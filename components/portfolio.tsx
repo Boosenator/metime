@@ -1,17 +1,15 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef } from "react"
+import { useState, useCallback, useEffect, useRef, type RefObject } from "react"
 import Image from "next/image"
 import { Play, X, ChevronLeft, ChevronRight, Search, LayoutGrid, Images } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-
-/* ------------------------------------------------------------------ */
-/*  Types                                                              */
-/* ------------------------------------------------------------------ */
+import type { PortfolioPhoto } from "@/lib/get-portfolio-photos"
 
 type PhotoItem = {
   id: number
   src: string
+  fullSrc?: string
   category: string
   alt: string
   wide?: boolean
@@ -27,23 +25,16 @@ type VideoItem = {
   alt: string
 }
 
-/* ------------------------------------------------------------------ */
-/*  Static data (grid view with categories)                            */
-/* ------------------------------------------------------------------ */
-
 const categoryIds = ["all", "dance", "wedding", "kids", "brand", "custom"] as const
 const videoCategoryIds = ["all", "dance", "wedding", "kids", "brand", "custom"] as const
 
-const photos: PhotoItem[] = [
+const fallbackPhotos: PhotoItem[] = [
   { id: 1, src: "/images/portfolio/dance-1.jpg", category: "dance", alt: "Танцювальна фотографія", wide: true },
   { id: 2, src: "/images/portfolio/dance-2.jpg", category: "dance", alt: "Dance performance" },
   { id: 3, src: "/images/portfolio/wedding-1.jpg", category: "wedding", alt: "Весільна фотографія", wide: true },
   { id: 4, src: "/images/portfolio/wedding-2.jpg", category: "wedding", alt: "Весільна церемонія" },
   { id: 5, src: "/images/portfolio/kids-1.jpg", category: "kids", alt: "Дитяча зйомка", wide: true },
   { id: 6, src: "/images/portfolio/kids-2.jpg", category: "kids", alt: "День народження" },
-  { id: 7, src: "/images/portfolio/brand-1.jpg", category: "brand", alt: "Brand зйомка", wide: true },
-  { id: 8, src: "/images/portfolio/brand-2.jpg", category: "brand", alt: "Комерційна зйомка" },
-  { id: 9, src: "/images/portfolio/custom-1.jpg", category: "custom", alt: "Custom проєкт", wide: true },
 ]
 
 const videos: VideoItem[] = [
@@ -53,15 +44,15 @@ const videos: VideoItem[] = [
   { id: 104, thumbnail: "/images/portfolio/video-wedding-2.jpg", category: "wedding", title: "Олена & Артем — Ceremony", duration: "3:15", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", alt: "Весільна церемонія відео" },
   { id: 105, thumbnail: "/images/portfolio/video-kids-1.jpg", category: "kids", title: "Birthday Party — Маленька Софія", duration: "2:47", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", alt: "День народження відео" },
   { id: 106, thumbnail: "/images/portfolio/video-kids-2.jpg", category: "kids", title: "Gender Party — Сюрприз", duration: "1:45", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", alt: "Gender Party відео" },
-  { id: 107, thumbnail: "/images/portfolio/video-brand-1.jpg", category: "brand", title: "Brand Film — Luxury Collection", duration: "1:30", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", alt: "Комерційне відео" },
-  { id: 108, thumbnail: "/images/portfolio/video-brand-2.jpg", category: "brand", title: "Course Creation — Studio Tour", duration: "5:01", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ", alt: "Brand відео" },
 ]
 
-/* ------------------------------------------------------------------ */
-/*  Portfolio Component                                                */
-/* ------------------------------------------------------------------ */
-
-export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
+export function Portfolio({
+  mosaicPhotos = [],
+  galleryPhotos = [],
+}: {
+  mosaicPhotos?: PortfolioPhoto[]
+  galleryPhotos?: PortfolioPhoto[]
+}) {
   const { t } = useI18n()
   const [mode, setMode] = useState<"photo" | "video">("photo")
   const [photoView, setPhotoView] = useState<"mosaic" | "grid">("mosaic")
@@ -72,16 +63,8 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
   const [videoModal, setVideoModal] = useState<VideoItem | null>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
 
-  // Build mosaic photo list from server-provided image paths
-  const mosaicPhotos: PhotoItem[] = mosaicImages.length
-    ? mosaicImages.map((src, i) => ({
-        id: 1000 + i,
-        src,
-        category: "all",
-        alt: `Фото ${i + 1}`,
-        wide: i % 6 === 0 || i % 6 === 5,
-      }))
-    : photos
+  const photoCatalog: PhotoItem[] = galleryPhotos.length ? galleryPhotos : fallbackPhotos
+  const mosaicCatalog: PhotoItem[] = mosaicPhotos.length ? mosaicPhotos : photoCatalog
 
   const photoCategories = categoryIds.map((id) => ({
     id,
@@ -93,15 +76,15 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
   }))
 
   const filteredPhotos =
-    photoFilter === "all" ? photos : photos.filter((p) => p.category === photoFilter)
+    photoFilter === "all"
+      ? photoCatalog
+      : photoCatalog.filter((photo) => photo.category === photoFilter)
 
   const filteredVideos =
-    videoFilter === "all" ? videos : videos.filter((v) => v.category === videoFilter)
+    videoFilter === "all" ? videos : videos.filter((video) => video.category === videoFilter)
 
-  // Photos shown in lightbox depend on current view
-  const displayPhotos = photoView === "mosaic" ? mosaicPhotos : filteredPhotos
+  const displayPhotos = photoView === "mosaic" ? mosaicCatalog : filteredPhotos
 
-  /* Mode switching with crossfade */
   const switchMode = useCallback(
     (newMode: "photo" | "video") => {
       if (newMode === mode) return
@@ -114,7 +97,6 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
     [mode]
   )
 
-  /* Photo lightbox */
   const openLightbox = useCallback((index: number) => {
     setLightbox({ index })
     document.body.style.overflow = "hidden"
@@ -138,7 +120,6 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
     [lightbox, displayPhotos.length]
   )
 
-  /* Video modal */
   const openVideoModal = useCallback((item: VideoItem) => {
     setVideoModal(item)
     document.body.style.overflow = "hidden"
@@ -149,25 +130,24 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
     document.body.style.overflow = ""
   }, [])
 
-  /* Keyboard nav */
   useEffect(() => {
-    function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") {
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === "Escape") {
         closeLightbox()
         closeVideoModal()
       }
       if (lightbox) {
-        if (e.key === "ArrowLeft") navigateLightbox("prev")
-        if (e.key === "ArrowRight") navigateLightbox("next")
+        if (event.key === "ArrowLeft") navigateLightbox("prev")
+        if (event.key === "ArrowRight") navigateLightbox("next")
       }
     }
+
     window.addEventListener("keydown", handleKey)
     return () => window.removeEventListener("keydown", handleKey)
   }, [lightbox, closeLightbox, closeVideoModal, navigateLightbox])
 
   return (
     <section id="portfolio" className="bg-dark py-16 lg:py-20">
-      {/* ---- Section Header ---- */}
       <div className="px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 text-center">
@@ -181,16 +161,11 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
         </div>
       </div>
 
-      {/* ---- Sticky Switcher ---- */}
       <div className="sticky top-12 z-40 bg-dark/95 px-6 py-4 backdrop-blur-md md:top-14 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="flex items-center justify-between">
-            {/* Photo / Video toggle */}
             <div className="flex items-center gap-6 md:gap-12">
-              <button
-                onClick={() => switchMode("photo")}
-                className="group relative pb-2 text-center"
-              >
+              <button onClick={() => switchMode("photo")} className="group relative pb-2 text-center">
                 <span
                   className={`text-sm font-medium uppercase tracking-[0.2em] transition-colors duration-300 md:text-base ${
                     mode === "photo" ? "text-cream" : "text-gray-mid"
@@ -207,10 +182,7 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
 
               <div className="h-5 w-px bg-gray-warm" />
 
-              <button
-                onClick={() => switchMode("video")}
-                className="group relative pb-2 text-center"
-              >
+              <button onClick={() => switchMode("video")} className="group relative pb-2 text-center">
                 <span
                   className={`text-sm font-medium uppercase tracking-[0.2em] transition-colors duration-300 md:text-base ${
                     mode === "video" ? "text-cream" : "text-gray-mid"
@@ -226,7 +198,6 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
               </button>
             </div>
 
-            {/* Mosaic / Grid view toggle (photo mode only) */}
             {mode === "photo" && (
               <div className="flex items-center gap-1">
                 <button
@@ -253,12 +224,9 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
         </div>
       </div>
 
-      {/* ---- Content area with crossfade ---- */}
-      <div
-        className={`transition-opacity duration-300 ${crossfade ? "opacity-0" : "opacity-100"}`}
-      >
+      <div className={`transition-opacity duration-300 ${crossfade ? "opacity-0" : "opacity-100"}`}>
         {mode === "photo" && photoView === "mosaic" && (
-          <MosaicGrid items={mosaicPhotos} openLightbox={openLightbox} />
+          <MosaicGrid items={mosaicCatalog} openLightbox={openLightbox} />
         )}
 
         {mode === "photo" && photoView === "grid" && (
@@ -288,7 +256,6 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
         )}
       </div>
 
-      {/* ---- Photo Lightbox ---- */}
       {lightbox && displayPhotos[lightbox.index] && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
@@ -304,8 +271,8 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
           </button>
 
           <button
-            onClick={(e) => {
-              e.stopPropagation()
+            onClick={(event) => {
+              event.stopPropagation()
               navigateLightbox("prev")
             }}
             className="absolute left-4 top-1/2 z-[60] -translate-y-1/2 text-wine/70 transition-colors duration-300 hover:text-wine md:left-8"
@@ -316,10 +283,10 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
 
           <div
             className="relative h-[80vh] w-[90vw] max-w-5xl"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           >
             <Image
-              src={displayPhotos[lightbox.index].src}
+              src={displayPhotos[lightbox.index].fullSrc ?? displayPhotos[lightbox.index].src}
               alt={displayPhotos[lightbox.index].alt}
               fill
               className="object-contain"
@@ -329,8 +296,8 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
           </div>
 
           <button
-            onClick={(e) => {
-              e.stopPropagation()
+            onClick={(event) => {
+              event.stopPropagation()
               navigateLightbox("next")
             }}
             className="absolute right-4 top-1/2 z-[60] -translate-y-1/2 text-wine/70 transition-colors duration-300 hover:text-wine md:right-8"
@@ -345,7 +312,6 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
         </div>
       )}
 
-      {/* ---- Video Modal ---- */}
       {videoModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm"
@@ -360,10 +326,7 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
             <X className="h-8 w-8" />
           </button>
 
-          <div
-            className="aspect-video w-[92vw] max-w-5xl"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="aspect-video w-[92vw] max-w-5xl" onClick={(event) => event.stopPropagation()}>
             <iframe
               src={videoModal.videoUrl + "?autoplay=1"}
               className="h-full w-full"
@@ -378,10 +341,6 @@ export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
   )
 }
 
-/* ================================================================== */
-/*  MOSAIC GRID — full-bleed, zero gaps, touching edges               */
-/* ================================================================== */
-
 function MosaicGrid({
   items,
   openLightbox,
@@ -389,45 +348,44 @@ function MosaicGrid({
   items: PhotoItem[]
   openLightbox: (index: number) => void
 }) {
+  const desktopRows = 8
+  const desktopColumns = Math.max(1, Math.ceil(items.length / desktopRows))
+
   return (
-    <div
-      className="grid grid-cols-2 lg:grid-cols-4"
-      style={{ gridAutoRows: "clamp(140px, 18vw, 300px)" }}
-    >
-      {items.map((item, i) => (
-        <div
-          key={item.id}
-          className={`relative overflow-hidden cursor-pointer group ${
-            item.wide ? "col-span-2" : ""
-          }`}
-          style={{
-            animationDelay: `${Math.min(i * 30, 600)}ms`,
-            animation: "fadeScaleIn 0.5s ease both",
-          }}
-          onClick={() => openLightbox(i)}
-        >
-          <Image
-            src={item.src}
-            alt={item.alt}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes={
-              item.wide
-                ? "(max-width: 768px) 100vw, 50vw"
-                : "(max-width: 768px) 50vw, 25vw"
-            }
-            loading={i < 8 ? "eager" : "lazy"}
-          />
-          <div className="absolute inset-0 bg-dark/0 transition-colors duration-500 group-hover:bg-dark/30" />
-        </div>
-      ))}
+    <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div
+        className="grid grid-cols-2 gap-3 sm:gap-4 lg:h-[calc(100vh-15rem)] lg:gap-[2px] lg:[grid-template-columns:repeat(var(--mosaic-cols),minmax(0,1fr))] lg:[grid-template-rows:repeat(var(--mosaic-rows),minmax(0,1fr))]"
+        style={
+          {
+            "--mosaic-cols": desktopColumns,
+            "--mosaic-rows": desktopRows,
+          } as Record<string, string | number>
+        }
+      >
+        {items.map((item, itemIndex) => (
+          <div
+            key={item.id}
+            className="group relative h-[clamp(180px,34vw,280px)] cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] lg:h-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
+            style={{
+              animationDelay: `${Math.min(itemIndex * 12, 180)}ms`,
+              animation: "fadeScaleIn 0.45s ease both",
+            }}
+            onClick={() => openLightbox(itemIndex)}
+          >
+            <div className="absolute inset-[4px] overflow-hidden rounded-[calc(1rem-4px)] bg-black sm:inset-[6px] lg:inset-0 lg:rounded-none">
+              <img
+                src={item.src}
+                alt={item.alt}
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                loading={itemIndex < 24 ? "eager" : "lazy"}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
-
-/* ================================================================== */
-/*  PHOTO WORLD — grid with category filters                          */
-/* ================================================================== */
 
 function PhotoWorld({
   categories,
@@ -442,7 +400,7 @@ function PhotoWorld({
   setActiveFilter: (id: string) => void
   items: PhotoItem[]
   openLightbox: (index: number) => void
-  tabsRef: React.RefObject<HTMLDivElement | null>
+  tabsRef: RefObject<HTMLDivElement | null>
 }) {
   return (
     <>
@@ -468,23 +426,19 @@ function PhotoWorld({
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
-        {items.map((item, i) => (
+        {items.map((item, index) => (
           <div
             key={item.id}
             className={`group relative cursor-pointer overflow-hidden ${
               item.wide ? "col-span-2" : "col-span-1"
             }`}
             style={{
-              animationDelay: `${i * 40}ms`,
+              animationDelay: `${index * 40}ms`,
               animation: "fadeScaleIn 0.5s ease both",
             }}
-            onClick={() => openLightbox(i)}
+            onClick={() => openLightbox(index)}
           >
-            <div
-              className={`relative w-full ${
-                item.wide ? "aspect-[16/10]" : "aspect-[3/4]"
-              }`}
-            >
+            <div className={`relative w-full ${item.wide ? "aspect-[16/10]" : "aspect-[3/4]"}`}>
               <Image
                 src={item.src}
                 alt={item.alt}
@@ -501,7 +455,7 @@ function PhotoWorld({
                 <div className="flex flex-col items-center gap-2 opacity-0 transition-all duration-500 group-hover:opacity-100">
                   <Search className="h-5 w-5 text-cream/80" />
                   <span className="text-[10px] uppercase tracking-[0.3em] text-wine">
-                    {categories.find((c) => c.id === item.category)?.label}
+                    {categories.find((category) => category.id === item.category)?.label}
                   </span>
                 </div>
               </div>
@@ -512,10 +466,6 @@ function PhotoWorld({
     </>
   )
 }
-
-/* ================================================================== */
-/*  VIDEO WORLD                                                        */
-/* ================================================================== */
 
 function VideoWorld({
   categories,
@@ -530,7 +480,7 @@ function VideoWorld({
   setActiveFilter: (id: string) => void
   items: VideoItem[]
   openVideoModal: (item: VideoItem) => void
-  tabsRef: React.RefObject<HTMLDivElement | null>
+  tabsRef: RefObject<HTMLDivElement | null>
 }) {
   return (
     <>
@@ -556,12 +506,12 @@ function VideoWorld({
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-        {items.map((item, i) => (
+        {items.map((item, index) => (
           <div
             key={item.id}
             className="group cursor-pointer"
             style={{
-              animationDelay: `${i * 50}ms`,
+              animationDelay: `${index * 50}ms`,
               animation: "fadeScaleIn 0.5s ease both",
             }}
             onClick={() => openVideoModal(item)}
@@ -577,10 +527,7 @@ function VideoWorld({
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/30 bg-dark/40 backdrop-blur-sm transition-all duration-400 group-hover:border-wine group-hover:bg-wine/70 group-hover:scale-110 md:h-20 md:w-20">
-                  <Play
-                    className="h-6 w-6 translate-x-0.5 text-cream md:h-7 md:w-7"
-                    fill="currentColor"
-                  />
+                  <Play className="h-6 w-6 translate-x-0.5 text-cream md:h-7 md:w-7" fill="currentColor" />
                 </div>
               </div>
               <div className="absolute bottom-3 right-3 bg-dark/70 px-2 py-1 text-xs tracking-wide text-cream/80 backdrop-blur-sm">
@@ -594,7 +541,7 @@ function VideoWorld({
                   {item.title}
                 </h3>
                 <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-gray-mid">
-                  {categories.find((c) => c.id === item.category)?.label}
+                  {categories.find((category) => category.id === item.category)?.label}
                 </p>
               </div>
             </div>

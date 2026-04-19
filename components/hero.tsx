@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import Image from "next/image"
 import { ChevronDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 
@@ -14,8 +15,15 @@ import { useI18n } from "@/lib/i18n"
 
 const DESKTOP_VIDEO = "/media/hero/desktop.mp4"
 const MOBILE_VIDEO = "/media/hero/mobile.mp4"
+const HERO_POSTER = "/images/hero-poster.jpg"
 
-export function Hero() {
+export function Hero({
+  hasDesktopVideo,
+  hasMobileVideo,
+}: {
+  hasDesktopVideo: boolean
+  hasMobileVideo: boolean
+}) {
   const { t } = useI18n()
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef = useRef<HTMLVideoElement>(null)
@@ -42,30 +50,54 @@ export function Hero() {
     <section className="relative flex h-screen items-center justify-center overflow-hidden">
       {/* Background video — Desktop (16:9) */}
       <div className="absolute inset-0 hidden md:block">
-        <video
-          ref={desktopVideoRef}
-          src={DESKTOP_VIDEO}
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/images/hero-poster.jpg"
-          className="h-full w-full object-cover"
-        />
+        {hasDesktopVideo ? (
+          <video
+            ref={desktopVideoRef}
+            src={DESKTOP_VIDEO}
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster={HERO_POSTER}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <Image
+            src={HERO_POSTER}
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            className="hero-poster-zoom object-cover"
+            sizes="100vw"
+          />
+        )}
       </div>
 
       {/* Background video — Mobile (9:16) */}
       <div className="absolute inset-0 md:hidden">
-        <video
-          ref={mobileVideoRef}
-          src={MOBILE_VIDEO}
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/images/hero-poster.jpg"
-          className="h-full w-full object-cover"
-        />
+        {hasMobileVideo ? (
+          <video
+            ref={mobileVideoRef}
+            src={MOBILE_VIDEO}
+            autoPlay
+            loop
+            muted
+            playsInline
+            poster={HERO_POSTER}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <Image
+            src={HERO_POSTER}
+            alt=""
+            aria-hidden="true"
+            fill
+            priority
+            className="hero-poster-zoom object-cover"
+            sizes="100vw"
+          />
+        )}
       </div>
 
       {/* Gradient overlay */}

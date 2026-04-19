@@ -7,19 +7,21 @@ import { Contact } from "@/components/contact"
 import { Footer } from "@/components/footer"
 import { ScrollWrapper } from "@/components/scroll-wrapper"
 import { I18nProvider } from "@/lib/i18n"
+import { getHeroVideoAvailability } from "@/lib/get-hero-video-availability"
 import { getPortfolioPhotos } from "@/lib/get-portfolio-photos"
 
-export default function Home() {
-  const mosaicImages = getPortfolioPhotos()
+export default async function Home() {
+  const { mosaicPhotos, galleryPhotos } = await getPortfolioPhotos()
+  const heroVideoAvailability = getHeroVideoAvailability()
 
   return (
     <I18nProvider>
       <ScrollWrapper>
         <Navigation />
         <main>
-          <Hero />
+          <Hero {...heroVideoAvailability} />
           <div className="fade-in-section">
-            <Portfolio mosaicImages={mosaicImages} />
+            <Portfolio mosaicPhotos={mosaicPhotos} galleryPhotos={galleryPhotos} />
           </div>
           <div className="fade-in-section">
             <Pricing />

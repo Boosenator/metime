@@ -11,3 +11,5 @@ out/
 .DS_Store
 .vercel
 .claude/
+
+.mosaic-cache/
