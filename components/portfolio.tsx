@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import Image from "next/image"
-import { Play, X, ChevronLeft, ChevronRight, Search } from "lucide-react"
+import { Play, X, ChevronLeft, ChevronRight, Search, LayoutGrid, Images } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 
 /* ------------------------------------------------------------------ */
@@ -14,7 +14,7 @@ type PhotoItem = {
   src: string
   category: string
   alt: string
-  wide?: boolean // hero shot — colspan 2
+  wide?: boolean
 }
 
 type VideoItem = {
@@ -28,7 +28,7 @@ type VideoItem = {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Data                                                               */
+/*  Static data (grid view with categories)                            */
 /* ------------------------------------------------------------------ */
 
 const categoryIds = ["all", "dance", "wedding", "kids", "brand", "custom"] as const
@@ -61,9 +61,10 @@ const videos: VideoItem[] = [
 /*  Portfolio Component                                                */
 /* ------------------------------------------------------------------ */
 
-export function Portfolio() {
+export function Portfolio({ mosaicImages = [] }: { mosaicImages?: string[] }) {
   const { t } = useI18n()
   const [mode, setMode] = useState<"photo" | "video">("photo")
+  const [photoView, setPhotoView] = useState<"mosaic" | "grid">("mosaic")
   const [photoFilter, setPhotoFilter] = useState("all")
   const [videoFilter, setVideoFilter] = useState("all")
   const [crossfade, setCrossfade] = useState(false)
@@ -71,7 +72,17 @@ export function Portfolio() {
   const [videoModal, setVideoModal] = useState<VideoItem | null>(null)
   const tabsRef = useRef<HTMLDivElement>(null)
 
-  // Build categories from translations
+  // Build mosaic photo list from server-provided image paths
+  const mosaicPhotos: PhotoItem[] = mosaicImages.length
+    ? mosaicImages.map((src, i) => ({
+        id: 1000 + i,
+        src,
+        category: "all",
+        alt: `Фото ${i + 1}`,
+        wide: i % 6 === 0 || i % 6 === 5,
+      }))
+    : photos
+
   const photoCategories = categoryIds.map((id) => ({
     id,
     label: t.portfolio.categories[id as keyof typeof t.portfolio.categories],
@@ -81,16 +92,14 @@ export function Portfolio() {
     label: t.portfolio.categories[id as keyof typeof t.portfolio.categories],
   }))
 
-  /* Filtered lists */
   const filteredPhotos =
-    photoFilter === "all"
-      ? photos
-      : photos.filter((p) => p.category === photoFilter)
+    photoFilter === "all" ? photos : photos.filter((p) => p.category === photoFilter)
 
   const filteredVideos =
-    videoFilter === "all"
-      ? videos
-      : videos.filter((v) => v.category === videoFilter)
+    videoFilter === "all" ? videos : videos.filter((v) => v.category === videoFilter)
+
+  // Photos shown in lightbox depend on current view
+  const displayPhotos = photoView === "mosaic" ? mosaicPhotos : filteredPhotos
 
   /* Mode switching with crossfade */
   const switchMode = useCallback(
@@ -119,14 +128,14 @@ export function Portfolio() {
   const navigateLightbox = useCallback(
     (dir: "prev" | "next") => {
       if (!lightbox) return
-      const len = filteredPhotos.length
+      const len = displayPhotos.length
       const next =
         dir === "next"
           ? (lightbox.index + 1) % len
           : (lightbox.index - 1 + len) % len
       setLightbox({ index: next })
     },
-    [lightbox, filteredPhotos.length]
+    [lightbox, displayPhotos.length]
   )
 
   /* Video modal */
@@ -157,21 +166,26 @@ export function Portfolio() {
   }, [lightbox, closeLightbox, closeVideoModal, navigateLightbox])
 
   return (
-    <section id="portfolio" className="bg-dark px-6 py-16 lg:px-8 lg:py-20">
-      <div className="mx-auto max-w-7xl">
-        {/* ---- Section Header ---- */}
-        <div className="mb-10 text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">
-            {t.nav.portfolio}
-          </p>
-          <h2 className="font-serif text-3xl font-light text-cream md:text-5xl lg:text-6xl text-balance">
-            {t.portfolio.title}
-          </h2>
+    <section id="portfolio" className="bg-dark py-16 lg:py-20">
+      {/* ---- Section Header ---- */}
+      <div className="px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-10 text-center">
+            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">
+              {t.nav.portfolio}
+            </p>
+            <h2 className="font-serif text-3xl font-light text-cream md:text-5xl lg:text-6xl text-balance">
+              {t.portfolio.title}
+            </h2>
+          </div>
         </div>
+      </div>
 
-        {/* ---- Big Switcher (Photo / Video) — Sticky ---- */}
-        <div className="sticky top-12 z-40 -mx-6 bg-dark/95 px-6 py-4 backdrop-blur-md md:top-14 lg:-mx-8 lg:px-8">
-          <div className="flex items-center justify-center">
+      {/* ---- Sticky Switcher ---- */}
+      <div className="sticky top-12 z-40 bg-dark/95 px-6 py-4 backdrop-blur-md md:top-14 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex items-center justify-between">
+            {/* Photo / Video toggle */}
             <div className="flex items-center gap-6 md:gap-12">
               <button
                 onClick={() => switchMode("photo")}
@@ -191,7 +205,6 @@ export function Portfolio() {
                 />
               </button>
 
-              {/* Divider */}
               <div className="h-5 w-px bg-gray-warm" />
 
               <button
@@ -212,16 +225,44 @@ export function Portfolio() {
                 />
               </button>
             </div>
+
+            {/* Mosaic / Grid view toggle (photo mode only) */}
+            {mode === "photo" && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPhotoView("mosaic")}
+                  aria-label="Мозаїка"
+                  className={`flex h-8 w-8 items-center justify-center transition-colors duration-300 ${
+                    photoView === "mosaic" ? "text-wine" : "text-gray-mid hover:text-cream"
+                  }`}
+                >
+                  <Images className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setPhotoView("grid")}
+                  aria-label="Сітка"
+                  className={`flex h-8 w-8 items-center justify-center transition-colors duration-300 ${
+                    photoView === "grid" ? "text-wine" : "text-gray-mid hover:text-cream"
+                  }`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* ---- Content area with crossfade ---- */}
-        <div
-          className={`transition-opacity duration-300 ${
-            crossfade ? "opacity-0" : "opacity-100"
-          }`}
-        >
-          {mode === "photo" ? (
+      {/* ---- Content area with crossfade ---- */}
+      <div
+        className={`transition-opacity duration-300 ${crossfade ? "opacity-0" : "opacity-100"}`}
+      >
+        {mode === "photo" && photoView === "mosaic" && (
+          <MosaicGrid items={mosaicPhotos} openLightbox={openLightbox} />
+        )}
+
+        {mode === "photo" && photoView === "grid" && (
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <PhotoWorld
               categories={photoCategories}
               activeFilter={photoFilter}
@@ -230,7 +271,11 @@ export function Portfolio() {
               openLightbox={openLightbox}
               tabsRef={tabsRef}
             />
-          ) : (
+          </div>
+        )}
+
+        {mode === "video" && (
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <VideoWorld
               categories={videoCategories}
               activeFilter={videoFilter}
@@ -239,12 +284,12 @@ export function Portfolio() {
               openVideoModal={openVideoModal}
               tabsRef={tabsRef}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* ---- Photo Lightbox ---- */}
-      {lightbox && filteredPhotos[lightbox.index] && (
+      {lightbox && displayPhotos[lightbox.index] && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.95)" }}
@@ -274,8 +319,8 @@ export function Portfolio() {
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={filteredPhotos[lightbox.index].src}
-              alt={filteredPhotos[lightbox.index].alt}
+              src={displayPhotos[lightbox.index].src}
+              alt={displayPhotos[lightbox.index].alt}
               fill
               className="object-contain"
               sizes="90vw"
@@ -294,9 +339,8 @@ export function Portfolio() {
             <ChevronRight className="h-10 w-10" />
           </button>
 
-          {/* Counter */}
           <div className="absolute bottom-6 left-1/2 z-[60] -translate-x-1/2 text-sm tracking-widest text-gray-mid">
-            {lightbox.index + 1} / {filteredPhotos.length}
+            {lightbox.index + 1} / {displayPhotos.length}
           </div>
         </div>
       )}
@@ -335,7 +379,54 @@ export function Portfolio() {
 }
 
 /* ================================================================== */
-/*  PHOTO WORLD                                                        */
+/*  MOSAIC GRID — full-bleed, zero gaps, touching edges               */
+/* ================================================================== */
+
+function MosaicGrid({
+  items,
+  openLightbox,
+}: {
+  items: PhotoItem[]
+  openLightbox: (index: number) => void
+}) {
+  return (
+    <div
+      className="grid grid-cols-2 lg:grid-cols-4"
+      style={{ gridAutoRows: "clamp(140px, 18vw, 300px)" }}
+    >
+      {items.map((item, i) => (
+        <div
+          key={item.id}
+          className={`relative overflow-hidden cursor-pointer group ${
+            item.wide ? "col-span-2" : ""
+          }`}
+          style={{
+            animationDelay: `${Math.min(i * 30, 600)}ms`,
+            animation: "fadeScaleIn 0.5s ease both",
+          }}
+          onClick={() => openLightbox(i)}
+        >
+          <Image
+            src={item.src}
+            alt={item.alt}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
+            sizes={
+              item.wide
+                ? "(max-width: 768px) 100vw, 50vw"
+                : "(max-width: 768px) 50vw, 25vw"
+            }
+            loading={i < 8 ? "eager" : "lazy"}
+          />
+          <div className="absolute inset-0 bg-dark/0 transition-colors duration-500 group-hover:bg-dark/30" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ================================================================== */
+/*  PHOTO WORLD — grid with category filters                          */
 /* ================================================================== */
 
 function PhotoWorld({
@@ -355,7 +446,6 @@ function PhotoWorld({
 }) {
   return (
     <>
-      {/* Category filter tabs — horizontal scroll on mobile */}
       <div className="mb-6">
         <div
           ref={tabsRef}
@@ -377,7 +467,6 @@ function PhotoWorld({
         </div>
       </div>
 
-      {/* Masonry Grid — 3 columns desktop, first item per category is wide */}
       <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
         {items.map((item, i) => (
           <div
@@ -408,8 +497,6 @@ function PhotoWorld({
                 }
                 loading="lazy"
               />
-
-              {/* Hover overlay */}
               <div className="absolute inset-0 flex items-center justify-center bg-dark/0 transition-all duration-500 group-hover:bg-dark/50">
                 <div className="flex flex-col items-center gap-2 opacity-0 transition-all duration-500 group-hover:opacity-100">
                   <Search className="h-5 w-5 text-cream/80" />
@@ -447,7 +534,6 @@ function VideoWorld({
 }) {
   return (
     <>
-      {/* Category filter tabs — consistent with photo */}
       <div className="mb-6">
         <div
           ref={tabsRef}
@@ -469,7 +555,6 @@ function VideoWorld({
         </div>
       </div>
 
-      {/* Editorial video cards — 2 cols desktop, 1 col mobile */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
         {items.map((item, i) => (
           <div
@@ -481,7 +566,6 @@ function VideoWorld({
             }}
             onClick={() => openVideoModal(item)}
           >
-            {/* Thumbnail */}
             <div className="relative aspect-video overflow-hidden">
               <Image
                 src={item.thumbnail}
@@ -491,8 +575,6 @@ function VideoWorld({
                 sizes="(max-width: 768px) 100vw, 50vw"
                 loading="lazy"
               />
-
-              {/* Play button */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/30 bg-dark/40 backdrop-blur-sm transition-all duration-400 group-hover:border-wine group-hover:bg-wine/70 group-hover:scale-110 md:h-20 md:w-20">
                   <Play
@@ -501,14 +583,11 @@ function VideoWorld({
                   />
                 </div>
               </div>
-
-              {/* Duration badge */}
               <div className="absolute bottom-3 right-3 bg-dark/70 px-2 py-1 text-xs tracking-wide text-cream/80 backdrop-blur-sm">
                 {item.duration}
               </div>
             </div>
 
-            {/* Meta */}
             <div className="mt-4 flex items-start justify-between">
               <div>
                 <h3 className="font-serif text-lg font-light text-cream transition-colors duration-300 group-hover:text-wine md:text-xl">

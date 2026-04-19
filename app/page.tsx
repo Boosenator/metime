@@ -1,5 +1,3 @@
-"use client"
-
 import { Navigation } from "@/components/navigation"
 import { Hero } from "@/components/hero"
 import { Portfolio } from "@/components/portfolio"
@@ -7,20 +5,21 @@ import { Pricing } from "@/components/pricing"
 import { Team } from "@/components/team"
 import { Contact } from "@/components/contact"
 import { Footer } from "@/components/footer"
-import { useScrollAnimation } from "@/hooks/use-scroll-animation"
+import { ScrollWrapper } from "@/components/scroll-wrapper"
 import { I18nProvider } from "@/lib/i18n"
+import { getPortfolioPhotos } from "@/lib/get-portfolio-photos"
 
 export default function Home() {
-  const containerRef = useScrollAnimation()
+  const mosaicImages = getPortfolioPhotos()
 
   return (
     <I18nProvider>
-      <div ref={containerRef}>
+      <ScrollWrapper>
         <Navigation />
         <main>
           <Hero />
           <div className="fade-in-section">
-            <Portfolio />
+            <Portfolio mosaicImages={mosaicImages} />
           </div>
           <div className="fade-in-section">
             <Pricing />
@@ -33,7 +32,7 @@ export default function Home() {
           </div>
         </main>
         <Footer />
-      </div>
+      </ScrollWrapper>
     </I18nProvider>
   )
 }

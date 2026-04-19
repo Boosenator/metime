@@ -1,106 +1,71 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import { ChevronDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 
 /*
- * Hero video з підтримкою двох форматів:
- * - Desktop: горизонтальне 16:9
- * - Mobile: вертикальне 9:16
- *
- * Поки що використовується stock відео з Blob.
- * Замініть на свої файли у seed-video API.
+ * Hero section with background video.
+ * Put your videos at:
+ *   public/media/hero/desktop.mp4  (horizontal 16:9)
+ *   public/media/hero/mobile.mp4   (vertical 9:16)
+ * If the files are missing the poster image is shown instead.
  */
+
+const DESKTOP_VIDEO = "/media/hero/desktop.mp4"
+const MOBILE_VIDEO = "/media/hero/mobile.mp4"
 
 export function Hero() {
   const { t } = useI18n()
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef = useRef<HTMLVideoElement>(null)
-  const [desktopUrl, setDesktopUrl] = useState<string | null>(null)
-  const [mobileUrl, setMobileUrl] = useState<string | null>(null)
 
-  // Fetch or seed video URLs from Blob (desktop + mobile)
   useEffect(() => {
-    async function loadVideos() {
-      try {
-        const res = await fetch("/api/seed-video")
-        const data = await res.json()
-        if (data.desktop) setDesktopUrl(data.desktop)
-        if (data.mobile) setMobileUrl(data.mobile)
-      } catch (e) {
-        console.error("Failed to load videos:", e)
-      }
-    }
-    loadVideos()
-  }, [])
-
-  // Play desktop video
-  useEffect(() => {
-    if (!desktopUrl) return
     const v = desktopVideoRef.current
     if (!v) return
-    v.load()
     v.play().catch(() => {
       v.muted = true
       v.play().catch(() => {})
     })
-  }, [desktopUrl])
+  }, [])
 
-  // Play mobile video
   useEffect(() => {
-    if (!mobileUrl) return
     const v = mobileVideoRef.current
     if (!v) return
-    v.load()
     v.play().catch(() => {
       v.muted = true
       v.play().catch(() => {})
     })
-  }, [mobileUrl])
+  }, [])
 
   return (
     <section className="relative flex h-screen items-center justify-center overflow-hidden">
-      {/* Background video - Desktop (16:9 horizontal) */}
+      {/* Background video — Desktop (16:9) */}
       <div className="absolute inset-0 hidden md:block">
-        {desktopUrl ? (
-          <video
-            ref={desktopVideoRef}
-            src={desktopUrl}
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster="/images/hero-poster.jpg"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div
-            className="h-full w-full bg-cover bg-center"
-            style={{ backgroundImage: "url(/images/hero-poster.jpg)" }}
-          />
-        )}
+        <video
+          ref={desktopVideoRef}
+          src={DESKTOP_VIDEO}
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/images/hero-poster.jpg"
+          className="h-full w-full object-cover"
+        />
       </div>
 
-      {/* Background video - Mobile (9:16 vertical) */}
+      {/* Background video — Mobile (9:16) */}
       <div className="absolute inset-0 md:hidden">
-        {mobileUrl ? (
-          <video
-            ref={mobileVideoRef}
-            src={mobileUrl}
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster="/images/hero-poster.jpg"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div
-            className="h-full w-full bg-cover bg-center"
-            style={{ backgroundImage: "url(/images/hero-poster.jpg)" }}
-          />
-        )}
+        <video
+          ref={mobileVideoRef}
+          src={MOBILE_VIDEO}
+          autoPlay
+          loop
+          muted
+          playsInline
+          poster="/images/hero-poster.jpg"
+          className="h-full w-full object-cover"
+        />
       </div>
 
       {/* Gradient overlay */}
