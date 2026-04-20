@@ -5,6 +5,8 @@ import Image from "next/image"
 import { Play, X, ChevronLeft, ChevronRight, Search, LayoutGrid, Images } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import type { PortfolioPhoto } from "@/lib/get-portfolio-photos"
+import { useMosaicReveal } from "@/hooks/use-mosaic-reveal"
+import { useCardTilt } from "@/hooks/use-card-tilt"
 
 type PhotoItem = {
   id: number
@@ -348,8 +350,10 @@ function MosaicGrid({
   items: PhotoItem[]
   openLightbox: (index: number) => void
 }) {
+  const { t } = useI18n()
   const desktopRows = 8
   const desktopColumns = Math.max(1, Math.ceil(items.length / desktopRows))
+  const revealRefs = useMosaicReveal(items.length)
 
   return (
     <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -363,25 +367,70 @@ function MosaicGrid({
         }
       >
         {items.map((item, itemIndex) => (
-          <div
+          <MosaicCard
             key={item.id}
-            className="group relative h-[clamp(180px,34vw,280px)] cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] lg:h-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
-            style={{
-              animationDelay: `${Math.min(itemIndex * 12, 180)}ms`,
-              animation: "fadeScaleIn 0.45s ease both",
-            }}
-            onClick={() => openLightbox(itemIndex)}
-          >
-            <div className="absolute inset-[4px] overflow-hidden rounded-[calc(1rem-4px)] bg-black sm:inset-[6px] lg:inset-0 lg:rounded-none">
-              <img
-                src={item.src}
-                alt={item.alt}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-                loading={itemIndex < 24 ? "eager" : "lazy"}
-              />
-            </div>
-          </div>
+            item={item}
+            itemIndex={itemIndex}
+            desktopColumns={desktopColumns}
+            openLightbox={openLightbox}
+            t={t}
+            revealRef={(el) => { revealRefs.current[itemIndex] = el }}
+          />
         ))}
+      </div>
+    </div>
+  )
+}
+
+function MosaicCard({
+  item,
+  itemIndex,
+  desktopColumns,
+  openLightbox,
+  t,
+  revealRef,
+}: {
+  item: PhotoItem
+  itemIndex: number
+  desktopColumns: number
+  openLightbox: (index: number) => void
+  t: ReturnType<typeof useI18n>["t"]
+  revealRef: (el: HTMLDivElement | null) => void
+}) {
+  const { ref, onMouseMove, onMouseEnter, onMouseLeave } = useCardTilt()
+  const isTouchDevice = typeof window !== "undefined" && window.matchMedia("(hover: none)").matches
+  const categoryLabel = t.portfolio.categories[item.category as keyof typeof t.portfolio.categories] ?? item.category
+
+  return (
+    <div
+      ref={(el) => {
+        (ref as React.MutableRefObject<HTMLDivElement | null>).current = el
+        revealRef(el)
+      }}
+      className="group relative h-[clamp(180px,34vw,280px)] cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] mosaic-item lg:h-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
+      data-col-desktop={itemIndex % desktopColumns}
+      data-col-mobile={itemIndex % 2}
+      onClick={() => { onMouseLeave(); openLightbox(itemIndex) }}
+      onMouseMove={isTouchDevice ? undefined : onMouseMove}
+      onMouseEnter={isTouchDevice ? undefined : onMouseEnter}
+      onMouseLeave={isTouchDevice ? undefined : onMouseLeave}
+    >
+      <div className="absolute inset-[4px] overflow-hidden rounded-[calc(1rem-4px)] bg-black sm:inset-[6px] lg:inset-0 lg:rounded-none">
+        <img
+          src={item.src}
+          alt={item.alt}
+          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.07]"
+          loading={itemIndex < 24 ? "eager" : "lazy"}
+        />
+        {/* Gradient overlay */}
+        <div
+          className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"
+          aria-hidden="true"
+        />
+        {/* Category label */}
+        <span className="absolute bottom-3 left-3 text-[9px] uppercase tracking-[0.25em] text-cream/90 font-medium translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 delay-75 pointer-events-none select-none">
+          {categoryLabel}
+        </span>
       </div>
     </div>
   )
