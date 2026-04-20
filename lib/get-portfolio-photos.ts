@@ -67,6 +67,8 @@ export type PortfolioPhoto = {
   alt: string
   wide: boolean
   fullSrc?: string
+  spanCols: number
+  spanRows: number
 }
 
 const CONTACT_SHEET_ROWS = 8
@@ -155,6 +157,8 @@ async function buildMosaicPhotos(
         category: matchedPhoto?.category ?? "custom",
         alt: matchedPhoto?.alt ?? `Портфоліо фото ${photoIndex + 1}`,
         wide: false,
+        spanCols: matchedPhoto?.spanCols ?? 1,
+        spanRows: matchedPhoto?.spanRows ?? 1,
       }
     })
   )
@@ -215,14 +219,24 @@ function listPortfolioImageFiles(): string[] {
 function buildGalleryPhotos(fileNames: string[]): PortfolioPhoto[] {
   return fileNames.map((fileName, index) => {
     const category = getPhotoCategory(fileName)
+    const { spanCols, spanRows } = getPhotoSpan(fileName)
     return {
       id: index + 1,
       src: `/images/portfolio/${fileName}`,
       category,
       alt: buildPhotoAlt(category, index + 1),
       wide: index % 5 === 0 || index % 7 === 0,
+      spanCols,
+      spanRows,
     }
   })
+}
+
+function getPhotoSpan(fileName: string): { spanCols: number; spanRows: number } {
+  const lower = fileName.toLowerCase()
+  if (lower.includes("-tall") || lower.includes("_tall")) return { spanCols: 2, spanRows: 4 }
+  if (lower.includes("-wide") || lower.includes("_wide")) return { spanCols: 4, spanRows: 2 }
+  return { spanCols: 1, spanRows: 1 }
 }
 
 function getPhotoCategory(fileName: string): string {

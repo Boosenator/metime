@@ -358,7 +358,7 @@ function MosaicGrid({
   return (
     <div className="mx-auto max-w-7xl px-6 lg:px-8">
       <div
-        className="grid grid-cols-2 gap-3 sm:gap-4 lg:h-[calc(100vh-15rem)] lg:gap-[2px] lg:[grid-template-columns:repeat(var(--mosaic-cols),minmax(0,1fr))] lg:[grid-template-rows:repeat(var(--mosaic-rows),minmax(0,1fr))]"
+        className="grid grid-cols-2 gap-3 sm:gap-4 [grid-auto-flow:dense] lg:h-[calc(100vh-15rem)] lg:gap-[2px] lg:[grid-template-columns:repeat(var(--mosaic-cols),minmax(0,1fr))] lg:[grid-template-rows:repeat(var(--mosaic-rows),minmax(0,1fr))]"
         style={
           {
             "--mosaic-cols": desktopColumns,
@@ -401,13 +401,22 @@ function MosaicCard({
   const isTouchDevice = typeof window !== "undefined" && window.matchMedia("(hover: none)").matches
   const categoryLabel = t.portfolio.categories[item.category as keyof typeof t.portfolio.categories] ?? item.category
 
+  const mobileHeight = item.spanRows > 1
+    ? `clamp(${180 * item.spanRows}px, ${34 * item.spanRows}vw, ${280 * item.spanRows}px)`
+    : "clamp(180px,34vw,280px)"
+
   return (
     <div
       ref={(el) => {
         (ref as React.MutableRefObject<HTMLDivElement | null>).current = el
         revealRef(el)
       }}
-      className="group relative h-[clamp(180px,34vw,280px)] cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] mosaic-item lg:h-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
+      className="group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] mosaic-item lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
+      style={{
+        height: mobileHeight,
+        gridColumn: item.spanCols > 1 ? `span ${item.spanCols}` : undefined,
+        gridRow: item.spanRows > 1 ? `span ${item.spanRows}` : undefined,
+      }}
       data-col-desktop={itemIndex % desktopColumns}
       data-col-mobile={itemIndex % 2}
       onClick={() => { onMouseLeave(); openLightbox(itemIndex) }}
