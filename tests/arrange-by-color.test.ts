@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { arrangeByColor } from "../lib/portfolio/arrange-by-color"
+import { arrangeByColor, ARRANGE_STRATEGIES } from "../lib/portfolio/arrange-by-color"
 import type { PhotoMeta, GridConfig } from "../lib/portfolio/types"
 
 function makePhoto(id: string, L: number, a: number, b: number): PhotoMeta {
@@ -96,5 +96,42 @@ describe("arrangeByColor", () => {
       expect(cell.y).toBeGreaterThanOrEqual(0)
       expect(cell.y).toBeLessThan(grid.rows)
     }
+  })
+
+  it.each(ARRANGE_STRATEGIES)("is deterministic for strategy %s", (strategy) => {
+    const photos = Array.from({ length: 12 }, (_, i) =>
+      makePhoto(`p${i}`, i * 6, i * 2 - 10, i * 3 - 12)
+    )
+    const grid: GridConfig = { cols: 4, rows: 3 }
+
+    const result1 = arrangeByColor(photos, grid, strategy)
+    const result2 = arrangeByColor(photos, grid, strategy)
+
+    expect(result1).toEqual(result2)
+  })
+
+  it.each(ARRANGE_STRATEGIES)("does not place duplicates for strategy %s", (strategy) => {
+    const photos = Array.from({ length: 8 }, (_, i) =>
+      makePhoto(`photo-${i}`, i * 11, i - 4, 8 - i)
+    )
+    const grid: GridConfig = { cols: 4, rows: 3 }
+    const cells = arrangeByColor(photos, grid, strategy)
+    const ids = cells.map((cell) => cell.photoId)
+
+    expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it("lightness strategy builds monotonic row flow", () => {
+    const photos = [
+      makePhoto("p1", 10, 0, 0),
+      makePhoto("p2", 20, 0, 0),
+      makePhoto("p3", 30, 0, 0),
+      makePhoto("p4", 40, 0, 0),
+    ]
+    const grid: GridConfig = { cols: 2, rows: 2 }
+    const cells = arrangeByColor(photos, grid, "lightness")
+    const byPosition = [...cells].sort((left, right) => left.y - right.y || left.x - right.x)
+
+    expect(byPosition.map((cell) => cell.photoId)).toEqual(["p1", "p2", "p4", "p3"])
   })
 })

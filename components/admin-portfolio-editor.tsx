@@ -20,7 +20,11 @@ import { useDraggable, useDroppable } from "@dnd-kit/core"
 import { Save, RotateCcw, Wand2, Upload, Grid2x2, Loader2, X } from "lucide-react"
 import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
 import type { PhotoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
-import { arrangeByColor } from "@/lib/portfolio/arrange-by-color"
+import {
+  ARRANGE_STRATEGIES,
+  arrangeByColor,
+  type ArrangeStrategy,
+} from "@/lib/portfolio/arrange-by-color"
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -199,6 +203,7 @@ export function AdminPortfolioEditor({
   const [uploading, setUploading] = useState(false)
   const [colsInput, setColsInput] = useState(String(initialLayout.grid.cols))
   const [rowsInput, setRowsInput] = useState(String(initialLayout.grid.rows))
+  const [arrangeStrategy, setArrangeStrategy] = useState<ArrangeStrategy>("neighbors")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const resizingRef = useRef<{
@@ -241,8 +246,11 @@ export function AdminPortfolioEditor({
   // ── Auto arrange ──────────────────────────────────────────────────────────
 
   const autoArrange = useCallback(() => {
-    setLayout((prev) => ({ ...prev, cells: arrangeByColor(photos, prev.grid) }))
-  }, [photos])
+    setLayout((prev) => ({
+      ...prev,
+      cells: arrangeByColor(photos, prev.grid, arrangeStrategy),
+    }))
+  }, [arrangeStrategy, photos])
 
   // ── DnD ──────────────────────────────────────────────────────────────────
 
@@ -405,6 +413,23 @@ export function AdminPortfolioEditor({
           className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors">
           <Wand2 className="h-3.5 w-3.5" /> Auto-arrange
         </button>
+
+        <select
+          value={arrangeStrategy}
+          onChange={(e) => setArrangeStrategy(e.target.value as ArrangeStrategy)}
+          className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+          title="Arrangement strategy"
+        >
+          {ARRANGE_STRATEGIES.map((strategy) => (
+            <option key={strategy} value={strategy} className="bg-dark text-cream">
+              {strategy === "neighbors"
+                ? "Smooth neighbors"
+                : strategy === "lightness"
+                  ? "Lightness bands"
+                  : "Radial blend"}
+            </option>
+          ))}
+        </select>
 
         <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
           className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors disabled:opacity-50">
