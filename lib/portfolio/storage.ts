@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync } from "fs"
-import { readFile, writeFile } from "fs/promises"
+import { readFile, unlink, writeFile } from "fs/promises"
 import { join } from "path"
-import { get, put } from "@vercel/blob"
+import { del, get, put } from "@vercel/blob"
 import { arrangeByColor } from "./arrange-by-color"
 import type { GridConfig, LayoutData, PhotoMeta } from "./types"
 
@@ -89,7 +89,7 @@ export async function readLayout(photos: PhotoMeta[]): Promise<LayoutData> {
 
   return {
     grid: DEFAULT_GRID,
-    cells: arrangeByColor(photos, DEFAULT_GRID),
+    cells: arrangeByColor(photos.filter((photo) => !photo.excluded), DEFAULT_GRID),
     version: 1,
     updatedAt: new Date().toISOString(),
   }
@@ -144,4 +144,15 @@ export async function readLocalPhotoBuffer(filename: string) {
   const localPath = join(PHOTOS_DIR, filename)
   if (!existsSync(localPath)) return null
   return readFile(localPath)
+}
+
+export async function deletePortfolioImage(photo: Pick<PhotoMeta, "filename" | "src">) {
+  if (useBlobStorage()) {
+    await del(photo.src || `${BLOB_IMAGE_PREFIX}/${photo.filename}`)
+    return
+  }
+
+  const localPath = join(PHOTOS_DIR, photo.filename)
+  if (!existsSync(localPath)) return
+  await unlink(localPath)
 }

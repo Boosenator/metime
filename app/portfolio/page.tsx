@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic"
 
 export default async function PortfolioPage() {
   const { photos, layout } = await readPortfolioData()
+  const activePhotos = photos.filter((photo) => !photo.excluded)
 
-  const photoMap = new Map(photos.map((p) => [p.id, p]))
+  const photoMap = new Map(activePhotos.map((p) => [p.id, p]))
 
   const cells = layout.cells
     .map((cell) => {

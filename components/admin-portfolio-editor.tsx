@@ -5,7 +5,6 @@ import {
   useRef,
   useCallback,
   useEffect,
-  type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from "react"
 import {
@@ -17,7 +16,17 @@ import {
   type DragEndEvent,
 } from "@dnd-kit/core"
 import { useDraggable, useDroppable } from "@dnd-kit/core"
-import { Save, RotateCcw, Wand2, Upload, Grid2x2, Loader2, X } from "lucide-react"
+import {
+  Ban,
+  Grid2x2,
+  Loader2,
+  RotateCcw,
+  Save,
+  Trash2,
+  Upload,
+  Wand2,
+  X,
+} from "lucide-react"
 import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
 import type { PhotoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
 import {
@@ -25,8 +34,6 @@ import {
   arrangeByColor,
   type ArrangeStrategy,
 } from "@/lib/portfolio/arrange-by-color"
-
-// ─── helpers ──────────────────────────────────────────────────────────────────
 
 function cellKey(x: number, y: number) {
   return `${x},${y}`
@@ -57,20 +64,32 @@ function canFit(cell: Cell, grid: GridConfig): boolean {
   )
 }
 
-// ─── Pool thumbnail (unplaced) ────────────────────────────────────────────────
-
-function PoolThumb({ photo, id }: { photo: PhotoMeta; id: string }) {
+function PoolThumb({
+  photo,
+  id,
+  excluded,
+  onExcludeToggle,
+  onDelete,
+}: {
+  photo: PhotoMeta
+  id: string
+  excluded: boolean
+  onExcludeToggle: () => void
+  onDelete: () => void
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `pool:${id}`,
     data: { type: "pool", photoId: id },
+    disabled: excluded,
   })
+
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      className={`aspect-square cursor-grab overflow-hidden rounded border border-white/10 transition-opacity ${
-        isDragging ? "opacity-30" : "opacity-100"
+      {...(excluded ? {} : listeners)}
+      {...(excluded ? {} : attributes)}
+      className={`relative aspect-square overflow-hidden rounded border border-white/10 transition-opacity ${
+        excluded ? "cursor-default opacity-45" : `cursor-grab ${isDragging ? "opacity-30" : "opacity-100"}`
       }`}
     >
       <img
@@ -79,17 +98,34 @@ function PoolThumb({ photo, id }: { photo: PhotoMeta; id: string }) {
         className="h-full w-full object-cover"
         draggable={false}
       />
+      <div className="absolute inset-x-0 top-0 flex items-center justify-end gap-1 p-1">
+        <button
+          type="button"
+          onClick={onExcludeToggle}
+          className="rounded bg-black/60 p-1 text-cream/80 transition-colors hover:text-amber-300"
+          title={excluded ? "Include in portfolio" : "Exclude from portfolio"}
+        >
+          {excluded ? <RotateCcw className="h-3 w-3" /> : <Ban className="h-3 w-3" />}
+        </button>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="rounded bg-black/60 p-1 text-cream/80 transition-colors hover:text-red-400"
+          title="Delete photo"
+        >
+          <Trash2 className="h-3 w-3" />
+        </button>
+      </div>
     </div>
   )
 }
-
-// ─── Drop target cell ─────────────────────────────────────────────────────────
 
 function DropCell({ x, y, occupied }: { x: number; y: number; occupied: boolean }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `cell:${x},${y}`,
     data: { x, y },
   })
+
   return (
     <div
       ref={setNodeRef}
@@ -107,8 +143,6 @@ function DropCell({ x, y, occupied }: { x: number; y: number; occupied: boolean 
   )
 }
 
-// ─── Placed photo — same visual as public mosaic ──────────────────────────────
-
 function PlacedCard({
   cell,
   photo,
@@ -116,6 +150,8 @@ function PlacedCard({
   onSelect,
   onStartResize,
   onRemove,
+  onExclude,
+  onDelete,
 }: {
   cell: Cell
   photo: PhotoMeta
@@ -123,6 +159,8 @@ function PlacedCard({
   onSelect: () => void
   onStartResize: (e: ReactPointerEvent<HTMLDivElement>) => void
   onRemove: () => void
+  onExclude: () => void
+  onDelete: () => void
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `placed:${cell.photoId}`,
@@ -143,49 +181,73 @@ function PlacedCard({
       }}
       {...listeners}
       {...attributes}
-      onClick={(e) => { e.stopPropagation(); onSelect() }}
+      onClick={(e) => {
+        e.stopPropagation()
+        onSelect()
+      }}
     >
-      {/* Blurred background — same as public mosaic */}
       <img
         src={src}
         alt=""
-        className="absolute inset-0 h-full w-full object-cover opacity-45 blur-xl scale-110 pointer-events-none"
+        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-xl pointer-events-none"
         draggable={false}
         aria-hidden="true"
       />
-      {/* Main image */}
       <img
         src={src}
         alt={photo.filename}
         className="relative z-[1] h-full w-full object-cover"
         draggable={false}
       />
-      {/* Hover gradient */}
-      <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/65 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
+      <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/65 via-black/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none" />
 
-      {/* Admin controls — shown on hover */}
-      <div className="absolute inset-x-0 top-0 z-[3] flex items-center justify-end gap-1 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+      <div className="absolute inset-x-0 top-0 z-[3] flex items-center justify-end gap-1 p-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
         <button
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => { e.stopPropagation(); onRemove() }}
-          className="rounded bg-black/60 p-1 text-cream/80 hover:text-red-400 transition-colors"
-          title="Remove"
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove()
+          }}
+          className="rounded bg-black/60 p-1 text-cream/80 transition-colors hover:text-red-400"
+          title="Remove from layout"
         >
           <X className="h-3 w-3" />
         </button>
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            onExclude()
+          }}
+          className="rounded bg-black/60 p-1 text-cream/80 transition-colors hover:text-amber-300"
+          title="Exclude from portfolio"
+        >
+          <Ban className="h-3 w-3" />
+        </button>
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            onDelete()
+          }}
+          className="rounded bg-black/60 p-1 text-cream/80 transition-colors hover:text-red-400"
+          title="Delete photo"
+        >
+          <Trash2 className="h-3 w-3" />
+        </button>
       </div>
 
-      {/* Resize handle — bottom-right corner */}
       <div
-        className="absolute bottom-0 right-0 z-[3] h-5 w-5 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute bottom-0 right-0 z-[3] h-5 w-5 cursor-se-resize opacity-0 transition-opacity group-hover:opacity-100"
         style={{ background: "linear-gradient(135deg, transparent 50%, rgba(139,26,46,0.85) 50%)" }}
-        onPointerDown={(e) => { e.stopPropagation(); onStartResize(e) }}
+        onPointerDown={(e) => {
+          e.stopPropagation()
+          onStartResize(e)
+        }}
       />
     </div>
   )
 }
-
-// ─── Main editor ──────────────────────────────────────────────────────────────
 
 export function AdminPortfolioEditor({
   initialPhotos,
@@ -194,13 +256,15 @@ export function AdminPortfolioEditor({
   initialPhotos: PhotoMeta[]
   initialLayout: LayoutData
 }) {
-  const [photos] = useState<PhotoMeta[]>(initialPhotos)
+  const [photos, setPhotos] = useState<PhotoMeta[]>(initialPhotos)
+  const [savedPhotos, setSavedPhotos] = useState<PhotoMeta[]>(initialPhotos)
   const [layout, setLayout] = useState<LayoutData>(initialLayout)
   const [savedLayout, setSavedLayout] = useState<LayoutData>(initialLayout)
   const [selected, setSelected] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null)
   const [colsInput, setColsInput] = useState(String(initialLayout.grid.cols))
   const [rowsInput, setRowsInput] = useState(String(initialLayout.grid.rows))
   const [arrangeStrategy, setArrangeStrategy] = useState<ArrangeStrategy>("neighbors")
@@ -216,18 +280,18 @@ export function AdminPortfolioEditor({
 
   const isDirty =
     JSON.stringify(layout.cells) !== JSON.stringify(savedLayout.cells) ||
+    JSON.stringify(photos) !== JSON.stringify(savedPhotos) ||
     layout.grid.cols !== savedLayout.grid.cols ||
     layout.grid.rows !== savedLayout.grid.rows
 
-  const photoMap = new Map(photos.map((p) => [p.id, p]))
-  const placedIds = new Set(layout.cells.map((c) => c.photoId))
-  const unplaced = photos.filter((p) => !placedIds.has(p.id))
+  const photoMap = new Map(photos.map((photo) => [photo.id, photo]))
+  const placedIds = new Set(layout.cells.map((cell) => cell.photoId))
+  const unplaced = photos.filter((photo) => !photo.excluded && !placedIds.has(photo.id))
+  const excluded = photos.filter((photo) => photo.excluded)
   const occupancy = buildOccupancyMap(layout.cells, layout.grid)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
-  const ROW_H = 120 // px per row — same visual density as public mosaic
-
-  // ── Grid size ─────────────────────────────────────────────────────────────
+  const ROW_H = 120
 
   const applyGridSize = useCallback(() => {
     const cols = Math.max(1, Math.min(40, parseInt(colsInput) || 12))
@@ -238,12 +302,14 @@ export function AdminPortfolioEditor({
       ...prev,
       grid: { cols, rows },
       cells: prev.cells
-        .filter((c) => c.x < cols && c.y < rows)
-        .map((c) => ({ ...c, spanX: Math.min(c.spanX, cols - c.x), spanY: Math.min(c.spanY, rows - c.y) })),
+        .filter((cell) => cell.x < cols && cell.y < rows)
+        .map((cell) => ({
+          ...cell,
+          spanX: Math.min(cell.spanX, cols - cell.x),
+          spanY: Math.min(cell.spanY, rows - cell.y),
+        })),
     }))
   }, [colsInput, rowsInput])
-
-  // ── Auto arrange ──────────────────────────────────────────────────────────
 
   const autoArrange = useCallback(() => {
     setLayout((prev) => ({
@@ -252,13 +318,52 @@ export function AdminPortfolioEditor({
     }))
   }, [arrangeStrategy, photos])
 
-  // ── DnD ──────────────────────────────────────────────────────────────────
+  const excludePhoto = useCallback((photoId: string) => {
+    setPhotos((prev) =>
+      prev.map((photo) => (photo.id === photoId ? { ...photo, excluded: true } : photo))
+    )
+    setLayout((prev) => ({
+      ...prev,
+      cells: prev.cells.filter((cell) => cell.photoId !== photoId),
+    }))
+  }, [])
+
+  const includePhoto = useCallback((photoId: string) => {
+    setPhotos((prev) =>
+      prev.map((photo) => (photo.id === photoId ? { ...photo, excluded: false } : photo))
+    )
+  }, [])
+
+  const deletePhoto = useCallback(async (photoId: string) => {
+    setDeletingPhotoId(photoId)
+    setSaveMsg(null)
+    try {
+      const res = await fetch("/api/admin/portfolio/photo", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: photoId }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+
+      setPhotos((prev) => prev.filter((photo) => photo.id !== photoId))
+      setSavedPhotos((prev) => prev.filter((photo) => photo.id !== photoId))
+      setLayout((prev) => ({ ...prev, cells: prev.cells.filter((cell) => cell.photoId !== photoId) }))
+      setSavedLayout((prev) => ({ ...prev, cells: prev.cells.filter((cell) => cell.photoId !== photoId) }))
+      setSaveMsg("Фото видалено")
+    } catch (err) {
+      setSaveMsg(`Помилка: ${err instanceof Error ? err.message : "unknown"}`)
+    } finally {
+      setDeletingPhotoId(null)
+    }
+  }, [])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     if (!over) return
+
     const targetId = String(over.id)
     if (!targetId.startsWith("cell:")) return
+
     const [, coords] = targetId.split("cell:")
     const [tx, ty] = coords.split(",").map(Number)
     const { photoId } = active.data.current as { photoId: string; cell?: Cell }
@@ -266,33 +371,35 @@ export function AdminPortfolioEditor({
     setLayout((prev) => {
       const cells = [...prev.cells]
       const grid = prev.grid
-      const movingCell = cells.find((c) => c.photoId === photoId)
+      const movingCell = cells.find((cell) => cell.photoId === photoId)
       const newCell: Cell = movingCell
         ? { ...movingCell, x: tx, y: ty }
         : { photoId, x: tx, y: ty, spanX: 1, spanY: 1 }
+
       if (!canFit(newCell, grid)) return prev
 
       const occ = buildOccupancyMap(cells, grid)
       const displaced = new Set<string>()
-      for (let dy = 0; dy < newCell.spanY; dy++)
+      for (let dy = 0; dy < newCell.spanY; dy++) {
         for (let dx = 0; dx < newCell.spanX; dx++) {
           const hit = occ.get(cellKey(tx + dx, ty + dy))
           if (hit && hit.photoId !== photoId) displaced.add(hit.photoId)
         }
-
-      let next = cells.filter((c) => c.photoId !== photoId && !displaced.has(c.photoId))
-      if (displaced.size === 1 && movingCell) {
-        const [dId] = displaced
-        const dc = cells.find((c) => c.photoId === dId)!
-        if (canFit({ ...dc, x: movingCell.x, y: movingCell.y }, grid))
-          next.push({ ...dc, x: movingCell.x, y: movingCell.y })
       }
+
+      let next = cells.filter((cell) => cell.photoId !== photoId && !displaced.has(cell.photoId))
+      if (displaced.size === 1 && movingCell) {
+        const [displacedId] = displaced
+        const displacedCell = cells.find((cell) => cell.photoId === displacedId)
+        if (displacedCell && canFit({ ...displacedCell, x: movingCell.x, y: movingCell.y }, grid)) {
+          next.push({ ...displacedCell, x: movingCell.x, y: movingCell.y })
+        }
+      }
+
       next.push(newCell)
       return { ...prev, cells: next }
     })
   }, [])
-
-  // ── Resize ────────────────────────────────────────────────────────────────
 
   const startResize = useCallback((e: ReactPointerEvent<HTMLDivElement>, cell: Cell) => {
     if (!gridRef.current) return
@@ -305,7 +412,7 @@ export function AdminPortfolioEditor({
       cellH: rect.height / layout.grid.rows,
     }
     e.currentTarget.setPointerCapture(e.pointerId)
-  }, [layout.grid])
+  }, [layout.grid.cols, layout.grid.rows])
 
   useEffect(() => {
     function onMove(e: PointerEvent) {
@@ -313,6 +420,7 @@ export function AdminPortfolioEditor({
       const { cell, startX, startY, cellW, cellH } = resizingRef.current
       const spanX = Math.max(1, Math.round(cell.spanX + (e.clientX - startX) / cellW))
       const spanY = Math.max(1, Math.round(cell.spanY + (e.clientY - startY) / cellH))
+
       setLayout((prev) => {
         const grid = prev.grid
         const updated: Cell = {
@@ -320,60 +428,77 @@ export function AdminPortfolioEditor({
           spanX: Math.min(spanX, grid.cols - cell.x),
           spanY: Math.min(spanY, grid.rows - cell.y),
         }
-        const others = prev.cells.filter((c) => c.photoId !== cell.photoId)
+        const others = prev.cells.filter((item) => item.photoId !== cell.photoId)
         const occ = buildOccupancyMap(others, grid)
         const displaced = new Set<string>()
-        for (let dy = 0; dy < updated.spanY; dy++)
+
+        for (let dy = 0; dy < updated.spanY; dy++) {
           for (let dx = 0; dx < updated.spanX; dx++) {
             const hit = occ.get(cellKey(updated.x + dx, updated.y + dy))
             if (hit) displaced.add(hit.photoId)
           }
-        return { ...prev, cells: [...others.filter((c) => !displaced.has(c.photoId)), updated] }
+        }
+
+        return {
+          ...prev,
+          cells: [...others.filter((item) => !displaced.has(item.photoId)), updated],
+        }
       })
     }
-    function onUp() { resizingRef.current = null }
+
+    function onUp() {
+      resizingRef.current = null
+    }
+
     window.addEventListener("pointermove", onMove)
     window.addEventListener("pointerup", onUp)
-    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp) }
+    return () => {
+      window.removeEventListener("pointermove", onMove)
+      window.removeEventListener("pointerup", onUp)
+    }
   }, [])
 
-  // ── Save / Discard ────────────────────────────────────────────────────────
-
   const save = useCallback(async () => {
-    setSaving(true); setSaveMsg(null)
+    setSaving(true)
+    setSaveMsg(null)
     try {
       const res = await fetch("/api/admin/portfolio/layout", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(layout),
+        body: JSON.stringify({ ...layout, photos }),
       })
       if (!res.ok) throw new Error(await res.text())
       setSavedLayout(layout)
+      setSavedPhotos(photos)
       setSaveMsg("Збережено!")
     } catch (err) {
       setSaveMsg(`Помилка: ${err instanceof Error ? err.message : "unknown"}`)
     } finally {
       setSaving(false)
     }
-  }, [layout])
+  }, [layout, photos])
 
   const discard = useCallback(() => {
     setLayout(savedLayout)
+    setPhotos(savedPhotos)
     setColsInput(String(savedLayout.grid.cols))
     setRowsInput(String(savedLayout.grid.rows))
-  }, [savedLayout])
-
-  // ── Upload ────────────────────────────────────────────────────────────────
+  }, [savedLayout, savedPhotos])
 
   const handleUpload = useCallback(async (files: FileList | null) => {
     if (!files?.length) return
     setUploading(true)
     const fd = new FormData()
-    for (const f of files) fd.append("files", f)
+    for (const file of files) fd.append("files", file)
+
     try {
       const res = await fetch("/api/admin/portfolio/upload", { method: "POST", body: fd })
       if (!res.ok) throw new Error(await res.text())
-      window.location.reload()
+      const data = await res.json() as { added?: PhotoMeta[] }
+      if (data.added?.length) {
+        setPhotos((prev) => [...prev, ...data.added!])
+        setSavedPhotos((prev) => [...prev, ...data.added!])
+      }
     } catch (err) {
       alert(`Upload failed: ${err instanceof Error ? err.message : "unknown"}`)
     } finally {
@@ -381,37 +506,42 @@ export function AdminPortfolioEditor({
     }
   }, [])
 
-  // ─────────────────────────────────────────────────────────────────────────
-
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-dark text-cream">
-
-      {/* ── Toolbar ─────────────────────────────────────────────────────── */}
       <div className="flex flex-shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-dark/95 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-1.5">
           <Grid2x2 className="h-4 w-4 text-gray-mid" />
           <input
-            type="number" min={1} max={40} value={colsInput}
+            type="number"
+            min={1}
+            max={40}
+            value={colsInput}
             onChange={(e) => setColsInput(e.target.value)}
             onBlur={applyGridSize}
             onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
             className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-            title="Колонки"
+            title="Columns"
           />
-          <span className="text-gray-mid">×</span>
+          <span className="text-gray-mid">x</span>
           <input
-            type="number" min={1} max={40} value={rowsInput}
+            type="number"
+            min={1}
+            max={40}
+            value={rowsInput}
             onChange={(e) => setRowsInput(e.target.value)}
             onBlur={applyGridSize}
             onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
             className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-            title="Рядки"
+            title="Rows"
           />
         </div>
 
-        <button onClick={autoArrange}
-          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors">
-          <Wand2 className="h-3.5 w-3.5" /> Auto-arrange
+        <button
+          onClick={autoArrange}
+          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream transition-colors hover:bg-wine/20"
+        >
+          <Wand2 className="h-3.5 w-3.5" />
+          Auto-arrange
         </button>
 
         <select
@@ -431,37 +561,50 @@ export function AdminPortfolioEditor({
           ))}
         </select>
 
-        <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
-          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors disabled:opacity-50">
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream transition-colors hover:bg-wine/20 disabled:opacity-50"
+        >
           {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
           Upload
         </button>
-        <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
-          onChange={(e) => handleUpload(e.target.files)} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => handleUpload(e.target.files)}
+        />
 
         <div className="ml-auto flex items-center gap-2">
           {saveMsg && (
-            <span className={`text-xs ${saveMsg.startsWith("П") ? "text-red-400" : "text-green-400"}`}>
+            <span className={`text-xs ${saveMsg.startsWith("Помилка") ? "text-red-400" : "text-green-400"}`}>
               {saveMsg}
             </span>
           )}
-          <button onClick={discard} disabled={!isDirty}
-            className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-white/10 transition-colors disabled:opacity-30">
-            <RotateCcw className="h-3.5 w-3.5" /> Discard
+          <button
+            onClick={discard}
+            disabled={!isDirty}
+            className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream transition-colors hover:bg-white/10 disabled:opacity-30"
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            Discard
           </button>
-          <button onClick={save} disabled={!isDirty || saving}
-            className="flex items-center gap-1.5 rounded bg-wine px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/80 transition-colors disabled:opacity-30">
+          <button
+            onClick={save}
+            disabled={!isDirty || saving}
+            className="flex items-center gap-1.5 rounded bg-wine px-3 py-1.5 text-xs uppercase tracking-widest text-cream transition-colors hover:bg-wine/80 disabled:opacity-30"
+          >
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             Save
           </button>
         </div>
       </div>
 
-      {/* ── Body ────────────────────────────────────────────────────────── */}
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="flex min-h-0 flex-1 overflow-hidden">
-
-          {/* Grid */}
           <div className="relative flex-1 overflow-auto bg-dark" onClick={() => setSelected(null)}>
             <style>{`
               .admin-mosaic-grid {
@@ -471,18 +614,16 @@ export function AdminPortfolioEditor({
               }
             `}</style>
             <div ref={gridRef} className="admin-mosaic-grid">
-
-              {/* Drop zone cells (transparent, only coloured on drag-over) */}
               {Array.from({ length: layout.grid.rows }, (_, y) =>
                 Array.from({ length: layout.grid.cols }, (_, x) => (
                   <DropCell key={`${x},${y}`} x={x} y={y} occupied={occupancy.has(cellKey(x, y))} />
                 ))
               )}
 
-              {/* Placed photos — same visual as public mosaic */}
               {layout.cells.map((cell) => {
                 const photo = photoMap.get(cell.photoId)
                 if (!photo) return null
+
                 return (
                   <PlacedCard
                     key={cell.photoId}
@@ -491,26 +632,58 @@ export function AdminPortfolioEditor({
                     selected={selected === cell.photoId}
                     onSelect={() => setSelected(cell.photoId)}
                     onStartResize={(e) => startResize(e, cell)}
-                    onRemove={() => setLayout((prev) => ({
-                      ...prev,
-                      cells: prev.cells.filter((c) => c.photoId !== cell.photoId),
-                    }))}
+                    onRemove={() =>
+                      setLayout((prev) => ({
+                        ...prev,
+                        cells: prev.cells.filter((item) => item.photoId !== cell.photoId),
+                      }))
+                    }
+                    onExclude={() => excludePhoto(cell.photoId)}
+                    onDelete={() => void deletePhoto(cell.photoId)}
                   />
                 )
               })}
             </div>
           </div>
 
-          {/* Unplaced pool */}
-          <div className="flex w-44 flex-shrink-0 flex-col overflow-y-auto border-l border-white/10 bg-dark/90 p-3">
+          <div className="flex w-48 flex-shrink-0 flex-col overflow-y-auto border-l border-white/10 bg-dark/90 p-3">
             <p className="mb-2 text-[10px] uppercase tracking-widest text-gray-mid">
-              Не розміщено ({unplaced.length})
+              Unplaced ({unplaced.length})
             </p>
             <div className="grid grid-cols-2 gap-1.5">
               {unplaced.map((photo) => (
-                <PoolThumb key={photo.id} photo={photo} id={photo.id} />
+                <PoolThumb
+                  key={photo.id}
+                  photo={photo}
+                  id={photo.id}
+                  excluded={false}
+                  onExcludeToggle={() => excludePhoto(photo.id)}
+                  onDelete={() => void deletePhoto(photo.id)}
+                />
               ))}
             </div>
+
+            <p className="mb-2 mt-4 text-[10px] uppercase tracking-widest text-gray-mid">
+              Excluded ({excluded.length})
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {excluded.map((photo) => (
+                <PoolThumb
+                  key={photo.id}
+                  photo={photo}
+                  id={photo.id}
+                  excluded
+                  onExcludeToggle={() => includePhoto(photo.id)}
+                  onDelete={() => void deletePhoto(photo.id)}
+                />
+              ))}
+            </div>
+
+            {deletingPhotoId && (
+              <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-mid">
+                Deleting photo...
+              </p>
+            )}
           </div>
         </div>
 

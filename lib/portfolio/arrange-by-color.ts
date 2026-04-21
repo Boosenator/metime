@@ -10,17 +10,18 @@ export function arrangeByColor(
   grid: GridConfig,
   strategy: ArrangeStrategy = "neighbors"
 ): Cell[] {
-  if (photos.length === 0) return []
+  const activePhotos = photos.filter((photo) => !photo.excluded)
+  if (activePhotos.length === 0) return []
 
   if (strategy === "lightness") {
-    return arrangeByLightnessBands(photos, grid)
+    return arrangeByLightnessBands(activePhotos, grid)
   }
 
   if (strategy === "radial") {
-    return arrangeByRadialNeighbors(photos, grid)
+    return arrangeByRadialNeighbors(activePhotos, grid)
   }
 
-  return arrangeByNeighborSimilarity(photos, grid)
+  return arrangeByNeighborSimilarity(activePhotos, grid)
 }
 
 function arrangeByNeighborSimilarity(photos: PhotoMeta[], grid: GridConfig): Cell[] {

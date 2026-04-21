@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
-import { saveLayoutData } from "@/lib/portfolio/storage"
-import type { LayoutData } from "@/lib/portfolio/types"
+import { saveLayoutData, savePhotosData } from "@/lib/portfolio/storage"
+import type { LayoutData, PhotoMeta } from "@/lib/portfolio/types"
 
 export async function PUT(request: Request) {
   const authError = requireAdminAuth(request)
@@ -49,7 +49,32 @@ export async function PUT(request: Request) {
     updatedAt: new Date().toISOString(),
   }
 
+  const bodyWithPhotos = body as { photos?: unknown[] }
+  const validatedPhotos = Array.isArray(bodyWithPhotos.photos)
+    ? bodyWithPhotos.photos
+        .filter(
+          (photo): photo is PhotoMeta =>
+            Boolean(photo) &&
+            typeof photo.id === "string" &&
+            typeof photo.filename === "string" &&
+            typeof photo.width === "number" &&
+            typeof photo.height === "number" &&
+            typeof photo.dominantColor === "string" &&
+            typeof photo.uploadedAt === "string" &&
+            typeof photo.lab?.L === "number" &&
+            typeof photo.lab?.a === "number" &&
+            typeof photo.lab?.b === "number"
+        )
+        .map((photo) => ({
+          ...photo,
+          excluded: Boolean(photo.excluded),
+        }))
+    : null
+
   try {
+    if (validatedPhotos) {
+      await savePhotosData(validatedPhotos)
+    }
     await saveLayoutData(validated)
     return NextResponse.json({ ok: true, cells: validated.cells.length })
   } catch (error) {

@@ -15,8 +15,9 @@ export const dynamic = "force-dynamic"
 export default async function Home() {
   const heroVideoAvailability = getHeroVideoAvailability()
   const { photos, layout } = await readPortfolioData()
+  const activePhotos = photos.filter((photo) => !photo.excluded)
 
-  const photoMap = new Map(photos.map((p) => [p.id, p]))
+  const photoMap = new Map(activePhotos.map((p) => [p.id, p]))
   const cells = layout.cells
     .map((cell) => {
       const photo = photoMap.get(cell.photoId)
@@ -32,7 +33,7 @@ export default async function Home() {
         <main>
           <Hero {...heroVideoAvailability} />
           <div className="fade-in-section">
-            <PortfolioClient cells={cells} grid={layout.grid} photos={photos} />
+            <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} />
           </div>
           <div className="fade-in-section">
             <Pricing />
