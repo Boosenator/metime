@@ -4,9 +4,9 @@ import Image from "next/image"
 import { useI18n } from "@/lib/i18n"
 
 const teamMembers = [
-  { id: "andrii", image: "/images/team/andrii.jpg" },
   { id: "nikita", image: "/images/team/Nikita.jpg" },
   { id: "anna", image: "/images/team/anna.jpg" },
+  { id: "andrii", image: "/images/team/andrii.jpg" },
   { id: "ihor", image: "/images/team/Ihor.jpg" },
 ] as const
 
