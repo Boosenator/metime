@@ -54,6 +54,8 @@ export async function POST(request: Request) {
         id: hash,
         filename,
         ...(src ? { src } : {}),
+        category: "custom",
+        excluded: false,
         width: meta.width ?? 0,
         height: meta.height ?? 0,
         dominantColor: hexFromRgb(r, g, b),

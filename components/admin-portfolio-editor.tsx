@@ -18,7 +18,10 @@ import {
 import { useDraggable, useDroppable } from "@dnd-kit/core"
 import {
   Ban,
+  Expand,
+  FolderKanban,
   Grid2x2,
+  Image as ImageIcon,
   Loader2,
   RotateCcw,
   Save,
@@ -27,6 +30,7 @@ import {
   Wand2,
   X,
 } from "lucide-react"
+import { createPortal } from "react-dom"
 import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
 import type { PhotoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
 import {
@@ -34,6 +38,19 @@ import {
   arrangeByColor,
   type ArrangeStrategy,
 } from "@/lib/portfolio/arrange-by-color"
+
+const PHOTO_CATEGORIES = [
+  "dance",
+  "wedding",
+  "kids",
+  "brand",
+  "custom",
+  "lovestory",
+  "portrait",
+  "commercial",
+] as const
+
+type AdminTab = "layout" | "library"
 
 function cellKey(x: number, y: number) {
   return `${x},${y}`
@@ -70,12 +87,14 @@ function PoolThumb({
   excluded,
   onExcludeToggle,
   onDelete,
+  onPreview,
 }: {
   photo: PhotoMeta
   id: string
   excluded: boolean
   onExcludeToggle: () => void
   onDelete: () => void
+  onPreview: () => void
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `pool:${id}`,
@@ -99,6 +118,14 @@ function PoolThumb({
         draggable={false}
       />
       <div className="absolute inset-x-0 top-0 flex items-center justify-end gap-1 p-1">
+        <button
+          type="button"
+          onClick={onPreview}
+          className="rounded bg-black/60 p-1 text-cream/80 transition-colors hover:text-cream"
+          title="Open full size"
+        >
+          <Expand className="h-3 w-3" />
+        </button>
         <button
           type="button"
           onClick={onExcludeToggle}
@@ -152,6 +179,7 @@ function PlacedCard({
   onRemove,
   onExclude,
   onDelete,
+  onPreview,
 }: {
   cell: Cell
   photo: PhotoMeta
@@ -161,6 +189,7 @@ function PlacedCard({
   onRemove: () => void
   onExclude: () => void
   onDelete: () => void
+  onPreview: () => void
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `placed:${cell.photoId}`,
@@ -202,6 +231,17 @@ function PlacedCard({
       <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/65 via-black/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none" />
 
       <div className="absolute inset-x-0 top-0 z-[3] flex items-center justify-end gap-1 p-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            onPreview()
+          }}
+          className="rounded bg-black/60 p-1 text-cream/80 transition-colors hover:text-cream"
+          title="Open full size"
+        >
+          <Expand className="h-3 w-3" />
+        </button>
         <button
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -249,6 +289,134 @@ function PlacedCard({
   )
 }
 
+function LibraryCard({
+  photo,
+  placed,
+  onCategoryChange,
+  onPreview,
+  onExcludeToggle,
+  onDelete,
+}: {
+  photo: PhotoMeta
+  placed: boolean
+  onCategoryChange: (value: string) => void
+  onPreview: () => void
+  onExcludeToggle: () => void
+  onDelete: () => void
+}) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div className="relative overflow-hidden rounded-xl">
+        <img
+          src={getPortfolioImageSrc(photo)}
+          alt={photo.filename}
+          className="aspect-[4/5] w-full object-cover"
+        />
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent p-2 text-[10px] uppercase tracking-[0.2em] text-cream/80">
+          <span>{photo.excluded ? "Excluded" : placed ? "Placed" : "Unplaced"}</span>
+          <button
+            type="button"
+            onClick={onPreview}
+            className="rounded bg-black/50 p-1 transition-colors hover:text-cream"
+            title="Open full size"
+          >
+            <Expand className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-3">
+        <div>
+          <p className="truncate text-xs text-cream/80">{photo.filename}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-mid">{photo.id}</p>
+        </div>
+
+        <label className="block">
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Category</span>
+          <select
+            value={photo.category ?? "custom"}
+            onChange={(e) => onCategoryChange(e.target.value)}
+            className="w-full rounded border border-white/10 bg-dark px-2 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+          >
+            {PHOTO_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onExcludeToggle}
+            className="flex flex-1 items-center justify-center gap-1 rounded border border-white/10 bg-white/5 px-2 py-2 text-[11px] uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10"
+          >
+            {photo.excluded ? <RotateCcw className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+            {photo.excluded ? "Include" : "Exclude"}
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="flex items-center justify-center rounded border border-red-900/40 bg-red-950/30 px-3 py-2 text-red-300 transition-colors hover:bg-red-950/50"
+            title="Delete photo"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+function PreviewModal({
+  photo,
+  onClose,
+}: {
+  photo: PhotoMeta
+  onClose: () => void
+}) {
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", onKey)
+    document.body.style.overflow = "hidden"
+    return () => {
+      window.removeEventListener("keydown", onKey)
+      document.body.style.overflow = ""
+    }
+  }, [onClose])
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 p-6"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-6 top-6 text-cream transition-colors hover:text-wine"
+        aria-label="Close preview"
+      >
+        <X className="h-8 w-8" />
+      </button>
+      <div className="max-h-[88vh] max-w-[92vw]" onClick={(e) => e.stopPropagation()}>
+        <img
+          src={getPortfolioImageSrc(photo)}
+          alt={photo.filename}
+          className="max-h-[78vh] max-w-[92vw] object-contain"
+        />
+        <div className="mt-3 flex items-center justify-between text-sm text-cream/80">
+          <span>{photo.filename}</span>
+          <span className="uppercase tracking-[0.2em] text-gray-mid">{photo.category ?? "custom"}</span>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 export function AdminPortfolioEditor({
   initialPhotos,
   initialLayout,
@@ -268,6 +436,8 @@ export function AdminPortfolioEditor({
   const [colsInput, setColsInput] = useState(String(initialLayout.grid.cols))
   const [rowsInput, setRowsInput] = useState(String(initialLayout.grid.rows))
   const [arrangeStrategy, setArrangeStrategy] = useState<ArrangeStrategy>("neighbors")
+  const [activeTab, setActiveTab] = useState<AdminTab>("layout")
+  const [previewPhotoId, setPreviewPhotoId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const resizingRef = useRef<{
@@ -290,6 +460,7 @@ export function AdminPortfolioEditor({
   const excluded = photos.filter((photo) => photo.excluded)
   const occupancy = buildOccupancyMap(layout.cells, layout.grid)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+  const previewPhoto = previewPhotoId ? photoMap.get(previewPhotoId) ?? null : null
 
   const ROW_H = 120
 
@@ -334,6 +505,12 @@ export function AdminPortfolioEditor({
     )
   }, [])
 
+  const updateCategory = useCallback((photoId: string, category: string) => {
+    setPhotos((prev) =>
+      prev.map((photo) => (photo.id === photoId ? { ...photo, category } : photo))
+    )
+  }, [])
+
   const deletePhoto = useCallback(async (photoId: string) => {
     setDeletingPhotoId(photoId)
     setSaveMsg(null)
@@ -349,13 +526,14 @@ export function AdminPortfolioEditor({
       setSavedPhotos((prev) => prev.filter((photo) => photo.id !== photoId))
       setLayout((prev) => ({ ...prev, cells: prev.cells.filter((cell) => cell.photoId !== photoId) }))
       setSavedLayout((prev) => ({ ...prev, cells: prev.cells.filter((cell) => cell.photoId !== photoId) }))
+      if (previewPhotoId === photoId) setPreviewPhotoId(null)
       setSaveMsg("Фото видалено")
     } catch (err) {
       setSaveMsg(`Помилка: ${err instanceof Error ? err.message : "unknown"}`)
     } finally {
       setDeletingPhotoId(null)
     }
-  }, [])
+  }, [previewPhotoId])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
@@ -509,57 +687,83 @@ export function AdminPortfolioEditor({
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-dark text-cream">
       <div className="flex flex-shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-dark/95 px-4 py-3 backdrop-blur-md">
-        <div className="flex items-center gap-1.5">
-          <Grid2x2 className="h-4 w-4 text-gray-mid" />
-          <input
-            type="number"
-            min={1}
-            max={40}
-            value={colsInput}
-            onChange={(e) => setColsInput(e.target.value)}
-            onBlur={applyGridSize}
-            onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
-            className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-            title="Columns"
-          />
-          <span className="text-gray-mid">x</span>
-          <input
-            type="number"
-            min={1}
-            max={40}
-            value={rowsInput}
-            onChange={(e) => setRowsInput(e.target.value)}
-            onBlur={applyGridSize}
-            onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
-            className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-            title="Rows"
-          />
+        <div className="flex items-center gap-1 rounded border border-white/10 bg-white/5 p-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab("layout")}
+            className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs uppercase tracking-[0.18em] transition-colors ${
+              activeTab === "layout" ? "bg-wine text-cream" : "text-gray-mid hover:text-cream"
+            }`}
+          >
+            <Grid2x2 className="h-3.5 w-3.5" />
+            Layout
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("library")}
+            className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs uppercase tracking-[0.18em] transition-colors ${
+              activeTab === "library" ? "bg-wine text-cream" : "text-gray-mid hover:text-cream"
+            }`}
+          >
+            <FolderKanban className="h-3.5 w-3.5" />
+            Library
+          </button>
         </div>
 
-        <button
-          onClick={autoArrange}
-          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream transition-colors hover:bg-wine/20"
-        >
-          <Wand2 className="h-3.5 w-3.5" />
-          Auto-arrange
-        </button>
+        {activeTab === "layout" && (
+          <>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                min={1}
+                max={40}
+                value={colsInput}
+                onChange={(e) => setColsInput(e.target.value)}
+                onBlur={applyGridSize}
+                onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
+                className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                title="Columns"
+              />
+              <span className="text-gray-mid">x</span>
+              <input
+                type="number"
+                min={1}
+                max={40}
+                value={rowsInput}
+                onChange={(e) => setRowsInput(e.target.value)}
+                onBlur={applyGridSize}
+                onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
+                className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                title="Rows"
+              />
+            </div>
 
-        <select
-          value={arrangeStrategy}
-          onChange={(e) => setArrangeStrategy(e.target.value as ArrangeStrategy)}
-          className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-          title="Arrangement strategy"
-        >
-          {ARRANGE_STRATEGIES.map((strategy) => (
-            <option key={strategy} value={strategy} className="bg-dark text-cream">
-              {strategy === "neighbors"
-                ? "Smooth neighbors"
-                : strategy === "lightness"
-                  ? "Lightness bands"
-                  : "Radial blend"}
-            </option>
-          ))}
-        </select>
+            <button
+              onClick={autoArrange}
+              className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream transition-colors hover:bg-wine/20"
+            >
+              <Wand2 className="h-3.5 w-3.5" />
+              Auto-arrange
+            </button>
+
+            <select
+              value={arrangeStrategy}
+              onChange={(e) => setArrangeStrategy(e.target.value as ArrangeStrategy)}
+              className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+              title="Arrangement strategy"
+            >
+              {ARRANGE_STRATEGIES.map((strategy) => (
+                <option key={strategy} value={strategy} className="bg-dark text-cream">
+                  {strategy === "neighbors"
+                    ? "Smooth neighbors"
+                    : strategy === "lightness"
+                      ? "Lightness bands"
+                      : "Radial blend"}
+                </option>
+              ))}
+            </select>
+          </>
+        )}
 
         <button
           onClick={() => fileInputRef.current?.click()}
@@ -603,92 +807,124 @@ export function AdminPortfolioEditor({
         </div>
       </div>
 
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="flex min-h-0 flex-1 overflow-hidden">
-          <div className="relative flex-1 overflow-auto bg-dark" onClick={() => setSelected(null)}>
-            <style>{`
-              .admin-mosaic-grid {
-                display: grid;
-                grid-template-columns: repeat(${layout.grid.cols}, minmax(0, 1fr));
-                grid-template-rows: repeat(${layout.grid.rows}, ${ROW_H}px);
-              }
-            `}</style>
-            <div ref={gridRef} className="admin-mosaic-grid">
-              {Array.from({ length: layout.grid.rows }, (_, y) =>
-                Array.from({ length: layout.grid.cols }, (_, x) => (
-                  <DropCell key={`${x},${y}`} x={x} y={y} occupied={occupancy.has(cellKey(x, y))} />
-                ))
-              )}
+      {activeTab === "layout" ? (
+        <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+          <div className="flex min-h-0 flex-1 overflow-hidden">
+            <div className="relative flex-1 overflow-auto bg-dark" onClick={() => setSelected(null)}>
+              <style>{`
+                .admin-mosaic-grid {
+                  display: grid;
+                  grid-template-columns: repeat(${layout.grid.cols}, minmax(0, 1fr));
+                  grid-template-rows: repeat(${layout.grid.rows}, ${ROW_H}px);
+                }
+              `}</style>
+              <div ref={gridRef} className="admin-mosaic-grid">
+                {Array.from({ length: layout.grid.rows }, (_, y) =>
+                  Array.from({ length: layout.grid.cols }, (_, x) => (
+                    <DropCell key={`${x},${y}`} x={x} y={y} occupied={occupancy.has(cellKey(x, y))} />
+                  ))
+                )}
 
-              {layout.cells.map((cell) => {
-                const photo = photoMap.get(cell.photoId)
-                if (!photo) return null
+                {layout.cells.map((cell) => {
+                  const photo = photoMap.get(cell.photoId)
+                  if (!photo) return null
 
-                return (
-                  <PlacedCard
-                    key={cell.photoId}
-                    cell={cell}
+                  return (
+                    <PlacedCard
+                      key={cell.photoId}
+                      cell={cell}
+                      photo={photo}
+                      selected={selected === cell.photoId}
+                      onSelect={() => setSelected(cell.photoId)}
+                      onStartResize={(e) => startResize(e, cell)}
+                      onRemove={() =>
+                        setLayout((prev) => ({
+                          ...prev,
+                          cells: prev.cells.filter((item) => item.photoId !== cell.photoId),
+                        }))
+                      }
+                      onExclude={() => excludePhoto(cell.photoId)}
+                      onDelete={() => void deletePhoto(cell.photoId)}
+                      onPreview={() => setPreviewPhotoId(cell.photoId)}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="flex w-48 flex-shrink-0 flex-col overflow-y-auto border-l border-white/10 bg-dark/90 p-3">
+              <p className="mb-2 text-[10px] uppercase tracking-widest text-gray-mid">
+                Unplaced ({unplaced.length})
+              </p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {unplaced.map((photo) => (
+                  <PoolThumb
+                    key={photo.id}
                     photo={photo}
-                    selected={selected === cell.photoId}
-                    onSelect={() => setSelected(cell.photoId)}
-                    onStartResize={(e) => startResize(e, cell)}
-                    onRemove={() =>
-                      setLayout((prev) => ({
-                        ...prev,
-                        cells: prev.cells.filter((item) => item.photoId !== cell.photoId),
-                      }))
-                    }
-                    onExclude={() => excludePhoto(cell.photoId)}
-                    onDelete={() => void deletePhoto(cell.photoId)}
+                    id={photo.id}
+                    excluded={false}
+                    onExcludeToggle={() => excludePhoto(photo.id)}
+                    onDelete={() => void deletePhoto(photo.id)}
+                    onPreview={() => setPreviewPhotoId(photo.id)}
                   />
-                )
-              })}
+                ))}
+              </div>
+
+              <p className="mb-2 mt-4 text-[10px] uppercase tracking-widest text-gray-mid">
+                Excluded ({excluded.length})
+              </p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {excluded.map((photo) => (
+                  <PoolThumb
+                    key={photo.id}
+                    photo={photo}
+                    id={photo.id}
+                    excluded
+                    onExcludeToggle={() => includePhoto(photo.id)}
+                    onDelete={() => void deletePhoto(photo.id)}
+                    onPreview={() => setPreviewPhotoId(photo.id)}
+                  />
+                ))}
+              </div>
+
+              {deletingPhotoId && (
+                <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-mid">
+                  Deleting photo...
+                </p>
+              )}
             </div>
           </div>
-
-          <div className="flex w-48 flex-shrink-0 flex-col overflow-y-auto border-l border-white/10 bg-dark/90 p-3">
-            <p className="mb-2 text-[10px] uppercase tracking-widest text-gray-mid">
-              Unplaced ({unplaced.length})
-            </p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {unplaced.map((photo) => (
-                <PoolThumb
-                  key={photo.id}
-                  photo={photo}
-                  id={photo.id}
-                  excluded={false}
-                  onExcludeToggle={() => excludePhoto(photo.id)}
-                  onDelete={() => void deletePhoto(photo.id)}
-                />
-              ))}
+          <DragOverlay />
+        </DndContext>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-auto bg-dark px-4 py-4">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] uppercase tracking-[0.24em] text-wine">Photo Library</p>
+              <h2 className="mt-1 text-xl text-cream">Categories and preview</h2>
             </div>
+            <p className="text-sm text-gray-mid">{photos.length} photos</p>
+          </div>
 
-            <p className="mb-2 mt-4 text-[10px] uppercase tracking-widest text-gray-mid">
-              Excluded ({excluded.length})
-            </p>
-            <div className="grid grid-cols-2 gap-1.5">
-              {excluded.map((photo) => (
-                <PoolThumb
-                  key={photo.id}
-                  photo={photo}
-                  id={photo.id}
-                  excluded
-                  onExcludeToggle={() => includePhoto(photo.id)}
-                  onDelete={() => void deletePhoto(photo.id)}
-                />
-              ))}
-            </div>
-
-            {deletingPhotoId && (
-              <p className="mt-3 text-[10px] uppercase tracking-widest text-gray-mid">
-                Deleting photo...
-              </p>
-            )}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {photos.map((photo) => (
+              <LibraryCard
+                key={photo.id}
+                photo={photo}
+                placed={placedIds.has(photo.id)}
+                onCategoryChange={(value) => updateCategory(photo.id, value)}
+                onPreview={() => setPreviewPhotoId(photo.id)}
+                onExcludeToggle={() => (photo.excluded ? includePhoto(photo.id) : excludePhoto(photo.id))}
+                onDelete={() => void deletePhoto(photo.id)}
+              />
+            ))}
           </div>
         </div>
+      )}
 
-        <DragOverlay />
-      </DndContext>
+      {previewPhoto ? (
+        <PreviewModal photo={previewPhoto} onClose={() => setPreviewPhotoId(null)} />
+      ) : null}
     </div>
   )
 }

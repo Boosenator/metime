@@ -67,6 +67,7 @@ export async function PUT(request: Request) {
         )
         .map((photo) => ({
           ...photo,
+          category: typeof photo.category === "string" ? photo.category : "custom",
           excluded: Boolean(photo.excluded),
         }))
     : null

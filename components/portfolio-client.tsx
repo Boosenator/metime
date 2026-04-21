@@ -183,7 +183,7 @@ export function PortfolioClient({
     id: p.id,
     filename: p.filename,
     src: p.src,
-    category: getCategory(p.filename),
+    category: p.category && SUPPORTED_CATEGORIES.has(p.category) ? p.category : getCategory(p.filename),
     wide: i % 5 === 0 || i % 7 === 0,
   }))
 
