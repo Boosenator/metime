@@ -12,7 +12,7 @@ import { readPortfolioData } from "@/lib/portfolio/read-data"
 
 export default async function Home() {
   const heroVideoAvailability = getHeroVideoAvailability()
-  const { photos, layout } = readPortfolioData()
+  const { photos, layout } = await readPortfolioData()
 
   const photoMap = new Map(photos.map((p) => [p.id, p]))
   const cells = layout.cells

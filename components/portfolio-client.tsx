@@ -5,6 +5,7 @@ import { createPortal } from "react-dom"
 import { Play, X, ChevronLeft, ChevronRight, Images, LayoutGrid } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
+import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
 import type { Cell, GridConfig, PhotoMeta } from "@/lib/portfolio/types"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -14,6 +15,7 @@ type PopulatedCell = Cell & { photo: PhotoMeta }
 type GalleryPhoto = {
   id: string
   filename: string
+  src?: string
   category: string
   wide: boolean
 }
@@ -96,7 +98,7 @@ function PhotoGrid({
         >
           <div className={`relative w-full ${photo.wide ? "aspect-[16/10]" : "aspect-[3/4]"}`}>
             <img
-              src={`/images/portfolio/${photo.filename}`}
+              src={getPortfolioImageSrc(photo)}
               alt={photo.filename}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
@@ -180,6 +182,7 @@ export function PortfolioClient({
   const galleryPhotos: GalleryPhoto[] = photos.map((p, i) => ({
     id: p.id,
     filename: p.filename,
+    src: p.src,
     category: getCategory(p.filename),
     wide: i % 5 === 0 || i % 7 === 0,
   }))
@@ -360,7 +363,7 @@ export function PortfolioClient({
             </button>
             <div className="relative h-[80vh] w-[90vw] max-w-5xl" onClick={(e) => e.stopPropagation()}>
               <img
-                src={`/images/portfolio/${filteredPhotos[galleryLightbox].filename}`}
+                src={getPortfolioImageSrc(filteredPhotos[galleryLightbox])}
                 alt={filteredPhotos[galleryLightbox].filename}
                 className="h-full w-full object-contain"
               />

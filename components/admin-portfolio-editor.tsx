@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/core"
 import { useDraggable, useDroppable } from "@dnd-kit/core"
 import { Save, RotateCcw, Wand2, Upload, Grid2x2, Loader2, X } from "lucide-react"
+import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
 import type { PhotoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
 import { arrangeByColor } from "@/lib/portfolio/arrange-by-color"
 
@@ -69,7 +70,7 @@ function PoolThumb({ photo, id }: { photo: PhotoMeta; id: string }) {
       }`}
     >
       <img
-        src={`/images/portfolio/${photo.filename}`}
+        src={getPortfolioImageSrc(photo)}
         alt={photo.filename}
         className="h-full w-full object-cover"
         draggable={false}
@@ -123,7 +124,7 @@ function PlacedCard({
     id: `placed:${cell.photoId}`,
     data: { type: "placed", photoId: cell.photoId, cell },
   })
-  const src = `/images/portfolio/${photo.filename}`
+  const src = getPortfolioImageSrc(photo)
 
   return (
     <div

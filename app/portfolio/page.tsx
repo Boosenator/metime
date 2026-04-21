@@ -6,8 +6,8 @@ import { I18nProvider } from "@/lib/i18n"
 
 export const dynamic = "force-dynamic"
 
-export default function PortfolioPage() {
-  const { photos, layout } = readPortfolioData()
+export default async function PortfolioPage() {
+  const { photos, layout } = await readPortfolioData()
 
   const photoMap = new Map(photos.map((p) => [p.id, p]))
 

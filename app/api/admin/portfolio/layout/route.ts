@@ -1,7 +1,6 @@
-import { writeFile } from "fs/promises"
-import { join } from "path"
 import { NextResponse } from "next/server"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
+import { saveLayoutData } from "@/lib/portfolio/storage"
 import type { LayoutData } from "@/lib/portfolio/types"
 
 export async function PUT(request: Request) {
@@ -50,8 +49,14 @@ export async function PUT(request: Request) {
     updatedAt: new Date().toISOString(),
   }
 
-  const path = join(process.cwd(), "data", "portfolio", "layout.json")
-  await writeFile(path, JSON.stringify(validated, null, 2), "utf8")
-
-  return NextResponse.json({ ok: true, cells: validated.cells.length })
+  try {
+    await saveLayoutData(validated)
+    return NextResponse.json({ ok: true, cells: validated.cells.length })
+  } catch (error) {
+    console.error("Failed to save portfolio layout", error)
+    return NextResponse.json(
+      { error: "Failed to save layout" },
+      { status: 500 }
+    )
+  }
 }

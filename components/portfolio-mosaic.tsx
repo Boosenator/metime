@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
+import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
 import type { Cell, GridConfig, PhotoMeta } from "@/lib/portfolio/types"
 import { useCardTilt } from "@/hooks/use-card-tilt"
 
@@ -19,7 +20,7 @@ function MosaicCell({
 }) {
   const { ref, onMouseMove, onMouseEnter, onMouseLeave } = useCardTilt()
 
-  const src = `/images/portfolio/${cell.photo.filename}`
+  const src = getPortfolioImageSrc(cell.photo)
   const mobileH =
     cell.spanY > 1
       ? `clamp(${180 * cell.spanY}px, ${34 * cell.spanY}vw, ${280 * cell.spanY}px)`
@@ -149,7 +150,7 @@ export function PortfolioMosaic({
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={`/images/portfolio/${cells[lightbox].photo.filename}`}
+              src={getPortfolioImageSrc(cells[lightbox].photo)}
               alt={cells[lightbox].photo.filename}
               className="h-full w-full object-contain"
             />

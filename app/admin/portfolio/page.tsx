@@ -3,7 +3,7 @@ import { AdminPortfolioEditor } from "@/components/admin-portfolio-editor"
 
 export const dynamic = "force-dynamic"
 
-export default function AdminPortfolioPage() {
-  const { photos, layout } = readPortfolioData()
+export default async function AdminPortfolioPage() {
+  const { photos, layout } = await readPortfolioData()
   return <AdminPortfolioEditor initialPhotos={photos} initialLayout={layout} />
 }

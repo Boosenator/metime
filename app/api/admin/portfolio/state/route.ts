@@ -6,6 +6,6 @@ export async function GET(request: Request) {
   const authError = requireAdminAuth(request)
   if (authError) return authError
 
-  const data = readPortfolioData()
+  const data = await readPortfolioData()
   return NextResponse.json(data)
 }

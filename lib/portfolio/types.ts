@@ -7,6 +7,7 @@ export type LabColor = {
 export type PhotoMeta = {
   id: string
   filename: string
+  src?: string
   width: number
   height: number
   dominantColor: string
