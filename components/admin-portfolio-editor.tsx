@@ -47,7 +47,6 @@ const PHOTO_CATEGORIES = [
   "custom",
   "lovestory",
   "portrait",
-  "commercial",
 ] as const
 
 const PHOTO_CATEGORY_LABELS: Record<(typeof PHOTO_CATEGORIES)[number], string> = {
@@ -58,7 +57,14 @@ const PHOTO_CATEGORY_LABELS: Record<(typeof PHOTO_CATEGORIES)[number], string> =
   custom: "Custom",
   lovestory: "Love Story",
   portrait: "Portrait",
-  commercial: "Brand",
+}
+
+function normalizePhotoCategory(category?: string): (typeof PHOTO_CATEGORIES)[number] {
+  if (category === "commercial" || category === "brand") return "brand"
+  if (category === "dance" || category === "wedding" || category === "kids" || category === "custom" || category === "lovestory" || category === "portrait") {
+    return category
+  }
+  return "custom"
 }
 
 type AdminTab = "layout" | "library"
@@ -345,7 +351,7 @@ function LibraryCard({
         <label className="block">
           <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Category</span>
           <select
-            value={photo.category ?? "custom"}
+            value={normalizePhotoCategory(photo.category)}
             onChange={(e) => onCategoryChange(e.target.value)}
             className="w-full rounded border border-white/10 bg-dark px-2 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
           >
@@ -421,7 +427,7 @@ function PreviewModal({
         <div className="mt-3 flex items-center justify-between text-sm text-cream/80">
           <span>{photo.filename}</span>
           <span className="uppercase tracking-[0.2em] text-gray-mid">
-            {PHOTO_CATEGORY_LABELS[(photo.category ?? "custom") as (typeof PHOTO_CATEGORIES)[number]]}
+            {PHOTO_CATEGORY_LABELS[normalizePhotoCategory(photo.category)]}
           </span>
         </div>
       </div>

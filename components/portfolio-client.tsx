@@ -33,9 +33,13 @@ type VideoItem = {
 
 const SUPPORTED_CATEGORIES = new Set(["dance", "wedding", "kids", "brand", "custom", "lovestory", "portrait", "commercial"])
 
+function normalizeCategory(category: string): string {
+  return category === "commercial" ? "brand" : category
+}
+
 function getCategory(filename: string): string {
   const prefix = filename.toLowerCase().split("-")[0]
-  return SUPPORTED_CATEGORIES.has(prefix) ? prefix : "custom"
+  return SUPPORTED_CATEGORIES.has(prefix) ? normalizeCategory(prefix) : "custom"
 }
 
 const VIDEO_ITEMS: VideoItem[] = [
@@ -47,8 +51,8 @@ const VIDEO_ITEMS: VideoItem[] = [
   { id: 106, thumbnail: "/images/portfolio/video-kids-2.jpg",  category: "kids",    title: "Gender Party — Сюрприз",          duration: "1:45", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
 ]
 
-const PHOTO_CATEGORY_IDS = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "commercial", "custom"] as const
-const VIDEO_CATEGORY_IDS  = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "commercial", "custom"] as const
+const PHOTO_CATEGORY_IDS = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "custom"] as const
+const VIDEO_CATEGORY_IDS  = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "custom"] as const
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 
@@ -183,7 +187,7 @@ export function PortfolioClient({
     id: p.id,
     filename: p.filename,
     src: p.src,
-    category: p.category && SUPPORTED_CATEGORIES.has(p.category) ? p.category : getCategory(p.filename),
+    category: p.category && SUPPORTED_CATEGORIES.has(p.category) ? normalizeCategory(p.category) : getCategory(p.filename),
     wide: i % 5 === 0 || i % 7 === 0,
   }))
 
