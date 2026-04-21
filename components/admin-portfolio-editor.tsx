@@ -50,6 +50,17 @@ const PHOTO_CATEGORIES = [
   "commercial",
 ] as const
 
+const PHOTO_CATEGORY_LABELS: Record<(typeof PHOTO_CATEGORIES)[number], string> = {
+  dance: "Dance",
+  wedding: "Wedding",
+  kids: "Kids",
+  brand: "Brand",
+  custom: "Custom",
+  lovestory: "Love Story",
+  portrait: "Portrait",
+  commercial: "Brand",
+}
+
 type AdminTab = "layout" | "library"
 
 function cellKey(x: number, y: number) {
@@ -340,7 +351,7 @@ function LibraryCard({
           >
             {PHOTO_CATEGORIES.map((category) => (
               <option key={category} value={category}>
-                {category}
+                {PHOTO_CATEGORY_LABELS[category]}
               </option>
             ))}
           </select>
@@ -409,7 +420,9 @@ function PreviewModal({
         />
         <div className="mt-3 flex items-center justify-between text-sm text-cream/80">
           <span>{photo.filename}</span>
-          <span className="uppercase tracking-[0.2em] text-gray-mid">{photo.category ?? "custom"}</span>
+          <span className="uppercase tracking-[0.2em] text-gray-mid">
+            {PHOTO_CATEGORY_LABELS[(photo.category ?? "custom") as (typeof PHOTO_CATEGORIES)[number]]}
+          </span>
         </div>
       </div>
     </div>,
