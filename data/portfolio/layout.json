@@ -1,0 +1,948 @@
+{
+  "grid": {
+    "cols": 12,
+    "rows": 24
+  },
+  "cells": [
+    {
+      "photoId": "aa90364ce406c532",
+      "x": 0,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "30366b43b93b4252",
+      "x": 1,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "4ee2a98417187ada",
+      "x": 2,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "360685b435740bfa",
+      "x": 3,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "459c2587903dbbba",
+      "x": 4,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "6cc65d0c8b379f29",
+      "x": 5,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "e0bf3b5202f19862",
+      "x": 6,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "f0d2d1a8053ec263",
+      "x": 7,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "7fba23282f4eb185",
+      "x": 8,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "52d25652dc5bd63f",
+      "x": 9,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "96b32ced4213d6da",
+      "x": 10,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "0a6b56b9954b3eff",
+      "x": 11,
+      "y": 0,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "d250ac5b2c566ec9",
+      "x": 0,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "29c96d540f477f29",
+      "x": 1,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "198d941a42b37ef2",
+      "x": 2,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "57b99a336be3f22a",
+      "x": 3,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "97dd573472fbffb2",
+      "x": 4,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "918db18af99eeedf",
+      "x": 5,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "46fd36574d9c3a5b",
+      "x": 6,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "1dd1eb1ebe83b913",
+      "x": 7,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "3bcad35335ef77f6",
+      "x": 8,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "dc01108d307c9aec",
+      "x": 9,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "2068ea0663029f26",
+      "x": 10,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "f256830d33452e1f",
+      "x": 11,
+      "y": 1,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "34d02703ccd822af",
+      "x": 0,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "dc659651198bb63f",
+      "x": 1,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "92a3c612346f62d4",
+      "x": 2,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "072108a081b799b5",
+      "x": 3,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "c59d8d2e817e3ac7",
+      "x": 4,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "a34a94eeeb8d98f8",
+      "x": 5,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "0a22e86b02280246",
+      "x": 6,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "db61f653b61638d4",
+      "x": 7,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "58fbaf44041f6500",
+      "x": 8,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "48a00745810a2295",
+      "x": 9,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "b1d161276fc47f56",
+      "x": 10,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "ec277b03716b3f31",
+      "x": 11,
+      "y": 2,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "12a6ad0af6b86c63",
+      "x": 0,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "2f6fcb4d33ae467c",
+      "x": 1,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "1e125a475350755a",
+      "x": 2,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "941787936a9d7cb7",
+      "x": 3,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "1a659308589d9d97",
+      "x": 4,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "e302f247e5283829",
+      "x": 5,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "dbb4701e96aea872",
+      "x": 6,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "de2e87bac29742c7",
+      "x": 7,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "9df31c9e9a0f49e7",
+      "x": 8,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "440e123d664337f4",
+      "x": 9,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "b58dec6faca1502b",
+      "x": 10,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "6d3c3c48975b85da",
+      "x": 11,
+      "y": 3,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "284dbb7b55b750aa",
+      "x": 0,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "7dffd42c62bab0ab",
+      "x": 1,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "59148a9866aeae11",
+      "x": 2,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "940a419ed930b3bb",
+      "x": 3,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "ee5a3b4c9c78cdd6",
+      "x": 4,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "8ec4f6a44e0f0c1d",
+      "x": 5,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "d34be62322d59dba",
+      "x": 6,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "faa8ef85c923530d",
+      "x": 7,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "7217191032467500",
+      "x": 8,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "09738695c89b9da8",
+      "x": 9,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "74b568afccb33d15",
+      "x": 10,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "1c6bcbc86fa8b649",
+      "x": 11,
+      "y": 4,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "097afa79c5dbb5bf",
+      "x": 0,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "dd0e44e9f0ae19ae",
+      "x": 1,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "b67110ed6a1ecdb2",
+      "x": 2,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "ccb8c5f1b1d1fc9d",
+      "x": 3,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "7c62802487e0c1f8",
+      "x": 4,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "68f353bd86fcd986",
+      "x": 5,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "84ba598c8ca0e68f",
+      "x": 6,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "39bc2971b5a55931",
+      "x": 7,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "3a00029de4d6826d",
+      "x": 8,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "b57121d98a8540a7",
+      "x": 9,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "8f3a3550fe6f2638",
+      "x": 10,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "486916e8956c9f80",
+      "x": 11,
+      "y": 5,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "014ac2c8e7cb487d",
+      "x": 0,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "5b9b0aef1b6ed983",
+      "x": 1,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "b111a27766546e20",
+      "x": 2,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "397deb2064fae7c9",
+      "x": 3,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "8c6c8e911b8a580d",
+      "x": 4,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "7c07cff1ed63d080",
+      "x": 5,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "94e5d213592f2214",
+      "x": 6,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "bf2194c1ec2be877",
+      "x": 7,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "f8ea7500c5ca12ff",
+      "x": 8,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "c6a17f78b8ec61a0",
+      "x": 9,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "893c2a54deb39be3",
+      "x": 10,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "a83a46d7c5a6f56d",
+      "x": 11,
+      "y": 6,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "9040a540ac0ce4b0",
+      "x": 0,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "32402522957d2d53",
+      "x": 1,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "bedc5d144696d5cb",
+      "x": 2,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "0138cdbb8141b4a2",
+      "x": 3,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "d248f5dd7d1451b2",
+      "x": 4,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "743fd24f50b6cc7f",
+      "x": 5,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "6fe446cb6b17d19c",
+      "x": 6,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "6fa53731f55ed67f",
+      "x": 7,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "47daba18f07ff269",
+      "x": 8,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "3522c0823e13100b",
+      "x": 9,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "2f34a1b89970fc69",
+      "x": 10,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "569487ff0b8c0425",
+      "x": 11,
+      "y": 7,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "e2a788768566dd92",
+      "x": 0,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "40d2cf6f020160df",
+      "x": 1,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "940a082d5f3157ee",
+      "x": 2,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "f3884177568aedf7",
+      "x": 3,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "71f04836ae37aef1",
+      "x": 4,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "6bed1e8ea342fa66",
+      "x": 5,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "bb917719ea3db57c",
+      "x": 6,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "749647aec900e82f",
+      "x": 7,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "fab499c988b49d39",
+      "x": 8,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "5780ea17a89a7b10",
+      "x": 9,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "dd6befa07aced687",
+      "x": 10,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "f485dbe7f61be108",
+      "x": 11,
+      "y": 8,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "184d3b60f75c31bc",
+      "x": 0,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "aa6e777505809388",
+      "x": 1,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "675dac36aa0f286f",
+      "x": 2,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "91657a5722552537",
+      "x": 3,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "d2250249c816c51e",
+      "x": 4,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "f99549e9ab0e3faf",
+      "x": 5,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "30c3966041a4cb9b",
+      "x": 6,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "eb6335c6d35b20fd",
+      "x": 7,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "e5653d48f547e468",
+      "x": 8,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "e435add87d6e07ac",
+      "x": 9,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "a29ff1a8e1d0bf83",
+      "x": 10,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "fb7d41b91aa3bf9d",
+      "x": 11,
+      "y": 9,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "39873333f19d873f",
+      "x": 0,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "c3a705a2508a8fcb",
+      "x": 1,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "982b200da5ce6068",
+      "x": 2,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "c7c572b4217382b4",
+      "x": 3,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "45e6b4ba4fc3eba4",
+      "x": 4,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "d9568934021b0239",
+      "x": 5,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "a3df4cb5d3458218",
+      "x": 6,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "89cea1127ce78639",
+      "x": 7,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "0d56ee0079a7ca06",
+      "x": 8,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "d43e500934a5a87b",
+      "x": 9,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "9725c4b33e93ba8f",
+      "x": 10,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "edf60da4a06c469f",
+      "x": 11,
+      "y": 10,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "c2ace3b323fddc37",
+      "x": 0,
+      "y": 23,
+      "spanX": 1,
+      "spanY": 1
+    },
+    {
+      "photoId": "dfcbb9cfad7b3532",
+      "x": 11,
+      "y": 23,
+      "spanX": 1,
+      "spanY": 1
+    }
+  ],
+  "version": 1,
+  "updatedAt": "2026-04-21T06:33:23.013Z"
+}
