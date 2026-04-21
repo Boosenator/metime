@@ -10,6 +10,8 @@ import { I18nProvider } from "@/lib/i18n"
 import { getHeroVideoAvailability } from "@/lib/get-hero-video-availability"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
 
+export const dynamic = "force-dynamic"
+
 export default async function Home() {
   const heroVideoAvailability = getHeroVideoAvailability()
   const { photos, layout } = await readPortfolioData()

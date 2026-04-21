@@ -108,10 +108,21 @@ export function PortfolioMosaic({
   return (
     <>
       <style>{`
+        .mosaic-cell {
+          grid-column: auto;
+          grid-row: auto;
+        }
+
         @media (min-width: 1024px) {
           .mosaic-grid {
             grid-template-columns: repeat(${grid.cols}, minmax(0, 1fr));
             grid-template-rows: repeat(${grid.rows}, minmax(120px, auto));
+          }
+
+          .mosaic-cell {
+            grid-column: var(--cell-col);
+            grid-row: var(--cell-row);
+            height: auto !important;
           }
         }
       `}</style>
