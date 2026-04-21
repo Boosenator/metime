@@ -5,6 +5,7 @@ import {
   useRef,
   useCallback,
   useEffect,
+  useMemo,
   type PointerEvent as ReactPointerEvent,
 } from "react"
 import {
@@ -23,6 +24,7 @@ import {
   Grid2x2,
   Image as ImageIcon,
   Loader2,
+  Search,
   RotateCcw,
   Save,
   Trash2,
@@ -68,9 +70,15 @@ function normalizePhotoCategory(category?: string): (typeof PHOTO_CATEGORIES)[nu
 }
 
 type AdminTab = "layout" | "library"
+type LibraryStatusFilter = "all" | "placed" | "unplaced" | "excluded"
+type LibrarySort = "newest" | "oldest" | "filename"
 
 function cellKey(x: number, y: number) {
   return `${x},${y}`
+}
+
+function toggleId(ids: string[], id: string) {
+  return ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]
 }
 
 function buildOccupancyMap(cells: Cell[], grid: GridConfig): Map<string, Cell> {
@@ -309,20 +317,24 @@ function PlacedCard({
 function LibraryCard({
   photo,
   placed,
+  selected,
   onCategoryChange,
+  onToggleSelected,
   onPreview,
   onExcludeToggle,
   onDelete,
 }: {
   photo: PhotoMeta
   placed: boolean
+  selected: boolean
   onCategoryChange: (value: string) => void
+  onToggleSelected: () => void
   onPreview: () => void
   onExcludeToggle: () => void
   onDelete: () => void
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/5 p-3">
+    <article className={`rounded-2xl border p-3 transition-colors ${selected ? "border-wine bg-wine/10" : "border-white/10 bg-white/5"}`}>
       <div className="relative overflow-hidden rounded-xl">
         <img
           src={getPortfolioImageSrc(photo)}
@@ -330,15 +342,26 @@ function LibraryCard({
           className="aspect-[4/5] w-full object-cover"
         />
         <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent p-2 text-[10px] uppercase tracking-[0.2em] text-cream/80">
-          <span>{photo.excluded ? "Excluded" : placed ? "Placed" : "Unplaced"}</span>
-          <button
-            type="button"
-            onClick={onPreview}
-            className="rounded bg-black/50 p-1 transition-colors hover:text-cream"
-            title="Open full size"
-          >
-            <Expand className="h-3.5 w-3.5" />
-          </button>
+          <label className="flex items-center gap-2 rounded bg-black/50 px-2 py-1 text-[10px] tracking-[0.18em]">
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={onToggleSelected}
+              className="h-3.5 w-3.5 accent-[#8b1a2e]"
+            />
+            Select
+          </label>
+          <div className="flex items-center gap-2">
+            <span>{photo.excluded ? "Excluded" : placed ? "Placed" : "Unplaced"}</span>
+            <button
+              type="button"
+              onClick={onPreview}
+              className="rounded bg-black/50 p-1 transition-colors hover:text-cream"
+              title="Open full size"
+            >
+              <Expand className="h-3.5 w-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -457,6 +480,13 @@ export function AdminPortfolioEditor({
   const [arrangeStrategy, setArrangeStrategy] = useState<ArrangeStrategy>("neighbors")
   const [activeTab, setActiveTab] = useState<AdminTab>("layout")
   const [previewPhotoId, setPreviewPhotoId] = useState<string | null>(null)
+  const [libraryQuery, setLibraryQuery] = useState("")
+  const [libraryCategory, setLibraryCategory] = useState<"all" | (typeof PHOTO_CATEGORIES)[number]>("all")
+  const [libraryStatus, setLibraryStatus] = useState<LibraryStatusFilter>("all")
+  const [librarySort, setLibrarySort] = useState<LibrarySort>("newest")
+  const [libraryPage, setLibraryPage] = useState(1)
+  const [libraryPageSize, setLibraryPageSize] = useState(48)
+  const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const resizingRef = useRef<{
@@ -474,14 +504,68 @@ export function AdminPortfolioEditor({
     layout.grid.rows !== savedLayout.grid.rows
 
   const photoMap = new Map(photos.map((photo) => [photo.id, photo]))
+  const photoOrder = new Map(photos.map((photo, index) => [photo.id, index]))
   const placedIds = new Set(layout.cells.map((cell) => cell.photoId))
   const unplaced = photos.filter((photo) => !photo.excluded && !placedIds.has(photo.id))
   const excluded = photos.filter((photo) => photo.excluded)
   const occupancy = buildOccupancyMap(layout.cells, layout.grid)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
   const previewPhoto = previewPhotoId ? photoMap.get(previewPhotoId) ?? null : null
+  const normalizedLibraryQuery = libraryQuery.trim().toLowerCase()
+
+  const filteredLibraryPhotos = useMemo(() => {
+    const next = photos.filter((photo) => {
+      const normalizedCategory = normalizePhotoCategory(photo.category)
+      const matchesQuery =
+        !normalizedLibraryQuery ||
+        photo.filename.toLowerCase().includes(normalizedLibraryQuery) ||
+        photo.id.toLowerCase().includes(normalizedLibraryQuery)
+      const matchesCategory = libraryCategory === "all" || normalizedCategory === libraryCategory
+      const matchesStatus =
+        libraryStatus === "all" ||
+        (libraryStatus === "placed" && placedIds.has(photo.id) && !photo.excluded) ||
+        (libraryStatus === "unplaced" && !placedIds.has(photo.id) && !photo.excluded) ||
+        (libraryStatus === "excluded" && !!photo.excluded)
+
+      return matchesQuery && matchesCategory && matchesStatus
+    })
+
+    next.sort((a, b) => {
+      if (librarySort === "filename") return a.filename.localeCompare(b.filename)
+      const aIndex = photoOrder.get(a.id) ?? 0
+      const bIndex = photoOrder.get(b.id) ?? 0
+      return librarySort === "oldest" ? aIndex - bIndex : bIndex - aIndex
+    })
+
+    return next
+  }, [libraryCategory, librarySort, libraryStatus, normalizedLibraryQuery, photoOrder, photos, placedIds])
+
+  const totalLibraryPages = Math.max(1, Math.ceil(filteredLibraryPhotos.length / libraryPageSize))
+  const paginatedLibraryPhotos = useMemo(() => {
+    const start = (libraryPage - 1) * libraryPageSize
+    return filteredLibraryPhotos.slice(start, start + libraryPageSize)
+  }, [filteredLibraryPhotos, libraryPage, libraryPageSize])
+  const selectedVisibleCount = paginatedLibraryPhotos.filter((photo) => selectedPhotoIds.includes(photo.id)).length
+  const allVisibleSelected = paginatedLibraryPhotos.length > 0 && selectedVisibleCount === paginatedLibraryPhotos.length
+  const allFilteredSelected = filteredLibraryPhotos.length > 0 && filteredLibraryPhotos.every((photo) => selectedPhotoIds.includes(photo.id))
 
   const ROW_H = 120
+
+  useEffect(() => {
+    const validIds = new Set(photos.map((photo) => photo.id))
+    setSelectedPhotoIds((prev) => {
+      const next = prev.filter((id) => validIds.has(id))
+      return next.length === prev.length ? prev : next
+    })
+  }, [photos])
+
+  useEffect(() => {
+    setLibraryPage(1)
+  }, [libraryCategory, libraryPageSize, libraryQuery, librarySort, libraryStatus])
+
+  useEffect(() => {
+    if (libraryPage > totalLibraryPages) setLibraryPage(totalLibraryPages)
+  }, [libraryPage, totalLibraryPages])
 
   const applyGridSize = useCallback(() => {
     const cols = Math.max(1, Math.min(40, parseInt(colsInput) || 12))
@@ -526,7 +610,7 @@ export function AdminPortfolioEditor({
 
   const updateCategory = useCallback((photoId: string, category: string) => {
     setPhotos((prev) =>
-      prev.map((photo) => (photo.id === photoId ? { ...photo, category } : photo))
+      prev.map((photo) => (photo.id === photoId ? { ...photo, category: normalizePhotoCategory(category) } : photo))
     )
   }, [])
 
@@ -553,6 +637,96 @@ export function AdminPortfolioEditor({
       setDeletingPhotoId(null)
     }
   }, [previewPhotoId])
+
+  const bulkSetCategory = useCallback((ids: string[], category: string) => {
+    const idSet = new Set(ids)
+    const nextCategory = normalizePhotoCategory(category)
+    setPhotos((prev) =>
+      prev.map((photo) => (idSet.has(photo.id) ? { ...photo, category: nextCategory } : photo))
+    )
+  }, [])
+
+  const bulkExclude = useCallback((ids: string[]) => {
+    const idSet = new Set(ids)
+    setPhotos((prev) =>
+      prev.map((photo) => (idSet.has(photo.id) ? { ...photo, excluded: true } : photo))
+    )
+    setLayout((prev) => ({
+      ...prev,
+      cells: prev.cells.filter((cell) => !idSet.has(cell.photoId)),
+    }))
+  }, [])
+
+  const bulkInclude = useCallback((ids: string[]) => {
+    const idSet = new Set(ids)
+    setPhotos((prev) =>
+      prev.map((photo) => (idSet.has(photo.id) ? { ...photo, excluded: false } : photo))
+    )
+  }, [])
+
+  const bulkDelete = useCallback(async (ids: string[]) => {
+    if (!ids.length) return
+    setDeletingPhotoId("bulk")
+    setSaveMsg(null)
+    try {
+      await Promise.all(
+        ids.map(async (photoId) => {
+          const res = await fetch("/api/admin/portfolio/photo", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: photoId }),
+          })
+          if (!res.ok) throw new Error(await res.text())
+        })
+      )
+
+      const idSet = new Set(ids)
+      setPhotos((prev) => prev.filter((photo) => !idSet.has(photo.id)))
+      setSavedPhotos((prev) => prev.filter((photo) => !idSet.has(photo.id)))
+      setLayout((prev) => ({ ...prev, cells: prev.cells.filter((cell) => !idSet.has(cell.photoId)) }))
+      setSavedLayout((prev) => ({ ...prev, cells: prev.cells.filter((cell) => !idSet.has(cell.photoId)) }))
+      setSelectedPhotoIds((prev) => prev.filter((id) => !idSet.has(id)))
+      if (previewPhotoId && idSet.has(previewPhotoId)) setPreviewPhotoId(null)
+      setSaveMsg(`${ids.length} photo${ids.length === 1 ? "" : "s"} deleted`)
+    } catch (err) {
+      setSaveMsg(`Delete error: ${err instanceof Error ? err.message : "unknown"}`)
+    } finally {
+      setDeletingPhotoId(null)
+    }
+  }, [previewPhotoId])
+
+  const togglePhotoSelection = useCallback((photoId: string) => {
+    setSelectedPhotoIds((prev) => toggleId(prev, photoId))
+  }, [])
+
+  const selectVisible = useCallback(() => {
+    setSelectedPhotoIds((prev) => {
+      const next = new Set(prev)
+      for (const photo of paginatedLibraryPhotos) next.add(photo.id)
+      return Array.from(next)
+    })
+  }, [paginatedLibraryPhotos])
+
+  const selectFiltered = useCallback(() => {
+    setSelectedPhotoIds((prev) => {
+      const next = new Set(prev)
+      for (const photo of filteredLibraryPhotos) next.add(photo.id)
+      return Array.from(next)
+    })
+  }, [filteredLibraryPhotos])
+
+  const clearSelection = useCallback(() => {
+    setSelectedPhotoIds([])
+  }, [])
+
+  const toggleSelectVisible = useCallback(() => {
+    if (allVisibleSelected) {
+      const visibleIds = new Set(paginatedLibraryPhotos.map((photo) => photo.id))
+      setSelectedPhotoIds((prev) => prev.filter((id) => !visibleIds.has(id)))
+      return
+    }
+    selectVisible()
+  }, [allVisibleSelected, paginatedLibraryPhotos, selectVisible])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
@@ -917,27 +1091,199 @@ export function AdminPortfolioEditor({
         </DndContext>
       ) : (
         <div className="min-h-0 flex-1 overflow-auto bg-dark px-4 py-4">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <p className="text-[10px] uppercase tracking-[0.24em] text-wine">Photo Library</p>
-              <h2 className="mt-1 text-xl text-cream">Categories and preview</h2>
+          <div className="mb-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-wine">Photo Library</p>
+                <h2 className="mt-1 text-xl text-cream">Categories and preview</h2>
+              </div>
+              <p className="text-sm text-gray-mid">
+                {filteredLibraryPhotos.length} filtered / {photos.length} total
+              </p>
             </div>
-            <p className="text-sm text-gray-mid">{photos.length} photos</p>
+
+            <div className="sticky top-0 z-10 rounded-2xl border border-white/10 bg-dark/95 p-3 backdrop-blur">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+                <label className="relative min-w-0 flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-mid" />
+                  <input
+                    type="text"
+                    value={libraryQuery}
+                    onChange={(e) => setLibraryQuery(e.target.value)}
+                    placeholder="Search by filename or id"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
+                  />
+                </label>
+
+                <select
+                  value={libraryCategory}
+                  onChange={(e) => setLibraryCategory(e.target.value as "all" | (typeof PHOTO_CATEGORIES)[number])}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="all">All categories</option>
+                  {PHOTO_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {PHOTO_CATEGORY_LABELS[category]}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={libraryStatus}
+                  onChange={(e) => setLibraryStatus(e.target.value as LibraryStatusFilter)}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="placed">Placed</option>
+                  <option value="unplaced">Unplaced</option>
+                  <option value="excluded">Excluded</option>
+                </select>
+
+                <select
+                  value={librarySort}
+                  onChange={(e) => setLibrarySort(e.target.value as LibrarySort)}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="filename">Filename</option>
+                </select>
+
+                <select
+                  value={String(libraryPageSize)}
+                  onChange={(e) => setLibraryPageSize(Number(e.target.value))}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="48">48 / page</option>
+                  <option value="96">96 / page</option>
+                  <option value="144">144 / page</option>
+                </select>
+              </div>
+
+              <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-mid">
+                  <span>{selectedPhotoIds.length} selected</span>
+                  <button
+                    type="button"
+                    onClick={toggleSelectVisible}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10"
+                  >
+                    {allVisibleSelected ? "Unselect visible" : "Select visible"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={selectFiltered}
+                    disabled={allFilteredSelected || filteredLibraryPhotos.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Select filtered
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearSelection}
+                    disabled={selectedPhotoIds.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (!e.target.value || selectedPhotoIds.length === 0) return
+                      bulkSetCategory(selectedPhotoIds, e.target.value)
+                      e.target.value = ""
+                    }}
+                    disabled={selectedPhotoIds.length === 0}
+                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine disabled:opacity-40"
+                  >
+                    <option value="">Set category</option>
+                    {PHOTO_CATEGORIES.map((category) => (
+                      <option key={category} value={category}>
+                        {PHOTO_CATEGORY_LABELS[category]}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => bulkExclude(selectedPhotoIds)}
+                    disabled={selectedPhotoIds.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Exclude
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => bulkInclude(selectedPhotoIds)}
+                    disabled={selectedPhotoIds.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Include
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedPhotoIds.length === 0) return
+                      if (!window.confirm(`Delete ${selectedPhotoIds.length} selected photo(s)?`)) return
+                      void bulkDelete(selectedPhotoIds)
+                    }}
+                    disabled={selectedPhotoIds.length === 0}
+                    className="rounded border border-red-900/40 bg-red-950/30 px-3 py-2 text-xs uppercase tracking-[0.16em] text-red-300 transition-colors hover:bg-red-950/50 disabled:opacity-40"
+                  >
+                    Delete selected
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm text-gray-mid">
+              <span>
+                Page {libraryPage} / {totalLibraryPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setLibraryPage((prev) => Math.max(1, prev - 1))}
+                  disabled={libraryPage === 1}
+                  className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLibraryPage((prev) => Math.min(totalLibraryPages, prev + 1))}
+                  disabled={libraryPage === totalLibraryPages}
+                  className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {photos.map((photo) => (
-              <LibraryCard
-                key={photo.id}
-                photo={photo}
-                placed={placedIds.has(photo.id)}
-                onCategoryChange={(value) => updateCategory(photo.id, value)}
-                onPreview={() => setPreviewPhotoId(photo.id)}
-                onExcludeToggle={() => (photo.excluded ? includePhoto(photo.id) : excludePhoto(photo.id))}
-                onDelete={() => void deletePhoto(photo.id)}
-              />
-            ))}
-          </div>
+          {paginatedLibraryPhotos.length ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {paginatedLibraryPhotos.map((photo) => (
+                <LibraryCard
+                  key={photo.id}
+                  photo={photo}
+                  placed={placedIds.has(photo.id)}
+                  selected={selectedPhotoIds.includes(photo.id)}
+                  onCategoryChange={(value) => updateCategory(photo.id, value)}
+                  onToggleSelected={() => togglePhotoSelection(photo.id)}
+                  onPreview={() => setPreviewPhotoId(photo.id)}
+                  onExcludeToggle={() => (photo.excluded ? includePhoto(photo.id) : excludePhoto(photo.id))}
+                  onDelete={() => void deletePhoto(photo.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-6 py-12 text-center text-gray-mid">
+              No photos match the current filters.
+            </div>
+          )}
         </div>
       )}
 
