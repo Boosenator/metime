@@ -1,6 +1,6 @@
 import { Navigation } from "@/components/navigation"
 import { Hero } from "@/components/hero"
-import { PortfolioSection } from "@/components/portfolio-section"
+import { PortfolioClient } from "@/components/portfolio-client"
 import { Pricing } from "@/components/pricing"
 import { Team } from "@/components/team"
 import { Contact } from "@/components/contact"
@@ -30,7 +30,7 @@ export default async function Home() {
         <main>
           <Hero {...heroVideoAvailability} />
           <div className="fade-in-section">
-            <PortfolioSection cells={cells} grid={layout.grid} />
+            <PortfolioClient cells={cells} grid={layout.grid} photos={photos} />
           </div>
           <div className="fade-in-section">
             <Pricing />

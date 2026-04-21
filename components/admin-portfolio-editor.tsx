@@ -14,7 +14,6 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  type DragStartEvent,
   type DragEndEvent,
 } from "@dnd-kit/core"
 import { useDraggable, useDroppable } from "@dnd-kit/core"
@@ -22,7 +21,7 @@ import { Save, RotateCcw, Wand2, Upload, Grid2x2, Loader2, X } from "lucide-reac
 import type { PhotoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
 import { arrangeByColor } from "@/lib/portfolio/arrange-by-color"
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+// ─── helpers ──────────────────────────────────────────────────────────────────
 
 function cellKey(x: number, y: number) {
   return `${x},${y}`
@@ -53,26 +52,19 @@ function canFit(cell: Cell, grid: GridConfig): boolean {
   )
 }
 
-// ─── Draggable photo thumbnail (from unplaced pool) ──────────────────────────
+// ─── Pool thumbnail (unplaced) ────────────────────────────────────────────────
 
-function PoolThumb({
-  photo,
-  id,
-}: {
-  photo: PhotoMeta
-  id: string
-}) {
+function PoolThumb({ photo, id }: { photo: PhotoMeta; id: string }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `pool:${id}`,
     data: { type: "pool", photoId: id },
   })
-
   return (
     <div
       ref={setNodeRef}
       {...listeners}
       {...attributes}
-      className={`aspect-square cursor-grab overflow-hidden rounded border border-white/10 bg-dark-card/60 transition-opacity ${
+      className={`aspect-square cursor-grab overflow-hidden rounded border border-white/10 transition-opacity ${
         isDragging ? "opacity-30" : "opacity-100"
       }`}
     >
@@ -86,38 +78,31 @@ function PoolThumb({
   )
 }
 
-// ─── Grid cell drop target ────────────────────────────────────────────────────
+// ─── Drop target cell ─────────────────────────────────────────────────────────
 
-function GridDropCell({
-  x,
-  y,
-  occupied,
-}: {
-  x: number
-  y: number
-  occupied: boolean
-}) {
+function DropCell({ x, y, occupied }: { x: number; y: number; occupied: boolean }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `cell:${x},${y}`,
     data: { x, y },
   })
-
   return (
     <div
       ref={setNodeRef}
-      className={`border border-white/6 transition-colors ${
-        isOver
+      className="transition-colors"
+      style={{
+        gridColumn: String(x + 1),
+        gridRow: String(y + 1),
+        backgroundColor: isOver
           ? occupied
-            ? "bg-red-900/20"
-            : "bg-wine/20"
-          : "bg-transparent"
-      }`}
-      style={{ gridColumn: `${x + 1}`, gridRow: `${y + 1}` }}
+            ? "rgba(139,26,46,0.25)"
+            : "rgba(139,26,46,0.15)"
+          : "transparent",
+      }}
     />
   )
 }
 
-// ─── Placed photo card ────────────────────────────────────────────────────────
+// ─── Placed photo — same visual as public mosaic ──────────────────────────────
 
 function PlacedCard({
   cell,
@@ -125,53 +110,71 @@ function PlacedCard({
   selected,
   onSelect,
   onStartResize,
+  onRemove,
 }: {
   cell: Cell
   photo: PhotoMeta
   selected: boolean
   onSelect: () => void
-  onStartResize: (e: ReactPointerEvent) => void
+  onStartResize: (e: ReactPointerEvent<HTMLDivElement>) => void
+  onRemove: () => void
 }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `placed:${cell.photoId}`,
     data: { type: "placed", photoId: cell.photoId, cell },
   })
+  const src = `/images/portfolio/${photo.filename}`
 
   return (
     <div
       ref={setNodeRef}
-      className={`absolute inset-0 cursor-grab overflow-hidden ${
-        isDragging ? "opacity-40" : "opacity-100"
-      } ${selected ? "ring-2 ring-wine ring-offset-1 ring-offset-dark" : ""}`}
-      style={
-        {
-          gridColumn: `${cell.x + 1} / span ${cell.spanX}`,
-          gridRow: `${cell.y + 1} / span ${cell.spanY}`,
-          pointerEvents: isDragging ? "none" : undefined,
-        } as CSSProperties
-      }
+      className="group relative cursor-grab overflow-hidden"
+      style={{
+        gridColumn: `${cell.x + 1} / span ${cell.spanX}`,
+        gridRow: `${cell.y + 1} / span ${cell.spanY}`,
+        opacity: isDragging ? 0.35 : 1,
+        outline: selected ? "2px solid rgba(139,26,46,0.9)" : undefined,
+        outlineOffset: selected ? "-2px" : undefined,
+      }}
       {...listeners}
       {...attributes}
-      onClick={(e) => {
-        e.stopPropagation()
-        onSelect()
-      }}
+      onClick={(e) => { e.stopPropagation(); onSelect() }}
     >
+      {/* Blurred background — same as public mosaic */}
       <img
-        src={`/images/portfolio/${photo.filename}`}
+        src={src}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover opacity-45 blur-xl scale-110 pointer-events-none"
+        draggable={false}
+        aria-hidden="true"
+      />
+      {/* Main image */}
+      <img
+        src={src}
         alt={photo.filename}
-        className="h-full w-full object-cover"
+        className="relative z-[1] h-full w-full object-cover"
         draggable={false}
       />
+      {/* Hover gradient */}
+      <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/65 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
 
-      {/* Resize handle */}
+      {/* Admin controls — shown on hover */}
+      <div className="absolute inset-x-0 top-0 z-[3] flex items-center justify-end gap-1 p-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => { e.stopPropagation(); onRemove() }}
+          className="rounded bg-black/60 p-1 text-cream/80 hover:text-red-400 transition-colors"
+          title="Remove"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+
+      {/* Resize handle — bottom-right corner */}
       <div
-        className="absolute bottom-0 right-0 z-10 h-5 w-5 cursor-se-resize bg-wine/80"
-        onPointerDown={(e) => {
-          e.stopPropagation()
-          onStartResize(e)
-        }}
-        title="Resize"
+        className="absolute bottom-0 right-0 z-[3] h-5 w-5 cursor-se-resize opacity-0 group-hover:opacity-100 transition-opacity"
+        style={{ background: "linear-gradient(135deg, transparent 50%, rgba(139,26,46,0.85) 50%)" }}
+        onPointerDown={(e) => { e.stopPropagation(); onStartResize(e) }}
       />
     </div>
   )
@@ -196,14 +199,13 @@ export function AdminPortfolioEditor({
   const [colsInput, setColsInput] = useState(String(initialLayout.grid.cols))
   const [rowsInput, setRowsInput] = useState(String(initialLayout.grid.rows))
   const fileInputRef = useRef<HTMLInputElement>(null)
-
   const gridRef = useRef<HTMLDivElement>(null)
   const resizingRef = useRef<{
     cell: Cell
     startX: number
     startY: number
-    originCellW: number
-    originCellH: number
+    cellW: number
+    cellH: number
   } | null>(null)
 
   const isDirty =
@@ -212,13 +214,12 @@ export function AdminPortfolioEditor({
     layout.grid.rows !== savedLayout.grid.rows
 
   const photoMap = new Map(photos.map((p) => [p.id, p]))
-
   const placedIds = new Set(layout.cells.map((c) => c.photoId))
   const unplaced = photos.filter((p) => !placedIds.has(p.id))
-
   const occupancy = buildOccupancyMap(layout.cells, layout.grid)
-
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
+
+  const ROW_H = 120 // px per row — same visual density as public mosaic
 
   // ── Grid size ─────────────────────────────────────────────────────────────
 
@@ -227,156 +228,110 @@ export function AdminPortfolioEditor({
     const rows = Math.max(1, Math.min(40, parseInt(rowsInput) || 24))
     setColsInput(String(cols))
     setRowsInput(String(rows))
-
-    setLayout((prev) => {
-      const clipped = prev.cells.filter(
-        (c) => c.x < cols && c.y < rows
-      ).map((c) => ({
-        ...c,
-        spanX: Math.min(c.spanX, cols - c.x),
-        spanY: Math.min(c.spanY, rows - c.y),
-      }))
-      return { ...prev, grid: { cols, rows }, cells: clipped }
-    })
+    setLayout((prev) => ({
+      ...prev,
+      grid: { cols, rows },
+      cells: prev.cells
+        .filter((c) => c.x < cols && c.y < rows)
+        .map((c) => ({ ...c, spanX: Math.min(c.spanX, cols - c.x), spanY: Math.min(c.spanY, rows - c.y) })),
+    }))
   }, [colsInput, rowsInput])
 
   // ── Auto arrange ──────────────────────────────────────────────────────────
 
   const autoArrange = useCallback(() => {
-    const cells = arrangeByColor(photos, layout.grid)
-    setLayout((prev) => ({ ...prev, cells }))
-  }, [photos, layout.grid])
+    setLayout((prev) => ({ ...prev, cells: arrangeByColor(photos, prev.grid) }))
+  }, [photos])
 
   // ── DnD ──────────────────────────────────────────────────────────────────
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, over } = event
-      if (!over) return
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event
+    if (!over) return
+    const targetId = String(over.id)
+    if (!targetId.startsWith("cell:")) return
+    const [, coords] = targetId.split("cell:")
+    const [tx, ty] = coords.split(",").map(Number)
+    const { photoId } = active.data.current as { photoId: string; cell?: Cell }
 
-      const targetId = String(over.id)
-      if (!targetId.startsWith("cell:")) return
+    setLayout((prev) => {
+      const cells = [...prev.cells]
+      const grid = prev.grid
+      const movingCell = cells.find((c) => c.photoId === photoId)
+      const newCell: Cell = movingCell
+        ? { ...movingCell, x: tx, y: ty }
+        : { photoId, x: tx, y: ty, spanX: 1, spanY: 1 }
+      if (!canFit(newCell, grid)) return prev
 
-      const [, coords] = targetId.split("cell:")
-      const [tx, ty] = coords.split(",").map(Number)
-
-      const activeData = active.data.current as { type: string; photoId: string; cell?: Cell }
-      const { photoId } = activeData
-
-      setLayout((prev) => {
-        const cells = [...prev.cells]
-        const grid = prev.grid
-
-        const movingCell = cells.find((c) => c.photoId === photoId)
-        const newCell: Cell = movingCell
-          ? { ...movingCell, x: tx, y: ty }
-          : { photoId, x: tx, y: ty, spanX: 1, spanY: 1 }
-
-        if (!canFit(newCell, grid)) return prev
-
-        const occupancyMap = buildOccupancyMap(cells, grid)
-        const displaced = new Set<string>()
-
-        for (let dy = 0; dy < newCell.spanY; dy++) {
-          for (let dx = 0; dx < newCell.spanX; dx++) {
-            const existing = occupancyMap.get(cellKey(tx + dx, ty + dy))
-            if (existing && existing.photoId !== photoId) {
-              displaced.add(existing.photoId)
-            }
-          }
+      const occ = buildOccupancyMap(cells, grid)
+      const displaced = new Set<string>()
+      for (let dy = 0; dy < newCell.spanY; dy++)
+        for (let dx = 0; dx < newCell.spanX; dx++) {
+          const hit = occ.get(cellKey(tx + dx, ty + dy))
+          if (hit && hit.photoId !== photoId) displaced.add(hit.photoId)
         }
 
-        let next = cells.filter((c) => c.photoId !== photoId && !displaced.has(c.photoId))
-
-        // Try to swap: move displaced to original position of dragged cell
-        if (displaced.size === 1 && movingCell) {
-          const [displacedId] = displaced
-          const displacedCell = cells.find((c) => c.photoId === displacedId)!
-          if (
-            canFit({ ...displacedCell, x: movingCell.x, y: movingCell.y }, grid)
-          ) {
-            next.push({ ...displacedCell, x: movingCell.x, y: movingCell.y })
-          }
-        }
-
-        next.push(newCell)
-        return { ...prev, cells: next }
-      })
-    },
-    []
-  )
+      let next = cells.filter((c) => c.photoId !== photoId && !displaced.has(c.photoId))
+      if (displaced.size === 1 && movingCell) {
+        const [dId] = displaced
+        const dc = cells.find((c) => c.photoId === dId)!
+        if (canFit({ ...dc, x: movingCell.x, y: movingCell.y }, grid))
+          next.push({ ...dc, x: movingCell.x, y: movingCell.y })
+      }
+      next.push(newCell)
+      return { ...prev, cells: next }
+    })
+  }, [])
 
   // ── Resize ────────────────────────────────────────────────────────────────
 
-  const startResize = useCallback((e: ReactPointerEvent, cell: Cell) => {
+  const startResize = useCallback((e: ReactPointerEvent<HTMLDivElement>, cell: Cell) => {
     if (!gridRef.current) return
-    const gridRect = gridRef.current.getBoundingClientRect()
-    const cellW = gridRect.width / layout.grid.cols
-    const cellH = gridRect.height / layout.grid.rows
+    const rect = gridRef.current.getBoundingClientRect()
     resizingRef.current = {
       cell,
       startX: e.clientX,
       startY: e.clientY,
-      originCellW: cellW,
-      originCellH: cellH,
+      cellW: rect.width / layout.grid.cols,
+      cellH: rect.height / layout.grid.rows,
     }
     e.currentTarget.setPointerCapture(e.pointerId)
   }, [layout.grid])
 
   useEffect(() => {
-    function onPointerMove(e: PointerEvent) {
+    function onMove(e: PointerEvent) {
       if (!resizingRef.current) return
-      const { cell, startX, startY, originCellW, originCellH } = resizingRef.current
-
-      const deltaX = e.clientX - startX
-      const deltaY = e.clientY - startY
-      const newSpanX = Math.max(1, Math.round(cell.spanX + deltaX / originCellW))
-      const newSpanY = Math.max(1, Math.round(cell.spanY + deltaY / originCellH))
-
+      const { cell, startX, startY, cellW, cellH } = resizingRef.current
+      const spanX = Math.max(1, Math.round(cell.spanX + (e.clientX - startX) / cellW))
+      const spanY = Math.max(1, Math.round(cell.spanY + (e.clientY - startY) / cellH))
       setLayout((prev) => {
         const grid = prev.grid
-        const clampedSpanX = Math.min(newSpanX, grid.cols - cell.x)
-        const clampedSpanY = Math.min(newSpanY, grid.rows - cell.y)
-
-        const updatedCell: Cell = {
+        const updated: Cell = {
           ...cell,
-          spanX: clampedSpanX,
-          spanY: clampedSpanY,
+          spanX: Math.min(spanX, grid.cols - cell.x),
+          spanY: Math.min(spanY, grid.rows - cell.y),
         }
-
         const others = prev.cells.filter((c) => c.photoId !== cell.photoId)
-        const map = buildOccupancyMap(others, grid)
+        const occ = buildOccupancyMap(others, grid)
         const displaced = new Set<string>()
-
-        for (let dy = 0; dy < updatedCell.spanY; dy++) {
-          for (let dx = 0; dx < updatedCell.spanX; dx++) {
-            const hit = map.get(cellKey(updatedCell.x + dx, updatedCell.y + dy))
+        for (let dy = 0; dy < updated.spanY; dy++)
+          for (let dx = 0; dx < updated.spanX; dx++) {
+            const hit = occ.get(cellKey(updated.x + dx, updated.y + dy))
             if (hit) displaced.add(hit.photoId)
           }
-        }
-
-        const remaining = others.filter((c) => !displaced.has(c.photoId))
-        return { ...prev, cells: [...remaining, updatedCell] }
+        return { ...prev, cells: [...others.filter((c) => !displaced.has(c.photoId)), updated] }
       })
     }
-
-    function onPointerUp() {
-      resizingRef.current = null
-    }
-
-    window.addEventListener("pointermove", onPointerMove)
-    window.addEventListener("pointerup", onPointerUp)
-    return () => {
-      window.removeEventListener("pointermove", onPointerMove)
-      window.removeEventListener("pointerup", onPointerUp)
-    }
+    function onUp() { resizingRef.current = null }
+    window.addEventListener("pointermove", onMove)
+    window.addEventListener("pointerup", onUp)
+    return () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp) }
   }, [])
 
-  // ── Save ──────────────────────────────────────────────────────────────────
+  // ── Save / Discard ────────────────────────────────────────────────────────
 
   const save = useCallback(async () => {
-    setSaving(true)
-    setSaveMsg(null)
+    setSaving(true); setSaveMsg(null)
     try {
       const res = await fetch("/api/admin/portfolio/layout", {
         method: "PUT",
@@ -385,9 +340,9 @@ export function AdminPortfolioEditor({
       })
       if (!res.ok) throw new Error(await res.text())
       setSavedLayout(layout)
-      setSaveMsg("Saved!")
+      setSaveMsg("Збережено!")
     } catch (err) {
-      setSaveMsg(`Error: ${err instanceof Error ? err.message : "unknown"}`)
+      setSaveMsg(`Помилка: ${err instanceof Error ? err.message : "unknown"}`)
     } finally {
       setSaving(false)
     }
@@ -404,10 +359,10 @@ export function AdminPortfolioEditor({
   const handleUpload = useCallback(async (files: FileList | null) => {
     if (!files?.length) return
     setUploading(true)
-    const formData = new FormData()
-    for (const file of files) formData.append("files", file)
+    const fd = new FormData()
+    for (const f of files) fd.append("files", f)
     try {
-      const res = await fetch("/api/admin/portfolio/upload", { method: "POST", body: formData })
+      const res = await fetch("/api/admin/portfolio/upload", { method: "POST", body: fd })
       if (!res.ok) throw new Error(await res.text())
       window.location.reload()
     } catch (err) {
@@ -421,163 +376,109 @@ export function AdminPortfolioEditor({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-dark text-cream">
-      {/* Toolbar */}
-      <div className="flex flex-shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-dark/95 px-4 py-3">
-        {/* Grid size */}
+
+      {/* ── Toolbar ─────────────────────────────────────────────────────── */}
+      <div className="flex flex-shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-dark/95 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-1.5">
           <Grid2x2 className="h-4 w-4 text-gray-mid" />
           <input
-            type="number"
-            min={1}
-            max={40}
-            value={colsInput}
+            type="number" min={1} max={40} value={colsInput}
             onChange={(e) => setColsInput(e.target.value)}
             onBlur={applyGridSize}
             onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
             className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-            title="Columns"
+            title="Колонки"
           />
           <span className="text-gray-mid">×</span>
           <input
-            type="number"
-            min={1}
-            max={40}
-            value={rowsInput}
+            type="number" min={1} max={40} value={rowsInput}
             onChange={(e) => setRowsInput(e.target.value)}
             onBlur={applyGridSize}
             onKeyDown={(e) => e.key === "Enter" && applyGridSize()}
             className="w-14 rounded border border-white/10 bg-white/5 px-2 py-1 text-center text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-            title="Rows"
+            title="Рядки"
           />
         </div>
 
-        <button
-          onClick={autoArrange}
-          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors"
-        >
-          <Wand2 className="h-3.5 w-3.5" />
-          Auto-arrange
+        <button onClick={autoArrange}
+          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors">
+          <Wand2 className="h-3.5 w-3.5" /> Auto-arrange
         </button>
 
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors disabled:opacity-50"
-        >
+        <button onClick={() => fileInputRef.current?.click()} disabled={uploading}
+          className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/20 transition-colors disabled:opacity-50">
           {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
           Upload
         </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => handleUpload(e.target.files)}
-        />
+        <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden"
+          onChange={(e) => handleUpload(e.target.files)} />
 
         <div className="ml-auto flex items-center gap-2">
           {saveMsg && (
-            <span
-              className={`text-xs ${saveMsg.startsWith("Error") ? "text-red-400" : "text-green-400"}`}
-            >
+            <span className={`text-xs ${saveMsg.startsWith("П") ? "text-red-400" : "text-green-400"}`}>
               {saveMsg}
             </span>
           )}
-          <button
-            onClick={discard}
-            disabled={!isDirty}
-            className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-white/10 transition-colors disabled:opacity-30"
-          >
-            <RotateCcw className="h-3.5 w-3.5" />
-            Discard
+          <button onClick={discard} disabled={!isDirty}
+            className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-white/10 transition-colors disabled:opacity-30">
+            <RotateCcw className="h-3.5 w-3.5" /> Discard
           </button>
-          <button
-            onClick={save}
-            disabled={!isDirty || saving}
-            className="flex items-center gap-1.5 rounded bg-wine px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/80 transition-colors disabled:opacity-30"
-          >
+          <button onClick={save} disabled={!isDirty || saving}
+            className="flex items-center gap-1.5 rounded bg-wine px-3 py-1.5 text-xs uppercase tracking-widest text-cream hover:bg-wine/80 transition-colors disabled:opacity-30">
             {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
             Save
           </button>
         </div>
       </div>
 
-      {/* Body: grid + pool */}
+      {/* ── Body ────────────────────────────────────────────────────────── */}
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="flex min-h-0 flex-1 overflow-hidden">
-          {/* Grid editor */}
-          <div
-            className="relative flex-1 overflow-auto"
-            onClick={() => setSelected(null)}
-          >
-            <div
-              ref={gridRef}
-              className="relative"
-              style={
-                {
-                  display: "grid",
-                  gridTemplateColumns: `repeat(${layout.grid.cols}, 1fr)`,
-                  gridTemplateRows: `repeat(${layout.grid.rows}, minmax(60px, 1fr))`,
-                  minHeight: `${layout.grid.rows * 60}px`,
-                } as CSSProperties
+
+          {/* Grid */}
+          <div className="relative flex-1 overflow-auto bg-dark" onClick={() => setSelected(null)}>
+            <style>{`
+              .admin-mosaic-grid {
+                display: grid;
+                grid-template-columns: repeat(${layout.grid.cols}, minmax(0, 1fr));
+                grid-template-rows: repeat(${layout.grid.rows}, ${ROW_H}px);
               }
-            >
-              {/* Drop targets */}
+            `}</style>
+            <div ref={gridRef} className="admin-mosaic-grid">
+
+              {/* Drop zone cells (transparent, only coloured on drag-over) */}
               {Array.from({ length: layout.grid.rows }, (_, y) =>
                 Array.from({ length: layout.grid.cols }, (_, x) => (
-                  <GridDropCell
-                    key={`${x},${y}`}
-                    x={x}
-                    y={y}
-                    occupied={occupancy.has(cellKey(x, y))}
-                  />
+                  <DropCell key={`${x},${y}`} x={x} y={y} occupied={occupancy.has(cellKey(x, y))} />
                 ))
               )}
 
-              {/* Placed photos overlay */}
+              {/* Placed photos — same visual as public mosaic */}
               {layout.cells.map((cell) => {
                 const photo = photoMap.get(cell.photoId)
                 if (!photo) return null
                 return (
-                  <div
+                  <PlacedCard
                     key={cell.photoId}
-                    className="relative"
-                    style={{
-                      gridColumn: `${cell.x + 1} / span ${cell.spanX}`,
-                      gridRow: `${cell.y + 1} / span ${cell.spanY}`,
-                    }}
-                  >
-                    <PlacedCard
-                      cell={cell}
-                      photo={photo}
-                      selected={selected === cell.photoId}
-                      onSelect={() => setSelected(cell.photoId)}
-                      onStartResize={(e) => startResize(e, cell)}
-                    />
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setLayout((prev) => ({
-                          ...prev,
-                          cells: prev.cells.filter((c) => c.photoId !== cell.photoId),
-                        }))
-                      }}
-                      className="absolute right-6 top-1 z-20 rounded bg-black/50 p-0.5 text-cream/70 hover:text-red-400 transition-colors"
-                      title="Remove from grid"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
+                    cell={cell}
+                    photo={photo}
+                    selected={selected === cell.photoId}
+                    onSelect={() => setSelected(cell.photoId)}
+                    onStartResize={(e) => startResize(e, cell)}
+                    onRemove={() => setLayout((prev) => ({
+                      ...prev,
+                      cells: prev.cells.filter((c) => c.photoId !== cell.photoId),
+                    }))}
+                  />
                 )
               })}
             </div>
           </div>
 
           {/* Unplaced pool */}
-          <div className="flex w-44 flex-shrink-0 flex-col overflow-y-auto border-l border-white/10 bg-dark/80 p-3">
+          <div className="flex w-44 flex-shrink-0 flex-col overflow-y-auto border-l border-white/10 bg-dark/90 p-3">
             <p className="mb-2 text-[10px] uppercase tracking-widest text-gray-mid">
-              Unplaced ({unplaced.length})
+              Не розміщено ({unplaced.length})
             </p>
             <div className="grid grid-cols-2 gap-1.5">
               {unplaced.map((photo) => (
@@ -587,9 +488,7 @@ export function AdminPortfolioEditor({
           </div>
         </div>
 
-        <DragOverlay>
-          {/* Empty — dnd-kit handles the overlay position; custom preview not needed */}
-        </DragOverlay>
+        <DragOverlay />
       </DndContext>
     </div>
   )

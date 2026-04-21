@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useCallback, useEffect, type CSSProperties } from "react"
+import { createPortal } from "react-dom"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import type { Cell, GridConfig, PhotoMeta } from "@/lib/portfolio/types"
 import { useCardTilt } from "@/hooks/use-card-tilt"
@@ -27,14 +28,12 @@ function MosaicCell({
   return (
     <div
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
+      className="mosaic-cell group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
       style={
         {
           height: mobileH,
-          "--mc": cell.x + 1,
-          "--mr": cell.y + 1,
-          gridColumn: `var(--mc) / span ${cell.spanX}`,
-          gridRow: `var(--mr) / span ${cell.spanY}`,
+          "--cell-col": `${cell.x + 1} / span ${cell.spanX}`,
+          "--cell-row": `${cell.y + 1} / span ${cell.spanY}`,
         } as CSSProperties
       }
       onClick={() => { onMouseLeave(); onClick() }}
@@ -107,34 +106,31 @@ export function PortfolioMosaic({
 
   return (
     <>
-      {/* Mosaic grid */}
-      <div
-        className="grid grid-cols-2 gap-3 px-4 sm:gap-4 lg:gap-[2px] lg:px-6
-          lg:[grid-template-columns:repeat(var(--mc),minmax(0,1fr))]
-          lg:[grid-template-rows:repeat(var(--mr),minmax(0,1fr))]
-          lg:h-[calc(100vh-12rem)]"
-        style={
-          {
-            "--mc": grid.cols,
-            "--mr": grid.rows,
-          } as CSSProperties
+      <style>{`
+        @media (min-width: 1024px) {
+          .mosaic-grid {
+            grid-template-columns: repeat(${grid.cols}, minmax(0, 1fr));
+            grid-template-rows: repeat(${grid.rows}, minmax(120px, auto));
+          }
         }
-      >
+      `}</style>
+      {/* Mosaic grid */}
+      <div className="mosaic-grid grid grid-cols-2 gap-3 px-4 sm:gap-4 lg:gap-[2px] lg:px-6">
         {cells.map((cell, i) => (
           <MosaicCell key={cell.photoId} cell={cell} index={i} onClick={() => open(i)} />
         ))}
       </div>
 
-      {/* Lightbox */}
-      {lightbox !== null && cells[lightbox] && (
+      {/* Lightbox — portal to body to escape ancestor transforms */}
+      {lightbox !== null && cells[lightbox] && typeof document !== "undefined" && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+          className="fixed inset-0 z-[9999] flex items-center justify-center"
           style={{ backgroundColor: "rgba(0,0,0,0.95)" }}
           onClick={close}
         >
           <button
             onClick={close}
-            className="absolute right-6 top-6 z-[60] text-cream hover:text-wine transition-colors"
+            className="absolute right-6 top-6 text-cream hover:text-wine transition-colors"
             aria-label="Close"
           >
             <X className="h-8 w-8" />
@@ -142,7 +138,7 @@ export function PortfolioMosaic({
 
           <button
             onClick={(e) => { e.stopPropagation(); navigate("prev") }}
-            className="absolute left-4 top-1/2 z-[60] -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:left-8"
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:left-8"
             aria-label="Previous"
           >
             <ChevronLeft className="h-10 w-10" />
@@ -161,16 +157,17 @@ export function PortfolioMosaic({
 
           <button
             onClick={(e) => { e.stopPropagation(); navigate("next") }}
-            className="absolute right-4 top-1/2 z-[60] -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:right-8"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:right-8"
             aria-label="Next"
           >
             <ChevronRight className="h-10 w-10" />
           </button>
 
-          <div className="absolute bottom-6 left-1/2 z-[60] -translate-x-1/2 text-sm tracking-widest text-gray-mid">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-widest text-gray-mid">
             {lightbox + 1} / {cells.length}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )

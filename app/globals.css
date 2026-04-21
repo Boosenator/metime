@@ -140,16 +140,11 @@ html {
   }
 }
 
-/* Mosaic scroll reveal */
-.mosaic-item {
-  opacity: 0;
-}
-.mosaic-item.mosaic-revealed {
-  animation: fadeScaleIn 0.45s ease both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .mosaic-item.mosaic-revealed {
-    animation: none;
-    opacity: 1;
+/* Mosaic grid placement — only on desktop */
+@media (min-width: 1024px) {
+  .mosaic-cell {
+    grid-column: var(--cell-col);
+    grid-row: var(--cell-row);
+    height: auto !important; /* override inline mobile height */
   }
 }
