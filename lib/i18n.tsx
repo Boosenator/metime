@@ -42,6 +42,9 @@ type Translations = {
       wedding: string
       kids: string
       brand: string
+      lovestory: string
+      portrait: string
+      commercial: string
       custom: string
     }
   }
@@ -122,6 +125,9 @@ const translations: Record<Locale, Translations> = {
         kids: "Діти",
         brand: "Бренд",
         custom: "Інше",
+        lovestory: "Love Story",
+        portrait: "Portrait",
+        commercial: "Commercial",
       },
     },
     pricing: {
@@ -396,6 +402,9 @@ const translations: Record<Locale, Translations> = {
         all: "All",
         dance: "Dance",
         wedding: "Wedding",
+        lovestory: "Love Story",
+        portrait: "Portrait",
+        commercial: "Commercial",
         kids: "Kids",
         brand: "Brand",
         custom: "Custom",

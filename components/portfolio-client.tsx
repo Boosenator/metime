@@ -47,8 +47,8 @@ const VIDEO_ITEMS: VideoItem[] = [
   { id: 106, thumbnail: "/images/portfolio/video-kids-2.jpg",  category: "kids",    title: "Gender Party — Сюрприз",          duration: "1:45", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
 ]
 
-const PHOTO_CATEGORY_IDS = ["all", "dance", "wedding", "kids", "brand", "custom"] as const
-const VIDEO_CATEGORY_IDS  = ["all", "dance", "wedding", "kids", "brand", "custom"] as const
+const PHOTO_CATEGORY_IDS = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "commercial", "custom"] as const
+const VIDEO_CATEGORY_IDS  = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "commercial", "custom"] as const
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 
