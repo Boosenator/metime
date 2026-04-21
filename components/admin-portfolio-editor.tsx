@@ -23,11 +23,13 @@ import {
   FolderKanban,
   Grid2x2,
   Image as ImageIcon,
+  Lock,
   Loader2,
   Search,
   RotateCcw,
   Save,
   Trash2,
+  Unlock,
   Upload,
   Wand2,
   X,
@@ -201,6 +203,7 @@ function PlacedCard({
   selected,
   onSelect,
   onStartResize,
+  onToggleLock,
   onRemove,
   onExclude,
   onDelete,
@@ -211,6 +214,7 @@ function PlacedCard({
   selected: boolean
   onSelect: () => void
   onStartResize: (e: ReactPointerEvent<HTMLDivElement>) => void
+  onToggleLock: () => void
   onRemove: () => void
   onExclude: () => void
   onDelete: () => void
@@ -219,13 +223,14 @@ function PlacedCard({
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `placed:${cell.photoId}`,
     data: { type: "placed", photoId: cell.photoId, cell },
+    disabled: Boolean(cell.locked),
   })
   const src = getPortfolioImageSrc(photo)
 
   return (
     <div
       ref={setNodeRef}
-      className="group relative cursor-grab overflow-hidden"
+      className={`group relative overflow-hidden ${cell.locked ? "cursor-default" : "cursor-grab"}`}
       style={{
         gridColumn: `${cell.x + 1} / span ${cell.spanX}`,
         gridRow: `${cell.y + 1} / span ${cell.spanY}`,
@@ -256,6 +261,17 @@ function PlacedCard({
       <div className="absolute inset-0 z-[2] bg-gradient-to-t from-black/65 via-black/10 to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100 pointer-events-none" />
 
       <div className="absolute inset-x-0 top-0 z-[3] flex items-center justify-end gap-1 p-1 opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+        <button
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation()
+            onToggleLock()
+          }}
+          className={`rounded p-1 transition-colors ${cell.locked ? "bg-wine/80 text-cream" : "bg-black/60 text-cream/80 hover:text-amber-200"}`}
+          title={cell.locked ? "Unlock position" : "Lock position"}
+        >
+          {cell.locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+        </button>
         <button
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -303,13 +319,20 @@ function PlacedCard({
       </div>
 
       <div
-        className="absolute bottom-0 right-0 z-[3] h-5 w-5 cursor-se-resize opacity-0 transition-opacity group-hover:opacity-100"
+        className={`absolute bottom-0 right-0 z-[3] h-5 w-5 opacity-0 transition-opacity group-hover:opacity-100 ${cell.locked ? "cursor-not-allowed" : "cursor-se-resize"}`}
         style={{ background: "linear-gradient(135deg, transparent 50%, rgba(139,26,46,0.85) 50%)" }}
         onPointerDown={(e) => {
           e.stopPropagation()
+          if (cell.locked) return
           onStartResize(e)
         }}
       />
+
+      {cell.locked ? (
+        <div className="absolute bottom-2 left-2 z-[3] rounded-full bg-black/65 p-1 text-cream/90">
+          <Lock className="h-3.5 w-3.5" />
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -588,9 +611,18 @@ export function AdminPortfolioEditor({
   const autoArrange = useCallback(() => {
     setLayout((prev) => ({
       ...prev,
-      cells: arrangeByColor(photos, prev.grid, arrangeStrategy),
+      cells: arrangeByColor(photos, prev.grid, arrangeStrategy, prev.cells),
     }))
   }, [arrangeStrategy, photos])
+
+  const toggleCellLock = useCallback((photoId: string) => {
+    setLayout((prev) => ({
+      ...prev,
+      cells: prev.cells.map((cell) =>
+        cell.photoId === photoId ? { ...cell, locked: !cell.locked } : cell
+      ),
+    }))
+  }, [])
 
   const excludePhoto = useCallback((photoId: string) => {
     setPhotos((prev) =>
@@ -1030,6 +1062,7 @@ export function AdminPortfolioEditor({
                       selected={selected === cell.photoId}
                       onSelect={() => setSelected(cell.photoId)}
                       onStartResize={(e) => startResize(e, cell)}
+                      onToggleLock={() => toggleCellLock(cell.photoId)}
                       onRemove={() =>
                         setLayout((prev) => ({
                           ...prev,

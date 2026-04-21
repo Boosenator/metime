@@ -44,6 +44,7 @@ export async function PUT(request: Request) {
         y: Math.max(0, Math.floor(c.y)),
         spanX: Math.max(1, Math.floor(c.spanX)),
         spanY: Math.max(1, Math.floor(c.spanY)),
+        locked: Boolean(c.locked),
       })),
     version: typeof payload.version === "number" ? payload.version + 1 : 1,
     updatedAt: new Date().toISOString(),

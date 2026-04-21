@@ -134,4 +134,34 @@ describe("arrangeByColor", () => {
 
     expect(byPosition.map((cell) => cell.photoId)).toEqual(["p1", "p2", "p4", "p3"])
   })
+
+  it.each(ARRANGE_STRATEGIES)("preserves locked cells for strategy %s", (strategy) => {
+    const photos = Array.from({ length: 8 }, (_, i) =>
+      makePhoto(`lock-${i}`, i * 10, i * 2, -i)
+    )
+    const grid: GridConfig = { cols: 4, rows: 3 }
+    const locked = [
+      { photoId: "lock-1", x: 1, y: 0, spanX: 1, spanY: 1, locked: true },
+      { photoId: "lock-4", x: 2, y: 1, spanX: 1, spanY: 1, locked: true },
+    ]
+
+    const cells = arrangeByColor(photos, grid, strategy, locked)
+
+    expect(cells.find((cell) => cell.photoId === "lock-1")).toMatchObject(locked[0])
+    expect(cells.find((cell) => cell.photoId === "lock-4")).toMatchObject(locked[1])
+  })
+
+  it("keeps locked multi-span cells in place during auto-arrange", () => {
+    const photos = Array.from({ length: 10 }, (_, i) =>
+      makePhoto(`span-${i}`, i * 9, i - 3, 12 - i)
+    )
+    const grid: GridConfig = { cols: 5, rows: 4 }
+    const locked = [{ photoId: "span-0", x: 1, y: 1, spanX: 2, spanY: 2, locked: true }]
+
+    const cells = arrangeByColor(photos, grid, "neighbors", locked)
+
+    expect(cells.find((cell) => cell.photoId === "span-0")).toMatchObject(locked[0])
+    const duplicates = cells.filter((cell) => cell.x === 1 && cell.y === 1)
+    expect(duplicates).toHaveLength(1)
+  })
 })

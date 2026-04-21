@@ -176,6 +176,7 @@ export function PortfolioClient({
   const { t } = useI18n()
   const [mode, setMode] = useState<"photo" | "video">("photo")
   const [photoView, setPhotoView] = useState<"mosaic" | "grid">("mosaic")
+  const [isDesktop, setIsDesktop] = useState(false)
   const [photoFilter, setPhotoFilter] = useState("all")
   const [videoFilter, setVideoFilter] = useState("all")
   const [crossfade, setCrossfade] = useState(false)
@@ -254,6 +255,21 @@ export function PortfolioClient({
     return () => window.removeEventListener("keydown", onKey)
   }, [galleryLightbox, closeGallery, closeVideo, navigateGallery])
 
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 1024px)")
+    const syncDesktop = () => {
+      const nextIsDesktop = media.matches
+      setIsDesktop(nextIsDesktop)
+      if (!nextIsDesktop) {
+        setPhotoView("grid")
+      }
+    }
+
+    syncDesktop()
+    media.addEventListener("change", syncDesktop)
+    return () => media.removeEventListener("change", syncDesktop)
+  }, [])
+
   return (
     <section id="portfolio" className="bg-dark py-16 lg:py-20">
       {/* Heading */}
@@ -288,8 +304,8 @@ export function PortfolioClient({
           </div>
 
           {/* Mosaic / Grid toggle — only in photo mode */}
-          {mode === "photo" && (
-            <div className="flex items-center gap-1">
+          {mode === "photo" && isDesktop && (
+            <div className="hidden items-center gap-1 lg:flex">
               <button
                 onClick={() => setPhotoView("mosaic")}
                 aria-label="Мозаїка"
@@ -317,12 +333,12 @@ export function PortfolioClient({
       <div className={`transition-opacity duration-300 ${crossfade ? "opacity-0" : "opacity-100"}`}>
 
         {/* ── Photo mosaic ─────────────────────────────────────────────── */}
-        {mode === "photo" && photoView === "mosaic" && (
+        {mode === "photo" && isDesktop && photoView === "mosaic" && (
           <PortfolioMosaic cells={cells} grid={grid} />
         )}
 
         {/* ── Photo grid with category filters ─────────────────────────── */}
-        {mode === "photo" && photoView === "grid" && (
+        {mode === "photo" && (!isDesktop || photoView === "grid") && (
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <div className="mb-6">
               <CategoryTabs

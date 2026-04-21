@@ -28,6 +28,7 @@ export type Cell = {
   y: number
   spanX: number
   spanY: number
+  locked?: boolean
 }
 
 export type LayoutData = {
