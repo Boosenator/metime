@@ -86,6 +86,9 @@ export async function PUT(request: Request) {
           category: typeof video.category === "string" ? video.category : "custom",
           excluded: Boolean(video.excluded),
           title: typeof video.title === "string" ? video.title : undefined,
+          posterTime: typeof video.posterTime === "number" && Number.isFinite(video.posterTime)
+            ? Math.max(0, video.posterTime)
+            : 0,
           src: typeof video.src === "string" ? video.src : undefined,
           mimeType: typeof video.mimeType === "string" ? video.mimeType : undefined,
         }))

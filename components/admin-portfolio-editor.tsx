@@ -37,6 +37,7 @@ import {
 } from "lucide-react"
 import { upload } from "@vercel/blob/client"
 import { createPortal } from "react-dom"
+import { VideoPosterFrame } from "@/components/video-poster-frame"
 import { getPortfolioImageSrc, getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import type { HeroVideoConfig, PhotoMeta, VideoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
 import {
@@ -113,6 +114,13 @@ function sanitizeUploadName(filename: string) {
     .replace(/[^a-z0-9._-]+/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
+}
+
+function formatSeconds(value: number) {
+  const total = Math.max(0, Math.floor(value))
+  const minutes = Math.floor(total / 60)
+  const seconds = total % 60
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`
 }
 
 function toggleId(ids: string[], id: string) {
@@ -471,7 +479,9 @@ function LibraryCard({
 function VideoLibraryCard({
   video,
   selected,
+  onTitleChange,
   onCategoryChange,
+  onPosterTimeChange,
   onToggleSelected,
   onPreview,
   onExcludeToggle,
@@ -479,21 +489,24 @@ function VideoLibraryCard({
 }: {
   video: VideoMeta
   selected: boolean
+  onTitleChange: (value: string) => void
   onCategoryChange: (value: string) => void
+  onPosterTimeChange: (value: number) => void
   onToggleSelected: () => void
   onPreview: () => void
   onExcludeToggle: () => void
   onDelete: () => void
 }) {
+  const [duration, setDuration] = useState(0)
+
   return (
     <article className={`rounded-2xl border p-3 transition-colors ${selected ? "border-wine bg-wine/10" : "border-white/10 bg-white/5"}`}>
       <div className="relative overflow-hidden rounded-xl">
-        <video
+        <VideoPosterFrame
           src={getPortfolioVideoSrc(video)}
+          seekTo={video.posterTime ?? 0}
           className="aspect-video w-full object-cover"
-          preload="metadata"
-          muted
-          playsInline
+          onDurationChange={setDuration}
         />
         <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent p-2 text-[10px] uppercase tracking-[0.2em] text-cream/80">
           <label className="flex items-center gap-2 rounded bg-black/50 px-2 py-1 text-[10px] tracking-[0.18em]">
@@ -521,9 +534,19 @@ function VideoLibraryCard({
 
       <div className="mt-3 space-y-3">
         <div>
-          <p className="truncate text-xs text-cream/80">{video.title || video.filename}</p>
           <p className="text-[10px] uppercase tracking-[0.2em] text-gray-mid">{video.id}</p>
         </div>
+
+        <label className="block">
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Title</span>
+          <input
+            type="text"
+            value={video.title || ""}
+            onChange={(e) => onTitleChange(e.target.value)}
+            placeholder="Video title"
+            className="w-full rounded border border-white/10 bg-dark px-2 py-2 text-sm text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
+          />
+        </label>
 
         <label className="block">
           <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Category</span>
@@ -538,6 +561,23 @@ function VideoLibraryCard({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="block">
+          <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-gray-mid">
+            <span>Cover frame</span>
+            <span>{formatSeconds(video.posterTime ?? 0)}</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={duration > 0 ? duration : 0}
+            step={0.1}
+            value={Math.min(video.posterTime ?? 0, duration > 0 ? duration : video.posterTime ?? 0)}
+            onChange={(e) => onPosterTimeChange(Number(e.target.value))}
+            disabled={duration <= 0}
+            className="w-full accent-[#8b1a2e] disabled:opacity-40"
+          />
         </label>
 
         <div className="flex gap-2">
@@ -933,6 +973,18 @@ export function AdminPortfolioEditor({
   const updateVideoCategory = useCallback((videoId: string, category: string) => {
     setVideos((prev) =>
       prev.map((video) => (video.id === videoId ? { ...video, category: normalizeVideoCategory(category) } : video))
+    )
+  }, [])
+
+  const updateVideoTitle = useCallback((videoId: string, title: string) => {
+    setVideos((prev) =>
+      prev.map((video) => (video.id === videoId ? { ...video, title } : video))
+    )
+  }, [])
+
+  const updateVideoPosterTime = useCallback((videoId: string, posterTime: number) => {
+    setVideos((prev) =>
+      prev.map((video) => (video.id === videoId ? { ...video, posterTime: Math.max(0, posterTime) } : video))
     )
   }, [])
 
@@ -1899,12 +1951,10 @@ export function AdminPortfolioEditor({
 
                   <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40">
                     {heroSlot.current ? (
-                      <video
+                      <VideoPosterFrame
                         src={getPortfolioVideoSrc(heroSlot.current)}
+                        seekTo={heroSlot.current.posterTime ?? 0}
                         className="aspect-video w-full object-cover"
-                        preload="metadata"
-                        muted
-                        playsInline
                       />
                     ) : (
                       <div className="flex aspect-video items-center justify-center text-sm uppercase tracking-[0.22em] text-gray-mid">
@@ -2134,7 +2184,9 @@ export function AdminPortfolioEditor({
                   key={video.id}
                   video={video}
                   selected={selectedVideoIds.includes(video.id)}
+                  onTitleChange={(value) => updateVideoTitle(video.id, value)}
                   onCategoryChange={(value) => updateVideoCategory(video.id, value)}
+                  onPosterTimeChange={(value) => updateVideoPosterTime(video.id, value)}
                   onToggleSelected={() => toggleVideoSelection(video.id)}
                   onPreview={() => setPreviewVideoId(video.id)}
                   onExcludeToggle={() => (video.excluded ? includeVideo(video.id) : excludeVideo(video.id))}

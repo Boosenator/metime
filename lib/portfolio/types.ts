@@ -24,6 +24,7 @@ export type VideoMeta = {
   category?: string
   excluded?: boolean
   title?: string
+  posterTime?: number
   mimeType?: string
   uploadedAt: string
 }

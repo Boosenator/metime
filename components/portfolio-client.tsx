@@ -5,6 +5,7 @@ import { createPortal } from "react-dom"
 import { Play, X, ChevronLeft, ChevronRight, Images, LayoutGrid } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
+import { VideoPosterFrame } from "@/components/video-poster-frame"
 import { getPortfolioImageSrc, getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import type { Cell, GridConfig, PhotoMeta, VideoMeta } from "@/lib/portfolio/types"
 
@@ -118,12 +119,10 @@ function VideoGrid({
           onClick={() => onOpen(item)}
         >
           <div className="relative aspect-video overflow-hidden">
-            <video
+            <VideoPosterFrame
               src={getPortfolioVideoSrc(item)}
+              seekTo={item.posterTime ?? 0}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-              preload="metadata"
-              muted
-              playsInline
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/30 bg-dark/40 backdrop-blur-sm transition-all duration-300 group-hover:border-wine group-hover:bg-wine/70 group-hover:scale-110 md:h-20 md:w-20">
@@ -400,10 +399,10 @@ export function PortfolioClient({
           <button onClick={closeVideo} className="absolute right-6 top-6 text-cream hover:text-wine transition-colors" aria-label="Close">
             <X className="h-8 w-8" />
           </button>
-          <div className="aspect-video w-[92vw] max-w-5xl" onClick={(e) => e.stopPropagation()}>
+          <div className="flex h-[84vh] w-[96vw] max-w-7xl items-center justify-center" onClick={(e) => e.stopPropagation()}>
             <video
               src={getPortfolioVideoSrc(videoModal)}
-              className="h-full w-full"
+              className="max-h-full w-full object-contain"
               controls
               autoPlay
               playsInline

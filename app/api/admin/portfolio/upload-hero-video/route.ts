@@ -33,6 +33,7 @@ function buildVideoMeta(payload: UploadedBlobPayload): VideoMeta | null {
     category: "custom",
     excluded: false,
     title: typeof payload.title === "string" && payload.title.trim().length > 0 ? payload.title.trim() : filename.replace(/\.[^.]+$/, ""),
+    posterTime: 0,
     mimeType: typeof payload.contentType === "string" ? payload.contentType : undefined,
     uploadedAt: new Date().toISOString(),
   }
