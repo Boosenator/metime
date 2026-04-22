@@ -35,6 +35,7 @@ import {
   Wand2,
   X,
 } from "lucide-react"
+import { upload } from "@vercel/blob/client"
 import { createPortal } from "react-dom"
 import { getPortfolioImageSrc, getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import type { HeroVideoConfig, PhotoMeta, VideoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
@@ -104,6 +105,14 @@ function normalizeVideoCategory(category?: string): (typeof VIDEO_CATEGORIES)[nu
 
 function cellKey(x: number, y: number) {
   return `${x},${y}`
+}
+
+function sanitizeUploadName(filename: string) {
+  return filename
+    .toLowerCase()
+    .replace(/[^a-z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
 }
 
 function toggleId(ids: string[], id: string) {
@@ -1302,21 +1311,67 @@ export function AdminPortfolioEditor({
   const handleUpload = useCallback(async (files: FileList | null) => {
     if (!files?.length) return
     setUploading(true)
-    const fd = new FormData()
-    for (const file of files) fd.append("files", file)
 
     try {
-      const endpoint = activeTab === "videos" ? "/api/admin/portfolio/upload-video" : "/api/admin/portfolio/upload"
-      const res = await fetch(endpoint, { method: "POST", body: fd })
-      if (!res.ok) throw new Error(await res.text())
-      const data = await res.json() as { added?: PhotoMeta[] | VideoMeta[] }
-      if (data.added?.length) {
-        if (activeTab === "videos") {
-          const addedVideos = data.added as VideoMeta[]
-          setVideos((prev) => [...prev, ...addedVideos])
-          setSavedVideos((prev) => [...prev, ...addedVideos])
-        } else {
-          const addedPhotos = data.added as PhotoMeta[]
+      if (activeTab === "videos") {
+        const uploadedVideos: VideoMeta[] = []
+
+        for (const file of Array.from(files)) {
+          const safeName = sanitizeUploadName(file.name) || `video-${Date.now()}.mp4`
+          const pathname = `portfolio/videos/${Date.now()}-${safeName}`
+          const blob = await upload(pathname, file, {
+            access: "public",
+            contentType: file.type || undefined,
+            handleUploadUrl: "/api/admin/portfolio/upload-video-client",
+            multipart: true,
+          })
+
+          const registerRes = await fetch("/api/admin/portfolio/upload-video", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              url: blob.url,
+              pathname: blob.pathname,
+              contentType: blob.contentType,
+              title: file.name.replace(/\.[^.]+$/, ""),
+            }),
+          })
+          if (!registerRes.ok) throw new Error(await registerRes.text())
+
+          const data = await registerRes.json() as { added?: VideoMeta[] }
+          if (data.added?.length) {
+            uploadedVideos.push(...data.added)
+          }
+        }
+
+        if (uploadedVideos.length) {
+          setVideos((prev) => {
+            const next = [...prev]
+            for (const video of uploadedVideos) {
+              const index = next.findIndex((item) => item.id === video.id)
+              if (index === -1) next.push(video)
+              else next[index] = video
+            }
+            return next
+          })
+          setSavedVideos((prev) => {
+            const next = [...prev]
+            for (const video of uploadedVideos) {
+              const index = next.findIndex((item) => item.id === video.id)
+              if (index === -1) next.push(video)
+              else next[index] = video
+            }
+            return next
+          })
+        }
+      } else {
+        const fd = new FormData()
+        for (const file of files) fd.append("files", file)
+        const res = await fetch("/api/admin/portfolio/upload", { method: "POST", body: fd })
+        if (!res.ok) throw new Error(await res.text())
+        const data = await res.json() as { added?: PhotoMeta[] }
+        if (data.added?.length) {
+          const addedPhotos = data.added
           setPhotos((prev) => [...prev, ...addedPhotos])
           setSavedPhotos((prev) => [...prev, ...addedPhotos])
         }
@@ -1331,11 +1386,28 @@ export function AdminPortfolioEditor({
   const handleHeroUpload = useCallback(async (slot: keyof HeroVideoConfig, files: FileList | null) => {
     if (!files?.length) return
     setUploading(true)
-    const fd = new FormData()
-    fd.append("file", files[0])
 
     try {
-      const res = await fetch("/api/admin/portfolio/upload-hero-video", { method: "POST", body: fd })
+      const file = files[0]
+      const safeName = sanitizeUploadName(file.name) || `hero-${Date.now()}.mp4`
+      const pathname = `portfolio/videos/hero-${slot}-${Date.now()}-${safeName}`
+      const blob = await upload(pathname, file, {
+        access: "public",
+        contentType: file.type || undefined,
+        handleUploadUrl: "/api/admin/portfolio/upload-video-client",
+        multipart: true,
+      })
+
+      const res = await fetch("/api/admin/portfolio/upload-hero-video", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url: blob.url,
+          pathname: blob.pathname,
+          contentType: blob.contentType,
+          title: file.name.replace(/\.[^.]+$/, ""),
+        }),
+      })
       if (!res.ok) throw new Error(await res.text())
       const data = await res.json() as { video?: VideoMeta }
       const uploadedVideo = data.video

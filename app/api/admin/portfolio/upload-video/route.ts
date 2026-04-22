@@ -1,56 +1,81 @@
 import { createHash } from "crypto"
 import { NextResponse } from "next/server"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
-import { readVideos, savePortfolioVideo, saveVideosData } from "@/lib/portfolio/storage"
+import { readVideos, saveVideosData } from "@/lib/portfolio/storage"
 import type { VideoMeta } from "@/lib/portfolio/types"
+
+type UploadedBlobPayload = {
+  url?: unknown
+  pathname?: unknown
+  contentType?: unknown
+  title?: unknown
+}
+
+function buildVideoMeta(payload: UploadedBlobPayload): VideoMeta | null {
+  if (typeof payload.url !== "string" || typeof payload.pathname !== "string") {
+    return null
+  }
+
+  const pathname = payload.pathname
+  if (!pathname.startsWith("portfolio/videos/")) {
+    return null
+  }
+
+  const filename = pathname.split("/").pop()
+  if (!filename) return null
+
+  const id = createHash("sha1").update(pathname).digest("hex").slice(0, 16)
+
+  return {
+    id,
+    filename,
+    src: payload.url,
+    category: "custom",
+    excluded: false,
+    title: typeof payload.title === "string" && payload.title.trim().length > 0 ? payload.title.trim() : filename.replace(/\.[^.]+$/, ""),
+    mimeType: typeof payload.contentType === "string" ? payload.contentType : undefined,
+    uploadedAt: new Date().toISOString(),
+  }
+}
 
 export async function POST(request: Request) {
   const authError = requireAdminAuth(request)
   if (authError) return authError
 
-  const formData = await request.formData()
-  const files = formData.getAll("files") as File[]
-
-  if (!files.length) {
-    return NextResponse.json({ error: "No videos uploaded" }, { status: 400 })
+  let body: UploadedBlobPayload
+  try {
+    body = (await request.json()) as UploadedBlobPayload
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 })
   }
 
-  const existing: VideoMeta[] = await readVideos()
-  const added: VideoMeta[] = []
+  const video = buildVideoMeta(body)
+  if (!video) {
+    return NextResponse.json({ error: "Invalid uploaded blob payload" }, { status: 400 })
+  }
 
   try {
-    for (const file of files) {
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
-      const hash = createHash("sha1").update(buffer).digest("hex").slice(0, 16)
-      const ext = file.name.split(".").pop()?.toLowerCase() ?? "mp4"
-      const filename = `${hash}.${ext}`
+    const existing = await readVideos()
+    const existingIndex = existing.findIndex((item) => item.src === video.src || item.filename === video.filename)
 
-      const src = await savePortfolioVideo(filename, buffer, file.type)
-      const video: VideoMeta = {
-        id: hash,
-        filename,
-        ...(src ? { src } : {}),
-        category: "custom",
-        excluded: false,
-        title: file.name.replace(/\.[^.]+$/, ""),
-        mimeType: file.type || undefined,
-        uploadedAt: new Date().toISOString(),
-      }
-
-      const existingIndex = existing.findIndex((item) => item.id === video.id)
-      if (existingIndex === -1) {
-        existing.push(video)
-        added.push(video)
-      } else if (src && !existing[existingIndex].src) {
-        existing[existingIndex] = { ...existing[existingIndex], src }
-      }
+    if (existingIndex === -1) {
+      const next = [...existing, video]
+      await saveVideosData(next)
+      return NextResponse.json({ ok: true, added: [video] })
     }
 
-    await saveVideosData(existing)
-    return NextResponse.json({ ok: true, added })
+    const merged: VideoMeta = {
+      ...existing[existingIndex],
+      src: existing[existingIndex].src || video.src,
+      mimeType: existing[existingIndex].mimeType || video.mimeType,
+      title: existing[existingIndex].title || video.title,
+    }
+
+    const next = existing.map((item, index) => (index === existingIndex ? merged : item))
+    await saveVideosData(next)
+    return NextResponse.json({ ok: true, added: [merged] })
   } catch (error) {
-    console.error("Failed to upload portfolio videos", error)
-    return NextResponse.json({ error: "Failed to upload videos" }, { status: 500 })
+    console.error("Failed to register portfolio video", error)
+    return NextResponse.json({ error: "Failed to save uploaded video" }, { status: 500 })
   }
 }
