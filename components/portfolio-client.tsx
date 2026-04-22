@@ -42,14 +42,7 @@ function getCategory(filename: string): string {
   return SUPPORTED_CATEGORIES.has(prefix) ? normalizeCategory(prefix) : "custom"
 }
 
-const VIDEO_ITEMS: VideoItem[] = [
-  { id: 101, thumbnail: "/images/portfolio/video-dance-1.jpg", category: "dance",   title: "Dynamic Vibes — Solo Performance", duration: "3:42", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-  { id: 102, thumbnail: "/images/portfolio/video-dance-2.jpg", category: "dance",   title: "Energy Blend — Duo",               duration: "2:15", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-  { id: 103, thumbnail: "/images/portfolio/video-wedding-1.jpg",category: "wedding", title: "Анна & Дмитро — Wedding Film",     duration: "4:28", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-  { id: 104, thumbnail: "/images/portfolio/video-wedding-2.jpg",category: "wedding", title: "Олена & Артем — Ceremony",         duration: "3:15", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-  { id: 105, thumbnail: "/images/portfolio/video-kids-1.jpg",  category: "kids",    title: "Birthday Party — Маленька Софія", duration: "2:47", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-  { id: 106, thumbnail: "/images/portfolio/video-kids-2.jpg",  category: "kids",    title: "Gender Party — Сюрприз",          duration: "1:45", videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ" },
-]
+const VIDEO_ITEMS: VideoItem[] = []
 
 const PHOTO_CATEGORY_IDS = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "custom"] as const
 const VIDEO_CATEGORY_IDS  = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "custom"] as const
@@ -182,6 +175,8 @@ export function PortfolioClient({
   const [crossfade, setCrossfade] = useState(false)
   const [galleryLightbox, setGalleryLightbox] = useState<number | null>(null)
   const [videoModal, setVideoModal] = useState<VideoItem | null>(null)
+  const hasVideos = VIDEO_ITEMS.length > 0
+  const portfolioTabs: Array<"photo" | "video"> = hasVideos ? ["photo", "video"] : ["photo"]
 
   // Build gallery photo list from PhotoMeta
   const galleryPhotos: GalleryPhoto[] = photos.map((p, i) => ({
@@ -270,6 +265,12 @@ export function PortfolioClient({
     return () => media.removeEventListener("change", syncDesktop)
   }, [])
 
+  useEffect(() => {
+    if (!hasVideos && mode === "video") {
+      setMode("photo")
+    }
+  }, [hasVideos, mode])
+
   return (
     <section id="portfolio" className="bg-dark py-16 lg:py-20">
       {/* Heading */}
@@ -289,7 +290,7 @@ export function PortfolioClient({
         <div className="mx-auto max-w-7xl flex items-center justify-between">
           {/* Photo / Video toggle */}
           <div className="flex items-center gap-6 md:gap-12">
-            {(["photo", "video"] as const).map((tab) => (
+            {portfolioTabs.map((tab) => (
               <button key={tab} onClick={() => switchMode(tab)} className="group relative pb-2 text-center">
                 <span className={`text-sm font-medium uppercase tracking-[0.2em] transition-colors duration-300 md:text-base ${
                   mode === tab ? "text-cream" : "text-gray-mid"
