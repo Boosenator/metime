@@ -55,13 +55,31 @@ function ensureLocalDirs() {
   mkdirSync(PHOTOS_DIR, { recursive: true })
 }
 
+function mergePhotoRecords(blobPhotos: PhotoMeta[], localPhotos: PhotoMeta[]) {
+  const localById = new Map(localPhotos.map((photo) => [photo.id, photo]))
+  const localByFilename = new Map(localPhotos.map((photo) => [photo.filename, photo]))
+
+  return blobPhotos.map((photo) => {
+    const fallback = localById.get(photo.id) ?? localByFilename.get(photo.filename)
+    if (!fallback) return photo
+
+    return {
+      ...fallback,
+      ...photo,
+      src: photo.src || fallback.src,
+    }
+  })
+}
+
 export async function readPhotos(): Promise<PhotoMeta[]> {
+  const localPhotos = readLocalJson<PhotoMeta[]>(PHOTOS_JSON) ?? []
+
   if (useBlobStorage()) {
     const photos = await readBlobJson<PhotoMeta[]>(BLOB_PHOTOS_JSON)
-    if (photos) return photos
+    if (photos) return mergePhotoRecords(photos, localPhotos)
   }
 
-  return readLocalJson<PhotoMeta[]>(PHOTOS_JSON) ?? []
+  return localPhotos
 }
 
 export async function readLayout(photos: PhotoMeta[]): Promise<LayoutData> {
