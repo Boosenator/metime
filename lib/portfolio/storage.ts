@@ -3,18 +3,28 @@ import { readFile, unlink, writeFile } from "fs/promises"
 import { join } from "path"
 import { del, get, put } from "@vercel/blob"
 import { arrangeByColor } from "./arrange-by-color"
-import type { GridConfig, LayoutData, PhotoMeta } from "./types"
+import type { GridConfig, HeroVideoConfig, LayoutData, PhotoMeta, VideoMeta } from "./types"
 
 const PORTFOLIO_DIR = join(process.cwd(), "data", "portfolio")
 const PHOTOS_DIR = join(process.cwd(), "public", "images", "portfolio")
+const VIDEOS_DIR = join(process.cwd(), "public", "videos", "portfolio")
 const PHOTOS_JSON = join(PORTFOLIO_DIR, "photos.json")
+const VIDEOS_JSON = join(PORTFOLIO_DIR, "videos.json")
+const HERO_VIDEOS_JSON = join(PORTFOLIO_DIR, "hero-videos.json")
 const LAYOUT_JSON = join(PORTFOLIO_DIR, "layout.json")
 
 const BLOB_PHOTOS_JSON = "portfolio/photos.json"
+const BLOB_VIDEOS_JSON = "portfolio/videos.json"
+const BLOB_HERO_VIDEOS_JSON = "portfolio/hero-videos.json"
 const BLOB_LAYOUT_JSON = "portfolio/layout.json"
 const BLOB_IMAGE_PREFIX = "portfolio/images"
+const BLOB_VIDEO_PREFIX = "portfolio/videos"
 
 const DEFAULT_GRID: GridConfig = { cols: 12, rows: 24 }
+const DEFAULT_HERO_VIDEOS: HeroVideoConfig = {
+  desktopVideoId: null,
+  mobileVideoId: null,
+}
 
 function useBlobStorage() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN)
@@ -53,6 +63,7 @@ function readLocalJson<T>(path: string): T | null {
 function ensureLocalDirs() {
   mkdirSync(PORTFOLIO_DIR, { recursive: true })
   mkdirSync(PHOTOS_DIR, { recursive: true })
+  mkdirSync(VIDEOS_DIR, { recursive: true })
 }
 
 function mergePhotoRecords(blobPhotos: PhotoMeta[], localPhotos: PhotoMeta[]) {
@@ -71,6 +82,22 @@ function mergePhotoRecords(blobPhotos: PhotoMeta[], localPhotos: PhotoMeta[]) {
   })
 }
 
+function mergeVideoRecords(blobVideos: VideoMeta[], localVideos: VideoMeta[]) {
+  const localById = new Map(localVideos.map((video) => [video.id, video]))
+  const localByFilename = new Map(localVideos.map((video) => [video.filename, video]))
+
+  return blobVideos.map((video) => {
+    const fallback = localById.get(video.id) ?? localByFilename.get(video.filename)
+    if (!fallback) return video
+
+    return {
+      ...fallback,
+      ...video,
+      src: video.src || fallback.src,
+    }
+  })
+}
+
 export async function readPhotos(): Promise<PhotoMeta[]> {
   const localPhotos = readLocalJson<PhotoMeta[]>(PHOTOS_JSON) ?? []
 
@@ -80,6 +107,36 @@ export async function readPhotos(): Promise<PhotoMeta[]> {
   }
 
   return localPhotos
+}
+
+export async function readVideos(): Promise<VideoMeta[]> {
+  const localVideos = readLocalJson<VideoMeta[]>(VIDEOS_JSON) ?? []
+
+  if (useBlobStorage()) {
+    const videos = await readBlobJson<VideoMeta[]>(BLOB_VIDEOS_JSON)
+    if (videos) return mergeVideoRecords(videos, localVideos)
+  }
+
+  return localVideos
+}
+
+export async function readHeroVideos(): Promise<HeroVideoConfig> {
+  const localHeroVideos = readLocalJson<HeroVideoConfig>(HERO_VIDEOS_JSON)
+
+  if (useBlobStorage()) {
+    const heroVideos = await readBlobJson<HeroVideoConfig>(BLOB_HERO_VIDEOS_JSON)
+    if (heroVideos) {
+      return {
+        desktopVideoId: typeof heroVideos.desktopVideoId === "string" ? heroVideos.desktopVideoId : localHeroVideos?.desktopVideoId ?? null,
+        mobileVideoId: typeof heroVideos.mobileVideoId === "string" ? heroVideos.mobileVideoId : localHeroVideos?.mobileVideoId ?? null,
+      }
+    }
+  }
+
+  return {
+    desktopVideoId: localHeroVideos?.desktopVideoId ?? DEFAULT_HERO_VIDEOS.desktopVideoId,
+    mobileVideoId: localHeroVideos?.mobileVideoId ?? DEFAULT_HERO_VIDEOS.mobileVideoId,
+  }
 }
 
 export async function readLayout(photos: PhotoMeta[]): Promise<LayoutData> {
@@ -113,10 +170,12 @@ export async function readLayout(photos: PhotoMeta[]): Promise<LayoutData> {
   }
 }
 
-export async function readPortfolioData(): Promise<{ photos: PhotoMeta[]; layout: LayoutData }> {
+export async function readPortfolioData(): Promise<{ photos: PhotoMeta[]; videos: VideoMeta[]; heroVideos: HeroVideoConfig; layout: LayoutData }> {
   const photos = await readPhotos()
+  const videos = await readVideos()
+  const heroVideos = await readHeroVideos()
   const layout = await readLayout(photos)
-  return { photos, layout }
+  return { photos, videos, heroVideos, layout }
 }
 
 export async function saveLayoutData(layout: LayoutData) {
@@ -139,6 +198,31 @@ export async function savePhotosData(photos: PhotoMeta[]) {
   await writeFile(PHOTOS_JSON, JSON.stringify(photos, null, 2), "utf8")
 }
 
+export async function saveVideosData(videos: VideoMeta[]) {
+  if (useBlobStorage()) {
+    await writeBlobJson(BLOB_VIDEOS_JSON, videos)
+    return
+  }
+
+  ensureLocalDirs()
+  await writeFile(VIDEOS_JSON, JSON.stringify(videos, null, 2), "utf8")
+}
+
+export async function saveHeroVideosData(heroVideos: HeroVideoConfig) {
+  const normalized: HeroVideoConfig = {
+    desktopVideoId: heroVideos.desktopVideoId ?? null,
+    mobileVideoId: heroVideos.mobileVideoId ?? null,
+  }
+
+  if (useBlobStorage()) {
+    await writeBlobJson(BLOB_HERO_VIDEOS_JSON, normalized)
+    return
+  }
+
+  ensureLocalDirs()
+  await writeFile(HERO_VIDEOS_JSON, JSON.stringify(normalized, null, 2), "utf8")
+}
+
 export async function savePortfolioImage(filename: string, buffer: Buffer, contentType?: string) {
   if (useBlobStorage()) {
     const uploaded = await put(`${BLOB_IMAGE_PREFIX}/${filename}`, buffer, {
@@ -158,6 +242,25 @@ export async function savePortfolioImage(filename: string, buffer: Buffer, conte
   return null
 }
 
+export async function savePortfolioVideo(filename: string, buffer: Buffer, contentType?: string) {
+  if (useBlobStorage()) {
+    const uploaded = await put(`${BLOB_VIDEO_PREFIX}/${filename}`, buffer, {
+      access: "public",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: contentType || undefined,
+    })
+    return uploaded.url
+  }
+
+  ensureLocalDirs()
+  const destPath = join(VIDEOS_DIR, filename)
+  if (!existsSync(destPath)) {
+    await writeFile(destPath, buffer)
+  }
+  return null
+}
+
 export async function readLocalPhotoBuffer(filename: string) {
   const localPath = join(PHOTOS_DIR, filename)
   if (!existsSync(localPath)) return null
@@ -171,6 +274,17 @@ export async function deletePortfolioImage(photo: Pick<PhotoMeta, "filename" | "
   }
 
   const localPath = join(PHOTOS_DIR, photo.filename)
+  if (!existsSync(localPath)) return
+  await unlink(localPath)
+}
+
+export async function deletePortfolioVideo(video: Pick<VideoMeta, "filename" | "src">) {
+  if (useBlobStorage()) {
+    await del(video.src || `${BLOB_VIDEO_PREFIX}/${video.filename}`)
+    return
+  }
+
+  const localPath = join(VIDEOS_DIR, video.filename)
   if (!existsSync(localPath)) return
   await unlink(localPath)
 }

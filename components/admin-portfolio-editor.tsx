@@ -25,6 +25,7 @@ import {
   Image as ImageIcon,
   Lock,
   Loader2,
+  Play,
   Search,
   RotateCcw,
   Save,
@@ -35,8 +36,8 @@ import {
   X,
 } from "lucide-react"
 import { createPortal } from "react-dom"
-import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
-import type { PhotoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
+import { getPortfolioImageSrc, getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
+import type { HeroVideoConfig, PhotoMeta, VideoMeta, LayoutData, Cell, GridConfig } from "@/lib/portfolio/types"
 import {
   ARRANGE_STRATEGIES,
   arrangeByColor,
@@ -53,6 +54,15 @@ const PHOTO_CATEGORIES = [
   "portrait",
 ] as const
 
+const VIDEO_CATEGORIES = [
+  "dance",
+  "wedding",
+  "kids",
+  "brand",
+  "custom",
+  "lovestory",
+] as const
+
 const PHOTO_CATEGORY_LABELS: Record<(typeof PHOTO_CATEGORIES)[number], string> = {
   dance: "Dance",
   wedding: "Wedding",
@@ -63,6 +73,15 @@ const PHOTO_CATEGORY_LABELS: Record<(typeof PHOTO_CATEGORIES)[number], string> =
   portrait: "Portrait",
 }
 
+const VIDEO_CATEGORY_LABELS: Record<(typeof VIDEO_CATEGORIES)[number], string> = {
+  dance: "Dance",
+  wedding: "Wedding",
+  kids: "Kids",
+  brand: "Brand",
+  custom: "Custom",
+  lovestory: "Love Story",
+}
+
 function normalizePhotoCategory(category?: string): (typeof PHOTO_CATEGORIES)[number] {
   if (category === "commercial" || category === "brand") return "brand"
   if (category === "dance" || category === "wedding" || category === "kids" || category === "custom" || category === "lovestory" || category === "portrait") {
@@ -71,9 +90,17 @@ function normalizePhotoCategory(category?: string): (typeof PHOTO_CATEGORIES)[nu
   return "custom"
 }
 
-type AdminTab = "layout" | "library"
+type AdminTab = "layout" | "library" | "videos"
 type LibraryStatusFilter = "all" | "placed" | "unplaced" | "excluded"
 type LibrarySort = "newest" | "oldest" | "filename"
+
+function normalizeVideoCategory(category?: string): (typeof VIDEO_CATEGORIES)[number] {
+  if (category === "commercial" || category === "brand") return "brand"
+  if (category === "dance" || category === "wedding" || category === "kids" || category === "custom" || category === "lovestory") {
+    return category
+  }
+  return "custom"
+}
 
 function cellKey(x: number, y: number) {
   return `${x},${y}`
@@ -432,6 +459,101 @@ function LibraryCard({
   )
 }
 
+function VideoLibraryCard({
+  video,
+  selected,
+  onCategoryChange,
+  onToggleSelected,
+  onPreview,
+  onExcludeToggle,
+  onDelete,
+}: {
+  video: VideoMeta
+  selected: boolean
+  onCategoryChange: (value: string) => void
+  onToggleSelected: () => void
+  onPreview: () => void
+  onExcludeToggle: () => void
+  onDelete: () => void
+}) {
+  return (
+    <article className={`rounded-2xl border p-3 transition-colors ${selected ? "border-wine bg-wine/10" : "border-white/10 bg-white/5"}`}>
+      <div className="relative overflow-hidden rounded-xl">
+        <video
+          src={getPortfolioVideoSrc(video)}
+          className="aspect-video w-full object-cover"
+          preload="metadata"
+          muted
+          playsInline
+        />
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent p-2 text-[10px] uppercase tracking-[0.2em] text-cream/80">
+          <label className="flex items-center gap-2 rounded bg-black/50 px-2 py-1 text-[10px] tracking-[0.18em]">
+            <input
+              type="checkbox"
+              checked={selected}
+              onChange={onToggleSelected}
+              className="h-3.5 w-3.5 accent-[#8b1a2e]"
+            />
+            Select
+          </label>
+          <div className="flex items-center gap-2">
+            <span>{video.excluded ? "Excluded" : "Published"}</span>
+            <button
+              type="button"
+              onClick={onPreview}
+              className="rounded bg-black/50 p-1 transition-colors hover:text-cream"
+              title="Open video"
+            >
+              <Play className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 space-y-3">
+        <div>
+          <p className="truncate text-xs text-cream/80">{video.title || video.filename}</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-mid">{video.id}</p>
+        </div>
+
+        <label className="block">
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Category</span>
+          <select
+            value={normalizeVideoCategory(video.category)}
+            onChange={(e) => onCategoryChange(e.target.value)}
+            className="w-full rounded border border-white/10 bg-dark px-2 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+          >
+            {VIDEO_CATEGORIES.map((category) => (
+              <option key={category} value={category}>
+                {VIDEO_CATEGORY_LABELS[category]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onExcludeToggle}
+            className="flex flex-1 items-center justify-center gap-1 rounded border border-white/10 bg-white/5 px-2 py-2 text-[11px] uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10"
+          >
+            {video.excluded ? <RotateCcw className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+            {video.excluded ? "Include" : "Exclude"}
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="flex items-center justify-center rounded border border-red-900/40 bg-red-950/30 px-3 py-2 text-red-300 transition-colors hover:bg-red-950/50"
+            title="Delete video"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
 function PreviewModal({
   photo,
   onClose,
@@ -482,15 +604,75 @@ function PreviewModal({
   )
 }
 
+function VideoPreviewModal({
+  video,
+  onClose,
+}: {
+  video: VideoMeta
+  onClose: () => void
+}) {
+  useEffect(() => {
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", onKey)
+    document.body.style.overflow = "hidden"
+    return () => {
+      window.removeEventListener("keydown", onKey)
+      document.body.style.overflow = ""
+    }
+  }, [onClose])
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/95 p-6"
+      onClick={onClose}
+    >
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute right-6 top-6 text-cream transition-colors hover:text-wine"
+        aria-label="Close preview"
+      >
+        <X className="h-8 w-8" />
+      </button>
+      <div className="max-h-[88vh] max-w-[92vw]" onClick={(e) => e.stopPropagation()}>
+        <video
+          src={getPortfolioVideoSrc(video)}
+          className="max-h-[78vh] max-w-[92vw]"
+          controls
+          autoPlay
+          playsInline
+        />
+        <div className="mt-3 flex items-center justify-between text-sm text-cream/80">
+          <span>{video.title || video.filename}</span>
+          <span className="uppercase tracking-[0.2em] text-gray-mid">
+            {VIDEO_CATEGORY_LABELS[normalizeVideoCategory(video.category)]}
+          </span>
+        </div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+
 export function AdminPortfolioEditor({
   initialPhotos,
+  initialVideos,
+  initialHeroVideos,
   initialLayout,
 }: {
   initialPhotos: PhotoMeta[]
+  initialVideos: VideoMeta[]
+  initialHeroVideos: HeroVideoConfig
   initialLayout: LayoutData
 }) {
   const [photos, setPhotos] = useState<PhotoMeta[]>(initialPhotos)
   const [savedPhotos, setSavedPhotos] = useState<PhotoMeta[]>(initialPhotos)
+  const [videos, setVideos] = useState<VideoMeta[]>(initialVideos)
+  const [savedVideos, setSavedVideos] = useState<VideoMeta[]>(initialVideos)
+  const [heroVideos, setHeroVideos] = useState<HeroVideoConfig>(initialHeroVideos)
+  const [savedHeroVideos, setSavedHeroVideos] = useState<HeroVideoConfig>(initialHeroVideos)
   const [layout, setLayout] = useState<LayoutData>(initialLayout)
   const [savedLayout, setSavedLayout] = useState<LayoutData>(initialLayout)
   const [selected, setSelected] = useState<string | null>(null)
@@ -503,6 +685,7 @@ export function AdminPortfolioEditor({
   const [arrangeStrategy, setArrangeStrategy] = useState<ArrangeStrategy>("neighbors")
   const [activeTab, setActiveTab] = useState<AdminTab>("layout")
   const [previewPhotoId, setPreviewPhotoId] = useState<string | null>(null)
+  const [previewVideoId, setPreviewVideoId] = useState<string | null>(null)
   const [libraryQuery, setLibraryQuery] = useState("")
   const [libraryCategory, setLibraryCategory] = useState<"all" | (typeof PHOTO_CATEGORIES)[number]>("all")
   const [libraryStatus, setLibraryStatus] = useState<LibraryStatusFilter>("all")
@@ -510,8 +693,17 @@ export function AdminPortfolioEditor({
   const [libraryPage, setLibraryPage] = useState(1)
   const [libraryPageSize, setLibraryPageSize] = useState(48)
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([])
+  const [videoQuery, setVideoQuery] = useState("")
+  const [videoCategory, setVideoCategory] = useState<"all" | (typeof VIDEO_CATEGORIES)[number]>("all")
+  const [videoStatus, setVideoStatus] = useState<"all" | "included" | "excluded">("all")
+  const [videoSort, setVideoSort] = useState<LibrarySort>("newest")
+  const [videoPage, setVideoPage] = useState(1)
+  const [videoPageSize, setVideoPageSize] = useState(24)
+  const [selectedVideoIds, setSelectedVideoIds] = useState<string[]>([])
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const heroFileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
+  const [pendingHeroSlot, setPendingHeroSlot] = useState<keyof HeroVideoConfig | null>(null)
   const resizingRef = useRef<{
     cell: Cell
     startX: number
@@ -523,18 +715,26 @@ export function AdminPortfolioEditor({
   const isDirty =
     JSON.stringify(layout.cells) !== JSON.stringify(savedLayout.cells) ||
     JSON.stringify(photos) !== JSON.stringify(savedPhotos) ||
+    JSON.stringify(videos) !== JSON.stringify(savedVideos) ||
+    JSON.stringify(heroVideos) !== JSON.stringify(savedHeroVideos) ||
     layout.grid.cols !== savedLayout.grid.cols ||
     layout.grid.rows !== savedLayout.grid.rows
 
   const photoMap = new Map(photos.map((photo) => [photo.id, photo]))
+  const videoMap = new Map(videos.map((video) => [video.id, video]))
   const photoOrder = new Map(photos.map((photo, index) => [photo.id, index]))
+  const videoOrder = new Map(videos.map((video, index) => [video.id, index]))
   const placedIds = new Set(layout.cells.map((cell) => cell.photoId))
   const unplaced = photos.filter((photo) => !photo.excluded && !placedIds.has(photo.id))
   const excluded = photos.filter((photo) => photo.excluded)
   const occupancy = buildOccupancyMap(layout.cells, layout.grid)
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
   const previewPhoto = previewPhotoId ? photoMap.get(previewPhotoId) ?? null : null
+  const previewVideo = previewVideoId ? videoMap.get(previewVideoId) ?? null : null
+  const desktopHeroVideo = heroVideos.desktopVideoId ? videoMap.get(heroVideos.desktopVideoId) ?? null : null
+  const mobileHeroVideo = heroVideos.mobileVideoId ? videoMap.get(heroVideos.mobileVideoId) ?? null : null
   const normalizedLibraryQuery = libraryQuery.trim().toLowerCase()
+  const normalizedVideoQuery = videoQuery.trim().toLowerCase()
 
   const filteredLibraryPhotos = useMemo(() => {
     const next = photos.filter((photo) => {
@@ -572,6 +772,42 @@ export function AdminPortfolioEditor({
   const allVisibleSelected = paginatedLibraryPhotos.length > 0 && selectedVisibleCount === paginatedLibraryPhotos.length
   const allFilteredSelected = filteredLibraryPhotos.length > 0 && filteredLibraryPhotos.every((photo) => selectedPhotoIds.includes(photo.id))
 
+  const filteredVideos = useMemo(() => {
+    const next = videos.filter((video) => {
+      const normalizedCategory = normalizeVideoCategory(video.category)
+      const matchesQuery =
+        !normalizedVideoQuery ||
+        video.filename.toLowerCase().includes(normalizedVideoQuery) ||
+        (video.title || "").toLowerCase().includes(normalizedVideoQuery) ||
+        video.id.toLowerCase().includes(normalizedVideoQuery)
+      const matchesCategory = videoCategory === "all" || normalizedCategory === videoCategory
+      const matchesStatus =
+        videoStatus === "all" ||
+        (videoStatus === "included" && !video.excluded) ||
+        (videoStatus === "excluded" && !!video.excluded)
+
+      return matchesQuery && matchesCategory && matchesStatus
+    })
+
+    next.sort((a, b) => {
+      if (videoSort === "filename") return (a.title || a.filename).localeCompare(b.title || b.filename)
+      const aIndex = videoOrder.get(a.id) ?? 0
+      const bIndex = videoOrder.get(b.id) ?? 0
+      return videoSort === "oldest" ? aIndex - bIndex : bIndex - aIndex
+    })
+
+    return next
+  }, [normalizedVideoQuery, videoCategory, videoOrder, videoSort, videoStatus, videos])
+
+  const totalVideoPages = Math.max(1, Math.ceil(filteredVideos.length / videoPageSize))
+  const paginatedVideos = useMemo(() => {
+    const start = (videoPage - 1) * videoPageSize
+    return filteredVideos.slice(start, start + videoPageSize)
+  }, [filteredVideos, videoPage, videoPageSize])
+  const selectedVisibleVideoCount = paginatedVideos.filter((video) => selectedVideoIds.includes(video.id)).length
+  const allVisibleVideosSelected = paginatedVideos.length > 0 && selectedVisibleVideoCount === paginatedVideos.length
+  const allFilteredVideosSelected = filteredVideos.length > 0 && filteredVideos.every((video) => selectedVideoIds.includes(video.id))
+
   const ROW_H = 120
 
   useEffect(() => {
@@ -583,12 +819,39 @@ export function AdminPortfolioEditor({
   }, [photos])
 
   useEffect(() => {
+    const validIds = new Set(videos.map((video) => video.id))
+    setSelectedVideoIds((prev) => {
+      const next = prev.filter((id) => validIds.has(id))
+      return next.length === prev.length ? prev : next
+    })
+  }, [videos])
+
+  useEffect(() => {
+    const validIds = new Set(videos.map((video) => video.id))
+    setHeroVideos((prev) => {
+      const next: HeroVideoConfig = {
+        desktopVideoId: prev.desktopVideoId && validIds.has(prev.desktopVideoId) ? prev.desktopVideoId : null,
+        mobileVideoId: prev.mobileVideoId && validIds.has(prev.mobileVideoId) ? prev.mobileVideoId : null,
+      }
+      return JSON.stringify(next) === JSON.stringify(prev) ? prev : next
+    })
+  }, [videos])
+
+  useEffect(() => {
     setLibraryPage(1)
   }, [libraryCategory, libraryPageSize, libraryQuery, librarySort, libraryStatus])
 
   useEffect(() => {
+    setVideoPage(1)
+  }, [videoCategory, videoPageSize, videoQuery, videoSort, videoStatus])
+
+  useEffect(() => {
     if (libraryPage > totalLibraryPages) setLibraryPage(totalLibraryPages)
   }, [libraryPage, totalLibraryPages])
+
+  useEffect(() => {
+    if (videoPage > totalVideoPages) setVideoPage(totalVideoPages)
+  }, [videoPage, totalVideoPages])
 
   const applyGridSize = useCallback(() => {
     const cols = Math.max(1, Math.min(40, parseInt(colsInput) || 12))
@@ -640,10 +903,32 @@ export function AdminPortfolioEditor({
     )
   }, [])
 
+  const excludeVideo = useCallback((videoId: string) => {
+    setVideos((prev) =>
+      prev.map((video) => (video.id === videoId ? { ...video, excluded: true } : video))
+    )
+  }, [])
+
+  const includeVideo = useCallback((videoId: string) => {
+    setVideos((prev) =>
+      prev.map((video) => (video.id === videoId ? { ...video, excluded: false } : video))
+    )
+  }, [])
+
   const updateCategory = useCallback((photoId: string, category: string) => {
     setPhotos((prev) =>
       prev.map((photo) => (photo.id === photoId ? { ...photo, category: normalizePhotoCategory(category) } : photo))
     )
+  }, [])
+
+  const updateVideoCategory = useCallback((videoId: string, category: string) => {
+    setVideos((prev) =>
+      prev.map((video) => (video.id === videoId ? { ...video, category: normalizeVideoCategory(category) } : video))
+    )
+  }, [])
+
+  const assignHeroVideo = useCallback((slot: keyof HeroVideoConfig, videoId: string | null) => {
+    setHeroVideos((prev) => ({ ...prev, [slot]: videoId }))
   }, [])
 
   const deletePhoto = useCallback(async (photoId: string) => {
@@ -670,11 +955,49 @@ export function AdminPortfolioEditor({
     }
   }, [previewPhotoId])
 
+  const deleteVideo = useCallback(async (videoId: string) => {
+    setDeletingPhotoId(videoId)
+    setSaveMsg(null)
+    try {
+      const res = await fetch("/api/admin/portfolio/video", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: videoId }),
+      })
+      if (!res.ok) throw new Error(await res.text())
+
+      setVideos((prev) => prev.filter((video) => video.id !== videoId))
+      setSavedVideos((prev) => prev.filter((video) => video.id !== videoId))
+      setHeroVideos((prev) => ({
+        desktopVideoId: prev.desktopVideoId === videoId ? null : prev.desktopVideoId,
+        mobileVideoId: prev.mobileVideoId === videoId ? null : prev.mobileVideoId,
+      }))
+      setSavedHeroVideos((prev) => ({
+        desktopVideoId: prev.desktopVideoId === videoId ? null : prev.desktopVideoId,
+        mobileVideoId: prev.mobileVideoId === videoId ? null : prev.mobileVideoId,
+      }))
+      if (previewVideoId === videoId) setPreviewVideoId(null)
+      setSaveMsg("Video deleted")
+    } catch (err) {
+      setSaveMsg(`Delete error: ${err instanceof Error ? err.message : "unknown"}`)
+    } finally {
+      setDeletingPhotoId(null)
+    }
+  }, [previewVideoId])
+
   const bulkSetCategory = useCallback((ids: string[], category: string) => {
     const idSet = new Set(ids)
     const nextCategory = normalizePhotoCategory(category)
     setPhotos((prev) =>
       prev.map((photo) => (idSet.has(photo.id) ? { ...photo, category: nextCategory } : photo))
+    )
+  }, [])
+
+  const bulkSetVideoCategory = useCallback((ids: string[], category: string) => {
+    const idSet = new Set(ids)
+    const nextCategory = normalizeVideoCategory(category)
+    setVideos((prev) =>
+      prev.map((video) => (idSet.has(video.id) ? { ...video, category: nextCategory } : video))
     )
   }, [])
 
@@ -693,6 +1016,20 @@ export function AdminPortfolioEditor({
     const idSet = new Set(ids)
     setPhotos((prev) =>
       prev.map((photo) => (idSet.has(photo.id) ? { ...photo, excluded: false } : photo))
+    )
+  }, [])
+
+  const bulkExcludeVideos = useCallback((ids: string[]) => {
+    const idSet = new Set(ids)
+    setVideos((prev) =>
+      prev.map((video) => (idSet.has(video.id) ? { ...video, excluded: true } : video))
+    )
+  }, [])
+
+  const bulkIncludeVideos = useCallback((ids: string[]) => {
+    const idSet = new Set(ids)
+    setVideos((prev) =>
+      prev.map((video) => (idSet.has(video.id) ? { ...video, excluded: false } : video))
     )
   }, [])
 
@@ -727,6 +1064,43 @@ export function AdminPortfolioEditor({
     }
   }, [previewPhotoId])
 
+  const bulkDeleteVideos = useCallback(async (ids: string[]) => {
+    if (!ids.length) return
+    setDeletingPhotoId("bulk-videos")
+    setSaveMsg(null)
+    try {
+      await Promise.all(
+        ids.map(async (videoId) => {
+          const res = await fetch("/api/admin/portfolio/video", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: videoId }),
+          })
+          if (!res.ok) throw new Error(await res.text())
+        })
+      )
+
+      const idSet = new Set(ids)
+      setVideos((prev) => prev.filter((video) => !idSet.has(video.id)))
+      setSavedVideos((prev) => prev.filter((video) => !idSet.has(video.id)))
+      setHeroVideos((prev) => ({
+        desktopVideoId: prev.desktopVideoId && idSet.has(prev.desktopVideoId) ? null : prev.desktopVideoId,
+        mobileVideoId: prev.mobileVideoId && idSet.has(prev.mobileVideoId) ? null : prev.mobileVideoId,
+      }))
+      setSavedHeroVideos((prev) => ({
+        desktopVideoId: prev.desktopVideoId && idSet.has(prev.desktopVideoId) ? null : prev.desktopVideoId,
+        mobileVideoId: prev.mobileVideoId && idSet.has(prev.mobileVideoId) ? null : prev.mobileVideoId,
+      }))
+      setSelectedVideoIds((prev) => prev.filter((id) => !idSet.has(id)))
+      if (previewVideoId && idSet.has(previewVideoId)) setPreviewVideoId(null)
+      setSaveMsg(`${ids.length} video${ids.length === 1 ? "" : "s"} deleted`)
+    } catch (err) {
+      setSaveMsg(`Delete error: ${err instanceof Error ? err.message : "unknown"}`)
+    } finally {
+      setDeletingPhotoId(null)
+    }
+  }, [previewVideoId])
+
   const togglePhotoSelection = useCallback((photoId: string) => {
     setSelectedPhotoIds((prev) => toggleId(prev, photoId))
   }, [])
@@ -751,6 +1125,30 @@ export function AdminPortfolioEditor({
     setSelectedPhotoIds([])
   }, [])
 
+  const toggleVideoSelection = useCallback((videoId: string) => {
+    setSelectedVideoIds((prev) => toggleId(prev, videoId))
+  }, [])
+
+  const selectVisibleVideos = useCallback(() => {
+    setSelectedVideoIds((prev) => {
+      const next = new Set(prev)
+      for (const video of paginatedVideos) next.add(video.id)
+      return Array.from(next)
+    })
+  }, [paginatedVideos])
+
+  const selectFilteredVideos = useCallback(() => {
+    setSelectedVideoIds((prev) => {
+      const next = new Set(prev)
+      for (const video of filteredVideos) next.add(video.id)
+      return Array.from(next)
+    })
+  }, [filteredVideos])
+
+  const clearVideoSelection = useCallback(() => {
+    setSelectedVideoIds([])
+  }, [])
+
   const toggleSelectVisible = useCallback(() => {
     if (allVisibleSelected) {
       const visibleIds = new Set(paginatedLibraryPhotos.map((photo) => photo.id))
@@ -759,6 +1157,15 @@ export function AdminPortfolioEditor({
     }
     selectVisible()
   }, [allVisibleSelected, paginatedLibraryPhotos, selectVisible])
+
+  const toggleSelectVisibleVideos = useCallback(() => {
+    if (allVisibleVideosSelected) {
+      const visibleIds = new Set(paginatedVideos.map((video) => video.id))
+      setSelectedVideoIds((prev) => prev.filter((id) => !visibleIds.has(id)))
+      return
+    }
+    selectVisibleVideos()
+  }, [allVisibleVideosSelected, paginatedVideos, selectVisibleVideos])
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
@@ -868,25 +1275,29 @@ export function AdminPortfolioEditor({
       const res = await fetch("/api/admin/portfolio/layout", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...layout, photos }),
+        body: JSON.stringify({ ...layout, photos, videos, heroVideos }),
       })
       if (!res.ok) throw new Error(await res.text())
       setSavedLayout(layout)
       setSavedPhotos(photos)
+      setSavedVideos(videos)
+      setSavedHeroVideos(heroVideos)
       setSaveMsg("Збережено!")
     } catch (err) {
       setSaveMsg(`Помилка: ${err instanceof Error ? err.message : "unknown"}`)
     } finally {
       setSaving(false)
     }
-  }, [layout, photos])
+  }, [heroVideos, layout, photos, videos])
 
   const discard = useCallback(() => {
     setLayout(savedLayout)
     setPhotos(savedPhotos)
+    setVideos(savedVideos)
+    setHeroVideos(savedHeroVideos)
     setColsInput(String(savedLayout.grid.cols))
     setRowsInput(String(savedLayout.grid.rows))
-  }, [savedLayout, savedPhotos])
+  }, [savedHeroVideos, savedLayout, savedPhotos, savedVideos])
 
   const handleUpload = useCallback(async (files: FileList | null) => {
     if (!files?.length) return
@@ -895,17 +1306,52 @@ export function AdminPortfolioEditor({
     for (const file of files) fd.append("files", file)
 
     try {
-      const res = await fetch("/api/admin/portfolio/upload", { method: "POST", body: fd })
+      const endpoint = activeTab === "videos" ? "/api/admin/portfolio/upload-video" : "/api/admin/portfolio/upload"
+      const res = await fetch(endpoint, { method: "POST", body: fd })
       if (!res.ok) throw new Error(await res.text())
-      const data = await res.json() as { added?: PhotoMeta[] }
+      const data = await res.json() as { added?: PhotoMeta[] | VideoMeta[] }
       if (data.added?.length) {
-        setPhotos((prev) => [...prev, ...data.added!])
-        setSavedPhotos((prev) => [...prev, ...data.added!])
+        if (activeTab === "videos") {
+          const addedVideos = data.added as VideoMeta[]
+          setVideos((prev) => [...prev, ...addedVideos])
+          setSavedVideos((prev) => [...prev, ...addedVideos])
+        } else {
+          const addedPhotos = data.added as PhotoMeta[]
+          setPhotos((prev) => [...prev, ...addedPhotos])
+          setSavedPhotos((prev) => [...prev, ...addedPhotos])
+        }
       }
     } catch (err) {
       alert(`Upload failed: ${err instanceof Error ? err.message : "unknown"}`)
     } finally {
       setUploading(false)
+    }
+  }, [activeTab])
+
+  const handleHeroUpload = useCallback(async (slot: keyof HeroVideoConfig, files: FileList | null) => {
+    if (!files?.length) return
+    setUploading(true)
+    const fd = new FormData()
+    fd.append("file", files[0])
+
+    try {
+      const res = await fetch("/api/admin/portfolio/upload-hero-video", { method: "POST", body: fd })
+      if (!res.ok) throw new Error(await res.text())
+      const data = await res.json() as { video?: VideoMeta }
+      const uploadedVideo = data.video
+      if (uploadedVideo) {
+        setVideos((prev) => (prev.some((item) => item.id === uploadedVideo.id) ? prev : [...prev, uploadedVideo]))
+        setSavedVideos((prev) => (prev.some((item) => item.id === uploadedVideo.id) ? prev : [...prev, uploadedVideo]))
+        setHeroVideos((prev) => ({ ...prev, [slot]: uploadedVideo.id }))
+      }
+    } catch (err) {
+      alert(`Hero video upload failed: ${err instanceof Error ? err.message : "unknown"}`)
+    } finally {
+      setUploading(false)
+      setPendingHeroSlot(null)
+      if (heroFileInputRef.current) {
+        heroFileInputRef.current.value = ""
+      }
     }
   }, [])
 
@@ -932,6 +1378,16 @@ export function AdminPortfolioEditor({
           >
             <FolderKanban className="h-3.5 w-3.5" />
             Library
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("videos")}
+            className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs uppercase tracking-[0.18em] transition-colors ${
+              activeTab === "videos" ? "bg-wine text-cream" : "text-gray-mid hover:text-cream"
+            }`}
+          >
+            <Play className="h-3.5 w-3.5" />
+            Videos
           </button>
         </div>
 
@@ -1001,10 +1457,21 @@ export function AdminPortfolioEditor({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={activeTab === "videos" ? "video/*" : "image/*"}
           multiple
           className="hidden"
           onChange={(e) => handleUpload(e.target.files)}
+        />
+        <input
+          ref={heroFileInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={(e) => {
+            if (pendingHeroSlot) {
+              void handleHeroUpload(pendingHeroSlot, e.target.files)
+            }
+          }}
         />
 
         <div className="ml-auto flex items-center gap-2">
@@ -1122,7 +1589,7 @@ export function AdminPortfolioEditor({
           </div>
           <DragOverlay />
         </DndContext>
-      ) : (
+      ) : activeTab === "library" ? (
         <div className="min-h-0 flex-1 overflow-auto bg-dark px-4 py-4">
           <div className="mb-4 flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -1318,10 +1785,304 @@ export function AdminPortfolioEditor({
             </div>
           )}
         </div>
+      ) : (
+        <div className="min-h-0 flex-1 overflow-auto bg-dark px-4 py-4">
+          <div className="mb-4 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.24em] text-wine">Video Library</p>
+                <h2 className="mt-1 text-xl text-cream">Videos and preview</h2>
+              </div>
+              <p className="text-sm text-gray-mid">
+                {filteredVideos.length} filtered / {videos.length} total
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              {([
+                {
+                  slot: "desktopVideoId",
+                  title: "Desktop hero",
+                  description: "Background video for desktop home hero",
+                  current: desktopHeroVideo,
+                },
+                {
+                  slot: "mobileVideoId",
+                  title: "Mobile hero",
+                  description: "Background video for mobile home hero",
+                  current: mobileHeroVideo,
+                },
+              ] as const).map((heroSlot) => (
+                <article key={heroSlot.slot} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="mb-3 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] uppercase tracking-[0.24em] text-wine">Hero video</p>
+                      <h3 className="mt-1 text-lg text-cream">{heroSlot.title}</h3>
+                      <p className="mt-1 text-sm text-gray-mid">{heroSlot.description}</p>
+                    </div>
+                    <div className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-gray-mid">
+                      {heroSlot.current ? "Assigned" : "Poster fallback"}
+                    </div>
+                  </div>
+
+                  <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                    {heroSlot.current ? (
+                      <video
+                        src={getPortfolioVideoSrc(heroSlot.current)}
+                        className="aspect-video w-full object-cover"
+                        preload="metadata"
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <div className="flex aspect-video items-center justify-center text-sm uppercase tracking-[0.22em] text-gray-mid">
+                        No video selected
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-3 flex flex-col gap-3">
+                    <div className="flex items-center gap-2">
+                      <select
+                        value={heroVideos[heroSlot.slot] ?? ""}
+                        onChange={(e) => assignHeroVideo(heroSlot.slot, e.target.value || null)}
+                        className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                      >
+                        <option value="">No video</option>
+                        {videos.map((video) => (
+                          <option key={video.id} value={video.id}>
+                            {video.title || video.filename}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setPendingHeroSlot(heroSlot.slot)
+                          heroFileInputRef.current?.click()
+                        }}
+                        disabled={uploading}
+                        className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                      >
+                        {uploading && pendingHeroSlot === heroSlot.slot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
+                        Upload
+                      </button>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => heroSlot.current && setPreviewVideoId(heroSlot.current.id)}
+                        disabled={!heroSlot.current}
+                        className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => assignHeroVideo(heroSlot.slot, null)}
+                        disabled={!heroVideos[heroSlot.slot]}
+                        className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                      >
+                        Clear
+                      </button>
+                      <span className="text-xs text-gray-mid">
+                        {heroSlot.current ? heroSlot.current.title || heroSlot.current.filename : "Falls back to poster image on the home page"}
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
+
+            <div className="sticky top-0 z-10 rounded-2xl border border-white/10 bg-dark/95 p-3 backdrop-blur">
+              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
+                <label className="relative min-w-0 flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-mid" />
+                  <input
+                    type="text"
+                    value={videoQuery}
+                    onChange={(e) => setVideoQuery(e.target.value)}
+                    placeholder="Search by title, filename or id"
+                    className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
+                  />
+                </label>
+
+                <select
+                  value={videoCategory}
+                  onChange={(e) => setVideoCategory(e.target.value as "all" | (typeof VIDEO_CATEGORIES)[number])}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="all">All categories</option>
+                  {VIDEO_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {VIDEO_CATEGORY_LABELS[category]}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={videoStatus}
+                  onChange={(e) => setVideoStatus(e.target.value as "all" | "included" | "excluded")}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="all">All statuses</option>
+                  <option value="included">Included</option>
+                  <option value="excluded">Excluded</option>
+                </select>
+
+                <select
+                  value={videoSort}
+                  onChange={(e) => setVideoSort(e.target.value as LibrarySort)}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="newest">Newest first</option>
+                  <option value="oldest">Oldest first</option>
+                  <option value="filename">Filename</option>
+                </select>
+
+                <select
+                  value={String(videoPageSize)}
+                  onChange={(e) => setVideoPageSize(Number(e.target.value))}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="24">24 / page</option>
+                  <option value="48">48 / page</option>
+                  <option value="96">96 / page</option>
+                </select>
+              </div>
+
+              <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-mid">
+                  <span>{selectedVideoIds.length} selected</span>
+                  <button
+                    type="button"
+                    onClick={toggleSelectVisibleVideos}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10"
+                  >
+                    {allVisibleVideosSelected ? "Unselect visible" : "Select visible"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={selectFilteredVideos}
+                    disabled={allFilteredVideosSelected || filteredVideos.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Select filtered
+                  </button>
+                  <button
+                    type="button"
+                    onClick={clearVideoSelection}
+                    disabled={selectedVideoIds.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Clear
+                  </button>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <select
+                    defaultValue=""
+                    onChange={(e) => {
+                      if (!e.target.value || selectedVideoIds.length === 0) return
+                      bulkSetVideoCategory(selectedVideoIds, e.target.value)
+                      e.target.value = ""
+                    }}
+                    disabled={selectedVideoIds.length === 0}
+                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine disabled:opacity-40"
+                  >
+                    <option value="">Set category</option>
+                    {VIDEO_CATEGORIES.map((category) => (
+                      <option key={category} value={category}>
+                        {VIDEO_CATEGORY_LABELS[category]}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => bulkExcludeVideos(selectedVideoIds)}
+                    disabled={selectedVideoIds.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Exclude
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => bulkIncludeVideos(selectedVideoIds)}
+                    disabled={selectedVideoIds.length === 0}
+                    className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  >
+                    Include
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedVideoIds.length === 0) return
+                      if (!window.confirm(`Delete ${selectedVideoIds.length} selected video(s)?`)) return
+                      void bulkDeleteVideos(selectedVideoIds)
+                    }}
+                    disabled={selectedVideoIds.length === 0}
+                    className="rounded border border-red-900/40 bg-red-950/30 px-3 py-2 text-xs uppercase tracking-[0.16em] text-red-300 transition-colors hover:bg-red-950/50 disabled:opacity-40"
+                  >
+                    Delete selected
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between text-sm text-gray-mid">
+              <span>
+                Page {videoPage} / {totalVideoPages}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setVideoPage((prev) => Math.max(1, prev - 1))}
+                  disabled={videoPage === 1}
+                  className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                >
+                  Prev
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVideoPage((prev) => Math.min(totalVideoPages, prev + 1))}
+                  disabled={videoPage === totalVideoPages}
+                  className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {paginatedVideos.length ? (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {paginatedVideos.map((video) => (
+                <VideoLibraryCard
+                  key={video.id}
+                  video={video}
+                  selected={selectedVideoIds.includes(video.id)}
+                  onCategoryChange={(value) => updateVideoCategory(video.id, value)}
+                  onToggleSelected={() => toggleVideoSelection(video.id)}
+                  onPreview={() => setPreviewVideoId(video.id)}
+                  onExcludeToggle={() => (video.excluded ? includeVideo(video.id) : excludeVideo(video.id))}
+                  onDelete={() => void deleteVideo(video.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-6 py-12 text-center text-gray-mid">
+              No videos match the current filters.
+            </div>
+          )}
+        </div>
       )}
 
       {previewPhoto ? (
         <PreviewModal photo={previewPhoto} onClose={() => setPreviewPhotoId(null)} />
+      ) : null}
+      {previewVideo ? (
+        <VideoPreviewModal video={previewVideo} onClose={() => setPreviewVideoId(null)} />
       ) : null}
     </div>
   )

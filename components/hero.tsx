@@ -5,24 +5,14 @@ import Image from "next/image"
 import { ChevronDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 
-/*
- * Hero section with background video.
- * Put your videos at:
- *   public/media/hero/desktop.mp4  (horizontal 16:9)
- *   public/media/hero/mobile.mp4   (vertical 9:16)
- * If the files are missing the poster image is shown instead.
- */
-
-const DESKTOP_VIDEO = "/media/hero/desktop.mp4"
-const MOBILE_VIDEO = "/media/hero/mobile.mp4"
 const HERO_POSTER = "/images/hero-poster.jpg"
 
 export function Hero({
-  hasDesktopVideo,
-  hasMobileVideo,
+  desktopVideoSrc,
+  mobileVideoSrc,
 }: {
-  hasDesktopVideo: boolean
-  hasMobileVideo: boolean
+  desktopVideoSrc: string | null
+  mobileVideoSrc: string | null
 }) {
   const { t } = useI18n()
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
@@ -50,10 +40,10 @@ export function Hero({
     <section className="relative flex h-screen items-center justify-center overflow-hidden">
       {/* Background video — Desktop (16:9) */}
       <div className="absolute inset-0 hidden md:block">
-        {hasDesktopVideo ? (
+        {desktopVideoSrc ? (
           <video
             ref={desktopVideoRef}
-            src={DESKTOP_VIDEO}
+            src={desktopVideoSrc}
             autoPlay
             loop
             muted
@@ -76,10 +66,10 @@ export function Hero({
 
       {/* Background video — Mobile (9:16) */}
       <div className="absolute inset-0 md:hidden">
-        {hasMobileVideo ? (
+        {mobileVideoSrc ? (
           <video
             ref={mobileVideoRef}
-            src={MOBILE_VIDEO}
+            src={mobileVideoSrc}
             autoPlay
             loop
             muted

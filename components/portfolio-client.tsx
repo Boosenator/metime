@@ -5,8 +5,8 @@ import { createPortal } from "react-dom"
 import { Play, X, ChevronLeft, ChevronRight, Images, LayoutGrid } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
-import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
-import type { Cell, GridConfig, PhotoMeta } from "@/lib/portfolio/types"
+import { getPortfolioImageSrc, getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
+import type { Cell, GridConfig, PhotoMeta, VideoMeta } from "@/lib/portfolio/types"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,15 +18,6 @@ type GalleryPhoto = {
   src?: string
   category: string
   wide: boolean
-}
-
-type VideoItem = {
-  id: number
-  thumbnail: string
-  category: string
-  title: string
-  duration: string
-  videoUrl: string
 }
 
 // ─── Static data ──────────────────────────────────────────────────────────────
@@ -42,10 +33,8 @@ function getCategory(filename: string): string {
   return SUPPORTED_CATEGORIES.has(prefix) ? normalizeCategory(prefix) : "custom"
 }
 
-const VIDEO_ITEMS: VideoItem[] = []
-
 const PHOTO_CATEGORY_IDS = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "custom"] as const
-const VIDEO_CATEGORY_IDS  = ["all", "dance", "wedding", "kids", "brand", "lovestory", "portrait", "custom"] as const
+const VIDEO_CATEGORY_IDS  = ["all", "dance", "wedding", "kids", "brand", "lovestory", "custom"] as const
 
 // ─── Subcomponents ────────────────────────────────────────────────────────────
 
@@ -116,8 +105,8 @@ function VideoGrid({
   videos,
   onOpen,
 }: {
-  videos: VideoItem[]
-  onOpen: (item: VideoItem) => void
+  videos: VideoMeta[]
+  onOpen: (item: VideoMeta) => void
 }) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
@@ -129,24 +118,22 @@ function VideoGrid({
           onClick={() => onOpen(item)}
         >
           <div className="relative aspect-video overflow-hidden">
-            <img
-              src={item.thumbnail}
-              alt={item.title}
+            <video
+              src={getPortfolioVideoSrc(item)}
               className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-              loading="lazy"
+              preload="metadata"
+              muted
+              playsInline
             />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/30 bg-dark/40 backdrop-blur-sm transition-all duration-300 group-hover:border-wine group-hover:bg-wine/70 group-hover:scale-110 md:h-20 md:w-20">
                 <Play className="h-6 w-6 translate-x-0.5 text-cream md:h-7 md:w-7" fill="currentColor" />
               </div>
             </div>
-            <div className="absolute bottom-3 right-3 bg-dark/70 px-2 py-1 text-xs tracking-wide text-cream/80 backdrop-blur-sm">
-              {item.duration}
-            </div>
           </div>
           <div className="mt-4">
             <h3 className="font-serif text-lg font-light text-cream transition-colors duration-300 group-hover:text-wine md:text-xl">
-              {item.title}
+              {item.title || item.filename}
             </h3>
           </div>
         </div>
@@ -161,10 +148,12 @@ export function PortfolioClient({
   cells,
   grid,
   photos,
+  videos,
 }: {
   cells: PopulatedCell[]
   grid: GridConfig
   photos: PhotoMeta[]
+  videos: VideoMeta[]
 }) {
   const { t } = useI18n()
   const [mode, setMode] = useState<"photo" | "video">("photo")
@@ -174,8 +163,8 @@ export function PortfolioClient({
   const [videoFilter, setVideoFilter] = useState("all")
   const [crossfade, setCrossfade] = useState(false)
   const [galleryLightbox, setGalleryLightbox] = useState<number | null>(null)
-  const [videoModal, setVideoModal] = useState<VideoItem | null>(null)
-  const hasVideos = VIDEO_ITEMS.length > 0
+  const [videoModal, setVideoModal] = useState<VideoMeta | null>(null)
+  const hasVideos = videos.length > 0
   const portfolioTabs: Array<"photo" | "video"> = hasVideos ? ["photo", "video"] : ["photo"]
 
   // Build gallery photo list from PhotoMeta
@@ -201,8 +190,8 @@ export function PortfolioClient({
     : galleryPhotos.filter((p) => p.category === photoFilter)
 
   const filteredVideos = videoFilter === "all"
-    ? VIDEO_ITEMS
-    : VIDEO_ITEMS.filter((v) => v.category === videoFilter)
+    ? videos
+    : videos.filter((video) => normalizeCategory(video.category ?? "custom") === videoFilter)
 
   const switchMode = useCallback((next: "photo" | "video") => {
     if (next === mode) return
@@ -232,7 +221,7 @@ export function PortfolioClient({
     setVideoModal(null)
     document.body.style.overflow = ""
   }, [])
-  const openVideo = useCallback((item: VideoItem) => {
+  const openVideo = useCallback((item: VideoMeta) => {
     setVideoModal(item)
     document.body.style.overflow = "hidden"
   }, [])
@@ -412,12 +401,12 @@ export function PortfolioClient({
             <X className="h-8 w-8" />
           </button>
           <div className="aspect-video w-[92vw] max-w-5xl" onClick={(e) => e.stopPropagation()}>
-            <iframe
-              src={`${videoModal.videoUrl}?autoplay=1`}
+            <video
+              src={getPortfolioVideoSrc(videoModal)}
               className="h-full w-full"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              title={videoModal.title}
+              controls
+              autoPlay
+              playsInline
             />
           </div>
         </div>,

@@ -7,15 +7,18 @@ import { Contact } from "@/components/contact"
 import { Footer } from "@/components/footer"
 import { ScrollWrapper } from "@/components/scroll-wrapper"
 import { I18nProvider } from "@/lib/i18n"
-import { getHeroVideoAvailability } from "@/lib/get-hero-video-availability"
+import { getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
 
 export const dynamic = "force-dynamic"
 
 export default async function Home() {
-  const heroVideoAvailability = getHeroVideoAvailability()
-  const { photos, layout } = await readPortfolioData()
+  const { photos, videos, heroVideos, layout } = await readPortfolioData()
   const activePhotos = photos.filter((photo) => !photo.excluded)
+  const activeVideos = videos.filter((video) => !video.excluded)
+  const videoMap = new Map(videos.map((video) => [video.id, video]))
+  const desktopHeroVideo = heroVideos.desktopVideoId ? videoMap.get(heroVideos.desktopVideoId) ?? null : null
+  const mobileHeroVideo = heroVideos.mobileVideoId ? videoMap.get(heroVideos.mobileVideoId) ?? null : null
 
   const photoMap = new Map(activePhotos.map((p) => [p.id, p]))
   const cells = layout.cells
@@ -31,9 +34,12 @@ export default async function Home() {
       <ScrollWrapper>
         <Navigation />
         <main>
-          <Hero {...heroVideoAvailability} />
+          <Hero
+            desktopVideoSrc={desktopHeroVideo ? getPortfolioVideoSrc(desktopHeroVideo) : null}
+            mobileVideoSrc={mobileHeroVideo ? getPortfolioVideoSrc(mobileHeroVideo) : null}
+          />
           <div className="fade-in-section">
-            <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} />
+            <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} videos={activeVideos} />
           </div>
           <div className="fade-in-section">
             <Pricing />

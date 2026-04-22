@@ -17,6 +17,22 @@ export type PhotoMeta = {
   uploadedAt: string
 }
 
+export type VideoMeta = {
+  id: string
+  filename: string
+  src?: string
+  category?: string
+  excluded?: boolean
+  title?: string
+  mimeType?: string
+  uploadedAt: string
+}
+
+export type HeroVideoConfig = {
+  desktopVideoId: string | null
+  mobileVideoId: string | null
+}
+
 export type GridConfig = {
   cols: number
   rows: number

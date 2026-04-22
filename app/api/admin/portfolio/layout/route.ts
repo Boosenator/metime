@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
-import { saveLayoutData, savePhotosData } from "@/lib/portfolio/storage"
-import type { LayoutData, PhotoMeta } from "@/lib/portfolio/types"
+import { saveHeroVideosData, saveLayoutData, savePhotosData, saveVideosData } from "@/lib/portfolio/storage"
+import type { HeroVideoConfig, LayoutData, PhotoMeta, VideoMeta } from "@/lib/portfolio/types"
 
 export async function PUT(request: Request) {
   const authError = requireAdminAuth(request)
@@ -50,7 +50,7 @@ export async function PUT(request: Request) {
     updatedAt: new Date().toISOString(),
   }
 
-  const bodyWithPhotos = body as { photos?: unknown[] }
+  const bodyWithPhotos = body as { photos?: unknown[]; videos?: unknown[]; heroVideos?: Partial<HeroVideoConfig> }
   const validatedPhotos = Array.isArray(bodyWithPhotos.photos)
     ? bodyWithPhotos.photos
         .filter(
@@ -72,10 +72,41 @@ export async function PUT(request: Request) {
           excluded: Boolean(photo.excluded),
         }))
     : null
+  const validatedVideos = Array.isArray(bodyWithPhotos.videos)
+    ? bodyWithPhotos.videos
+        .filter(
+          (video): video is VideoMeta =>
+            Boolean(video) &&
+            typeof video.id === "string" &&
+            typeof video.filename === "string" &&
+            typeof video.uploadedAt === "string"
+        )
+        .map((video) => ({
+          ...video,
+          category: typeof video.category === "string" ? video.category : "custom",
+          excluded: Boolean(video.excluded),
+          title: typeof video.title === "string" ? video.title : undefined,
+          src: typeof video.src === "string" ? video.src : undefined,
+          mimeType: typeof video.mimeType === "string" ? video.mimeType : undefined,
+        }))
+    : null
+  const validatedHeroVideos: HeroVideoConfig | null =
+    bodyWithPhotos.heroVideos && typeof bodyWithPhotos.heroVideos === "object"
+      ? {
+          desktopVideoId: typeof bodyWithPhotos.heroVideos.desktopVideoId === "string" ? bodyWithPhotos.heroVideos.desktopVideoId : null,
+          mobileVideoId: typeof bodyWithPhotos.heroVideos.mobileVideoId === "string" ? bodyWithPhotos.heroVideos.mobileVideoId : null,
+        }
+      : null
 
   try {
     if (validatedPhotos) {
       await savePhotosData(validatedPhotos)
+    }
+    if (validatedVideos) {
+      await saveVideosData(validatedVideos)
+    }
+    if (validatedHeroVideos) {
+      await saveHeroVideosData(validatedHeroVideos)
     }
     await saveLayoutData(validated)
     return NextResponse.json({ ok: true, cells: validated.cells.length })
