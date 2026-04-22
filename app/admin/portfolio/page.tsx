@@ -1,5 +1,18 @@
+import type { Metadata } from "next"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
 import { AdminPortfolioEditor } from "@/components/admin-portfolio-editor"
+
+export const metadata: Metadata = {
+  title: "Admin Portfolio",
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+}
 
 export const dynamic = "force-dynamic"
 

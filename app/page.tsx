@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { Navigation } from "@/components/navigation"
 import { Hero } from "@/components/hero"
 import { PortfolioClient } from "@/components/portfolio-client"
@@ -9,6 +10,33 @@ import { ScrollWrapper } from "@/components/scroll-wrapper"
 import { I18nProvider } from "@/lib/i18n"
 import { getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
+import { absoluteUrl, buildStudioJsonLd, buildWebsiteJsonLd, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo"
+
+export const metadata: Metadata = {
+  title: "Фото та відеозйомка в Черкасах",
+  description: SITE_DESCRIPTION,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: `${SITE_NAME} | Фото та відеозйомка в Черкасах`,
+    description: SITE_DESCRIPTION,
+    url: absoluteUrl("/"),
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} portfolio preview`,
+      },
+    ],
+  },
+  twitter: {
+    title: `${SITE_NAME} | Фото та відеозйомка в Черкасах`,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
+}
 
 export const dynamic = "force-dynamic"
 
@@ -32,6 +60,13 @@ export default async function Home() {
   return (
     <I18nProvider>
       <ScrollWrapper>
+        <script
+          type="application/ld+json"
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([buildStudioJsonLd(), buildWebsiteJsonLd()]),
+          }}
+        />
         <Navigation />
         <main>
           <Hero

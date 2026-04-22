@@ -1,8 +1,31 @@
+import type { Metadata } from "next"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
+import { absoluteUrl, buildPortfolioJsonLd, OG_IMAGE, SITE_NAME } from "@/lib/seo"
+
+export const metadata: Metadata = {
+  title: "Портфоліо",
+  description: "Портфоліо MeTime Studio: фотоісторії, мозаїка робіт і приклади зйомок у різних жанрах.",
+  alternates: {
+    canonical: "/portfolio",
+  },
+  openGraph: {
+    title: `Портфоліо | ${SITE_NAME}`,
+    description: "Добірка фото та візуальних історій MeTime Studio.",
+    url: absoluteUrl("/portfolio"),
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} portfolio`,
+      },
+    ],
+  },
+}
 
 export const dynamic = "force-dynamic"
 
@@ -22,6 +45,13 @@ export default async function PortfolioPage() {
 
   return (
     <I18nProvider>
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(buildPortfolioJsonLd(activePhotos.length)),
+        }}
+      />
       <Navigation />
       <main className="min-h-screen bg-dark pt-16">
         <div className="px-4 py-10 text-center">
