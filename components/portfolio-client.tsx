@@ -75,15 +75,15 @@ function PhotoGrid({
   onOpen: (index: number) => void
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
+    <div className="grid grid-flow-dense grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3">
       {photos.map((photo, index) => (
         <div
           key={photo.id}
-          className={`group relative cursor-pointer overflow-hidden ${photo.wide ? "col-span-2" : "col-span-1"}`}
+          className={`group relative cursor-pointer overflow-hidden ${photo.wide ? "col-span-1 md:col-span-2" : "col-span-1"}`}
           style={{ animation: "fadeScaleIn 0.5s ease both", animationDelay: `${index * 40}ms` }}
           onClick={() => onOpen(index)}
         >
-          <div className={`relative w-full ${photo.wide ? "aspect-[16/10]" : "aspect-[3/4]"}`}>
+          <div className={`relative w-full ${photo.wide ? "aspect-[3/4] md:aspect-[16/10]" : "aspect-[3/4]"}`}>
             <img
               src={getPortfolioImageSrc(photo)}
               alt={photo.filename}

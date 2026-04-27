@@ -29,7 +29,7 @@ function MosaicCell({
   return (
     <div
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="mosaic-cell group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
+      className="mosaic-cell group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-wine/70 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
       style={
         {
           height: mobileH,
@@ -37,6 +37,7 @@ function MosaicCell({
           "--cell-row": `${cell.y + 1} / span ${cell.spanY}`,
         } as CSSProperties
       }
+      tabIndex={0}
       onClick={() => { onMouseLeave(); onClick() }}
       onMouseMove={onMouseMove}
       onMouseEnter={onMouseEnter}
@@ -59,6 +60,15 @@ function MosaicCell({
         <div
           className="absolute inset-0 z-[2] bg-gradient-to-t from-black/65 via-black/10 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"
           aria-hidden="true"
+        />
+      </div>
+
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-[15] hidden h-[min(56vh,620px)] w-[min(36vw,540px)] -translate-x-1/2 -translate-y-1/2 scale-95 rounded-2xl border border-white/15 bg-black/92 p-3 opacity-0 shadow-[0_28px_80px_rgba(0,0,0,0.55)] transition-all duration-300 ease-out lg:block lg:group-hover:scale-100 lg:group-hover:opacity-100 lg:group-focus-visible:scale-100 lg:group-focus-visible:opacity-100">
+        <img
+          src={src}
+          alt={cell.photo.filename}
+          className="h-full w-full object-contain"
+          loading={index < 24 ? "eager" : "lazy"}
         />
       </div>
     </div>
