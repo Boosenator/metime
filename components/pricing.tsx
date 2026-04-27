@@ -2,16 +2,15 @@
 
 import { useState } from "react"
 import { Check, MessageCircle } from "lucide-react"
-import { useI18n } from "@/lib/i18n"
+import { getDefaultPricingLocaleData, useI18n } from "@/lib/i18n"
+import type { PricingData, PricingLocaleData, PricingPackageItem, PricingCategoryKey, StandardPricingCategoryKey } from "@/lib/pricing/types"
+import { PRICING_CATEGORY_KEYS } from "@/lib/pricing/types"
 
-const categoryKeys = ["dance", "wedding", "kids", "brand", "custom"] as const
-type CategoryKey = (typeof categoryKeys)[number]
-
-export function Pricing() {
+export function Pricing({ pricingData }: { pricingData: PricingData | null }) {
   const { t, locale } = useI18n()
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>("dance")
+  const [activeCategory, setActiveCategory] = useState<PricingCategoryKey>("dance")
 
-  const categories = t.pricing.categories
+  const categories = pricingData?.[locale] ?? getDefaultPricingLocaleData(locale)
 
   return (
     <section id="pricing" className="bg-dark-card px-6 py-16 lg:px-8 lg:py-20">
@@ -29,7 +28,7 @@ export function Pricing() {
         {/* Category Tabs - Sticky */}
         <div className="sticky top-16 z-40 -mx-6 mb-8 bg-dark-card/95 px-6 py-4 backdrop-blur-md lg:-mx-8 lg:px-8">
           <div className="flex flex-wrap justify-center gap-2 md:gap-4">
-            {categoryKeys.map((key) => (
+            {PRICING_CATEGORY_KEYS.map((key) => (
               <button
                 key={key}
                 onClick={() => setActiveCategory(key)}
@@ -47,9 +46,9 @@ export function Pricing() {
 
         {/* Content */}
         {activeCategory === "custom" ? (
-          <CustomPricing />
+          <CustomPricing categories={categories} />
         ) : (
-          <CategoryPricing categoryKey={activeCategory} />
+          <CategoryPricing categoryKey={activeCategory} categories={categories} />
         )}
 
         {/* Note + CTA */}
@@ -69,15 +68,21 @@ export function Pricing() {
   )
 }
 
-function CategoryPricing({ categoryKey }: { categoryKey: Exclude<CategoryKey, "custom"> }) {
-  const { t, locale } = useI18n()
-  const category = t.pricing.categories[categoryKey]
+function CategoryPricing({
+  categoryKey,
+  categories,
+}: {
+  categoryKey: StandardPricingCategoryKey
+  categories: PricingLocaleData
+}) {
+  const { t } = useI18n()
+  const category = categories[categoryKey]
 
   return (
     <div className="space-y-12">
       {/* Packages Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {category.packages.map((pkg, idx) => (
+        {category.packages.map((pkg: PricingPackageItem, idx) => (
           <div
             key={pkg.name}
             className={`group relative flex flex-col border transition-all duration-500 hover:-translate-y-1 ${
@@ -122,10 +127,7 @@ function CategoryPricing({ categoryKey }: { categoryKey: Exclude<CategoryKey, "c
                 ))}
               </ul>
 
-              <a
-                href="#contact"
-                className="mt-6 block border border-gray-warm py-2.5 text-center text-xs uppercase tracking-[0.2em] text-cream transition-all duration-300 hover:border-wine hover:bg-wine"
-              >
+              <a href="#contact" className="mt-6 block border border-gray-warm py-2.5 text-center text-xs uppercase tracking-[0.2em] text-cream transition-all duration-300 hover:border-wine hover:bg-wine">
                 {t.pricing.choose}
               </a>
             </div>
@@ -152,9 +154,9 @@ function CategoryPricing({ categoryKey }: { categoryKey: Exclude<CategoryKey, "c
   )
 }
 
-function CustomPricing() {
+function CustomPricing({ categories }: { categories: PricingLocaleData }) {
   const { t } = useI18n()
-  const custom = t.pricing.categories.custom
+  const custom = categories.custom
 
   return (
     <div className="mx-auto max-w-2xl">

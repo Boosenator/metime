@@ -1483,6 +1483,12 @@ export function AdminPortfolioEditor({
     <div className="flex h-screen flex-col overflow-hidden bg-dark text-cream">
       <div className="flex flex-shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-dark/95 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-1 rounded border border-white/10 bg-white/5 p-1">
+          <a
+            href="/admin/pricing"
+            className="flex items-center gap-1.5 rounded px-3 py-1.5 text-xs uppercase tracking-[0.18em] text-gray-mid transition-colors hover:text-cream"
+          >
+            Pricing
+          </a>
           <button
             type="button"
             onClick={() => setActiveTab("layout")}

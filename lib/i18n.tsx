@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import type { PricingData, PricingLocaleData } from "@/lib/pricing/types"
 
 export type Locale = "uk" | "en"
 
@@ -656,6 +657,72 @@ const translations: Record<Locale, Translations> = {
       rights: "All rights reserved.",
     },
   },
+}
+
+function clonePricingLocaleData(locale: Locale): PricingLocaleData {
+  const categories = translations[locale].pricing.categories
+
+  return {
+    dance: {
+      title: categories.dance.title,
+      packages: categories.dance.packages.map((pkg, index) => ({
+        id: `dance-${index + 1}`,
+        name: pkg.name,
+        price: pkg.price,
+        features: [...pkg.features],
+      })),
+      extras: [...(categories.dance.extras ?? [])],
+    },
+    wedding: {
+      title: categories.wedding.title,
+      packages: categories.wedding.packages.map((pkg, index) => ({
+        id: `wedding-${index + 1}`,
+        name: pkg.name,
+        price: pkg.price,
+        features: [...pkg.features],
+      })),
+      extras: [...(categories.wedding.extras ?? [])],
+    },
+    kids: {
+      title: categories.kids.title,
+      packages: categories.kids.packages.map((pkg, index) => ({
+        id: `kids-${index + 1}`,
+        name: pkg.name,
+        price: pkg.price,
+        features: [...pkg.features],
+      })),
+      extras: [...(categories.kids.extras ?? [])],
+    },
+    brand: {
+      title: categories.brand.title,
+      packages: categories.brand.packages.map((pkg, index) => ({
+        id: `brand-${index + 1}`,
+        name: pkg.name,
+        price: pkg.price,
+        features: [...pkg.features],
+      })),
+      extras: [...(categories.brand.extras ?? [])],
+    },
+    custom: {
+      title: categories.custom.title,
+      subtitle: categories.custom.subtitle,
+      description: categories.custom.description,
+      features: [...categories.custom.features],
+      cta: categories.custom.cta,
+    },
+  }
+}
+
+export function getDefaultPricingLocaleData(locale: Locale): PricingLocaleData {
+  return clonePricingLocaleData(locale)
+}
+
+export function getDefaultPricingData(): PricingData {
+  return {
+    uk: clonePricingLocaleData("uk"),
+    en: clonePricingLocaleData("en"),
+    updatedAt: new Date(0).toISOString(),
+  }
 }
 
 type I18nContextType = {

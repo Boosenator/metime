@@ -10,6 +10,7 @@ import { ScrollWrapper } from "@/components/scroll-wrapper"
 import { I18nProvider } from "@/lib/i18n"
 import { getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
+import { readPricingData } from "@/lib/pricing/storage"
 import { absoluteUrl, buildStudioJsonLd, buildWebsiteJsonLd, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo"
 
 export const metadata: Metadata = {
@@ -42,6 +43,7 @@ export const dynamic = "force-dynamic"
 
 export default async function Home() {
   const { photos, videos, heroVideos, layout } = await readPortfolioData()
+  const pricingData = await readPricingData()
   const activePhotos = photos.filter((photo) => !photo.excluded)
   const activeVideos = videos.filter((video) => !video.excluded)
   const videoMap = new Map(videos.map((video) => [video.id, video]))
@@ -77,7 +79,7 @@ export default async function Home() {
             <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} videos={activeVideos} />
           </div>
           <div className="fade-in-section">
-            <Pricing />
+            <Pricing pricingData={pricingData} />
           </div>
           <div className="fade-in-section">
             <Team />
