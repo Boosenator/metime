@@ -13,10 +13,14 @@ function MosaicCell({
   cell,
   index,
   onClick,
+  onPreviewStart,
+  onPreviewEnd,
 }: {
   cell: PopulatedCell
   index: number
   onClick: () => void
+  onPreviewStart: (photo: PhotoMeta) => void
+  onPreviewEnd: () => void
 }) {
   const { ref, onMouseMove, onMouseEnter, onMouseLeave } = useCardTilt()
 
@@ -29,7 +33,7 @@ function MosaicCell({
   return (
     <div
       ref={ref as React.RefObject<HTMLDivElement>}
-      className="mosaic-cell group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-wine/70 lg:overflow-visible lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
+      className="mosaic-cell group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-wine/70 lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
       style={
         {
           height: mobileH,
@@ -38,10 +42,12 @@ function MosaicCell({
         } as CSSProperties
       }
       tabIndex={0}
-      onClick={() => { onMouseLeave(); onClick() }}
+      onClick={() => { onMouseLeave(); onPreviewEnd(); onClick() }}
       onMouseMove={onMouseMove}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      onMouseEnter={(event) => { onMouseEnter(event); onPreviewStart(cell.photo) }}
+      onMouseLeave={() => { onMouseLeave(); onPreviewEnd() }}
+      onFocus={() => onPreviewStart(cell.photo)}
+      onBlur={onPreviewEnd}
     >
       <div className="absolute inset-[4px] overflow-hidden rounded-[calc(1rem-4px)] bg-black sm:inset-[6px] lg:inset-0 lg:rounded-none">
         <img
@@ -62,15 +68,6 @@ function MosaicCell({
           aria-hidden="true"
         />
       </div>
-
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-[15] hidden h-[min(56vh,620px)] w-[min(36vw,540px)] -translate-x-1/2 -translate-y-1/2 scale-95 rounded-2xl border border-white/15 bg-black/92 p-3 opacity-0 shadow-[0_28px_80px_rgba(0,0,0,0.55)] transition-all duration-300 ease-out lg:block lg:group-hover:scale-100 lg:group-hover:opacity-100 lg:group-focus-visible:scale-100 lg:group-focus-visible:opacity-100">
-        <img
-          src={src}
-          alt={cell.photo.filename}
-          className="h-full w-full object-contain"
-          loading={index < 24 ? "eager" : "lazy"}
-        />
-      </div>
     </div>
   )
 }
@@ -83,6 +80,7 @@ export function PortfolioMosaic({
   grid: GridConfig
 }) {
   const [lightbox, setLightbox] = useState<number | null>(null)
+  const [previewPhoto, setPreviewPhoto] = useState<PhotoMeta | null>(null)
 
   const close = useCallback(() => {
     setLightbox(null)
@@ -137,13 +135,33 @@ export function PortfolioMosaic({
         }
       `}</style>
       {/* Mosaic grid */}
-      <div className="mosaic-grid grid grid-cols-2 gap-3 px-4 sm:gap-4 lg:gap-[2px] lg:px-6">
+      <div className="mosaic-grid grid grid-cols-2 gap-3 overflow-x-clip px-4 sm:gap-4 lg:gap-[2px] lg:px-6">
         {cells.map((cell, i) => (
-          <MosaicCell key={cell.photoId} cell={cell} index={i} onClick={() => open(i)} />
+          <MosaicCell
+            key={cell.photoId}
+            cell={cell}
+            index={i}
+            onClick={() => open(i)}
+            onPreviewStart={setPreviewPhoto}
+            onPreviewEnd={() => setPreviewPhoto((current) => (current?.id === cell.photo.id ? null : current))}
+          />
         ))}
       </div>
 
       {/* Lightbox — portal to body to escape ancestor transforms */}
+      {previewPhoto && typeof document !== "undefined" && createPortal(
+        <div className="pointer-events-none fixed inset-0 z-[90] hidden items-center justify-center lg:flex">
+          <div className="h-[min(56vh,620px)] w-[min(36vw,540px)] rounded-2xl border border-white/15 bg-black/92 p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
+            <img
+              src={getPortfolioImageSrc(previewPhoto)}
+              alt={previewPhoto.filename}
+              className="h-full w-full object-contain"
+            />
+          </div>
+        </div>,
+        document.body
+      )}
+
       {lightbox !== null && cells[lightbox] && typeof document !== "undefined" && createPortal(
         <div
           className="fixed inset-0 z-[9999] flex items-center justify-center"
