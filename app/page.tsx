@@ -11,7 +11,7 @@ import { I18nProvider } from "@/lib/i18n"
 import { getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
 import { readPricingData } from "@/lib/pricing/storage"
-import { absoluteUrl, buildStudioJsonLd, buildWebsiteJsonLd, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo"
+import { absoluteUrl, buildStudioJsonLd, buildVideoObjectJsonLd, buildWebsiteJsonLd, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Фото та відеозйомка в Черкасах",
@@ -66,7 +66,16 @@ export default async function Home() {
           type="application/ld+json"
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify([buildStudioJsonLd(), buildWebsiteJsonLd()]),
+            __html: JSON.stringify([
+              buildStudioJsonLd(),
+              buildWebsiteJsonLd(),
+              ...(desktopHeroVideo
+                ? [buildVideoObjectJsonLd(desktopHeroVideo, absoluteUrl(getPortfolioVideoSrc(desktopHeroVideo)))]
+                : []),
+              ...activeVideos
+                .filter((v) => v.id !== desktopHeroVideo?.id && v.id !== mobileHeroVideo?.id)
+                .map((v) => buildVideoObjectJsonLd(v, absoluteUrl(getPortfolioVideoSrc(v)))),
+            ]),
           }}
         />
         <Navigation />

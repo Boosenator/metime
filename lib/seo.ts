@@ -165,6 +165,31 @@ export function buildPortfolioJsonLd(imageCount: number) {
   }
 }
 
+export function buildVideoObjectJsonLd(video: {
+  title?: string
+  filename: string
+  uploadedAt: string
+}, contentUrl: string) {
+  const name = video.title
+    || video.filename.replace(/\.[^.]+$/, "").replace(/^\d+-/, "").replace(/[-_]+/g, " ").trim()
+    || video.filename
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name,
+    description: SITE_DESCRIPTION,
+    thumbnailUrl: absoluteUrl(OG_IMAGE),
+    uploadDate: video.uploadedAt,
+    contentUrl,
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  }
+}
+
 export function buildBreadcrumbJsonLd(items: { name: string; url: string }[]) {
   return {
     "@context": "https://schema.org",
