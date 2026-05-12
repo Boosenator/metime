@@ -4,7 +4,7 @@ import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
-import { absoluteUrl, buildBreadcrumbJsonLd, buildPortfolioJsonLd, OG_IMAGE, SITE_NAME } from "@/lib/seo"
+import { absoluteUrl, buildBreadcrumbJsonLd, buildPortfolioJsonLd, OG_IMAGE_PORTFOLIO, SITE_NAME } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Портфоліо",
@@ -18,10 +18,10 @@ export const metadata: Metadata = {
     url: absoluteUrl("/portfolio"),
     images: [
       {
-        url: OG_IMAGE,
-        width: 1200,
-        height: 630,
-        alt: `${SITE_NAME} portfolio`,
+        url: OG_IMAGE_PORTFOLIO,
+        width: 1920,
+        height: 1280,
+        alt: `${SITE_NAME} — портфоліо фотографій`,
       },
     ],
   },
