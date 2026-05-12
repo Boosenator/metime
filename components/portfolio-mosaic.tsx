@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
-import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
+import { getPortfolioImageSrc, photoAlt } from "@/lib/portfolio/image-src"
 import type { Cell, GridConfig, PhotoMeta } from "@/lib/portfolio/types"
 import { useCardTilt } from "@/hooks/use-card-tilt"
 
@@ -52,14 +52,14 @@ function MosaicCell({
       <div className="absolute inset-[4px] overflow-hidden rounded-[calc(1rem-4px)] bg-black sm:inset-[6px] lg:inset-0 lg:rounded-none">
         <img
           src={src}
-          alt={cell.photo.filename}
+          alt=""
           className="absolute inset-0 h-full w-full object-cover opacity-45 blur-xl scale-110 transition-transform duration-300 group-hover:scale-[1.14]"
           loading={index < 24 ? "eager" : "lazy"}
           aria-hidden="true"
         />
         <img
           src={src}
-          alt={cell.photo.filename}
+          alt={photoAlt(cell.photo)}
           className="relative z-[1] h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           loading={index < 24 ? "eager" : "lazy"}
         />
@@ -154,7 +154,7 @@ export function PortfolioMosaic({
           <div className="h-[min(56vh,620px)] w-[min(36vw,540px)] rounded-2xl border border-white/15 bg-black/92 p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
             <img
               src={getPortfolioImageSrc(previewPhoto)}
-              alt={previewPhoto.filename}
+              alt={photoAlt(previewPhoto)}
               className="h-full w-full object-contain"
             />
           </div>
@@ -190,7 +190,7 @@ export function PortfolioMosaic({
           >
             <img
               src={getPortfolioImageSrc(cells[lightbox].photo)}
-              alt={cells[lightbox].photo.filename}
+              alt={photoAlt(cells[lightbox].photo)}
               className="h-full w-full object-contain"
             />
           </div>

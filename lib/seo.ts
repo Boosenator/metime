@@ -37,13 +37,21 @@ export function buildDefaultMetadata(): Metadata {
       "відеограф Черкаси",
       "фотограф Черкаси",
       "весільна зйомка Черкаси",
+      "весільне відео Черкаси",
       "love story Черкаси",
-      "бренд зйомка",
-      "портретна зйомка",
+      "танцювальна зйомка Черкаси",
+      "дитяча зйомка Черкаси",
+      "портретна зйомка Черкаси",
+      "бренд зйомка Черкаси",
+      "сімейна фотосесія Черкаси",
+      "фотосесія Черкаси",
+      "відеограф Черкаська область",
       "MeTime Studio",
       "videographer Cherkasy",
       "photographer Cherkasy",
       "wedding videography Ukraine",
+      "dance photography Ukraine",
+      "studio photography Cherkasy",
     ],
     authors: [{ name: SITE_NAME }],
     creator: SITE_NAME,
@@ -112,6 +120,18 @@ export function buildStudioJsonLd() {
     description: SITE_DESCRIPTION,
     areaServed: ["Cherkasy", "Ukraine"],
     priceRange: "$$",
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: "Послуги фото та відеозйомки",
+      itemListElement: [
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Весільна зйомка" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Love story" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Танцювальна зйомка" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Дитяча зйомка" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Портретна зйомка" } },
+        { "@type": "Offer", itemOffered: { "@type": "Service", name: "Бренд-зйомка" } },
+      ],
+    },
   }
 }
 
@@ -121,7 +141,7 @@ export function buildWebsiteJsonLd() {
     "@type": "WebSite",
     name: SITE_NAME,
     url: SITE_URL,
-    inLanguage: ["uk-UA", "en"],
+    inLanguage: "uk-UA",
   }
 }
 
@@ -142,5 +162,18 @@ export function buildPortfolioJsonLd(imageCount: number) {
       name: "Portfolio Gallery",
       numberOfItems: imageCount,
     },
+  }
+}
+
+export function buildBreadcrumbJsonLd(items: { name: string; url: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: absoluteUrl(item.url),
+    })),
   }
 }

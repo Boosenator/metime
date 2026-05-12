@@ -4,7 +4,7 @@ import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
-import { absoluteUrl, buildPortfolioJsonLd, OG_IMAGE, SITE_NAME } from "@/lib/seo"
+import { absoluteUrl, buildBreadcrumbJsonLd, buildPortfolioJsonLd, OG_IMAGE, SITE_NAME } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Портфоліо",
@@ -49,14 +49,20 @@ export default async function PortfolioPage() {
         type="application/ld+json"
         suppressHydrationWarning
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify(buildPortfolioJsonLd(activePhotos.length)),
+          __html: JSON.stringify([
+            buildPortfolioJsonLd(activePhotos.length),
+            buildBreadcrumbJsonLd([
+              { name: "Головна", url: "/" },
+              { name: "Портфоліо", url: "/portfolio" },
+            ]),
+          ]),
         }}
       />
       <Navigation />
       <main className="min-h-screen bg-dark pt-16">
         <div className="px-4 py-10 text-center">
           <p className="mb-2 text-xs uppercase tracking-[0.3em] text-wine">Портфоліо</p>
-          <h1 className="font-serif text-4xl font-light text-cream md:text-6xl">MiTime Studio</h1>
+          <h1 className="font-serif text-4xl font-light text-cream md:text-6xl">MeTime Studio</h1>
         </div>
         <PortfolioMosaic cells={cells} grid={layout.grid} />
       </main>

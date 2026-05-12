@@ -6,7 +6,7 @@ import { Play, X, ChevronLeft, ChevronRight, Images, LayoutGrid } from "lucide-r
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { VideoPosterFrame } from "@/components/video-poster-frame"
-import { getPortfolioImageSrc, getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
+import { getPortfolioImageSrc, getPortfolioVideoSrc, photoAlt } from "@/lib/portfolio/image-src"
 import type { Cell, GridConfig, PhotoMeta, VideoMeta } from "@/lib/portfolio/types"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ function PhotoGrid({
           <div className={`relative w-full ${photo.wide ? "aspect-[3/4] md:aspect-[16/10]" : "aspect-[3/4]"}`}>
             <img
               src={getPortfolioImageSrc(photo)}
-              alt={photo.filename}
+              alt={photoAlt(photo)}
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
               loading="lazy"
             />
@@ -373,7 +373,7 @@ export function PortfolioClient({
             <div className="relative h-[80vh] w-[90vw] max-w-5xl" onClick={(e) => e.stopPropagation()}>
               <img
                 src={getPortfolioImageSrc(filteredPhotos[galleryLightbox])}
-                alt={filteredPhotos[galleryLightbox].filename}
+                alt={photoAlt(filteredPhotos[galleryLightbox])}
                 className="h-full w-full object-contain"
               />
             </div>
