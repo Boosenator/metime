@@ -52,7 +52,7 @@ export function Navigation() {
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8">
           {/* Logo */}
-          <a href="#" className="flex flex-col leading-none">
+          <a href="/" className="flex flex-col leading-none">
             <span className="font-serif text-2xl font-semibold tracking-wide text-cream lg:text-3xl">
               MeTime
             </span>

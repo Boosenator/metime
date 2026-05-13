@@ -61,8 +61,8 @@ export default async function PortfolioPage() {
       <Navigation />
       <main className="min-h-screen bg-dark pt-16">
         <div className="px-4 py-10 text-center">
-          <p className="mb-2 text-xs uppercase tracking-[0.3em] text-wine">Портфоліо</p>
-          <h1 className="font-serif text-4xl font-light text-cream md:text-6xl">MeTime Studio</h1>
+          <p className="mb-2 text-xs uppercase tracking-[0.3em] text-wine">MeTime Studio</p>
+          <h1 className="font-serif text-4xl font-light text-cream md:text-6xl">Портфоліо фото та відеозйомки</h1>
         </div>
         <PortfolioMosaic cells={cells} grid={layout.grid} />
       </main>

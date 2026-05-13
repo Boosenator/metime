@@ -106,7 +106,7 @@ const translations: Record<Locale, Translations> = {
       book: "Записатися",
     },
     hero: {
-      subtitle: "Photo & Video Production Studio",
+      subtitle: "Фото та відеозйомка у Черкасах",
       title1: "Ми фіксуємо моменти,",
       title2: "які залишаються назавжди",
       location: "Черкаси, Україна",

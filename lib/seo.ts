@@ -107,8 +107,15 @@ export function buildStudioJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": ["LocalBusiness", "ProfessionalService"],
+    "@id": `${SITE_URL}/#studio`,
     name: SITE_NAME,
     image: absoluteUrl(OG_IMAGE),
+    logo: {
+      "@type": "ImageObject",
+      url: absoluteUrl(OG_IMAGE),
+      width: 1200,
+      height: 630,
+    },
     url: SITE_URL,
     telephone: CONTACT_INFO.phone,
     email: CONTACT_INFO.email,
@@ -117,6 +124,20 @@ export function buildStudioJsonLd() {
       addressLocality: CONTACT_INFO.city,
       addressCountry: CONTACT_INFO.country,
     },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: 49.4444,
+      longitude: 32.0598,
+    },
+    hasMap: "https://maps.google.com/?q=MeTime+Studio+Cherkasy+Ukraine",
+    openingHoursSpecification: [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+        opens: "09:00",
+        closes: "21:00",
+      },
+    ],
     sameAs: [CONTACT_INFO.instagramUrl],
     description: SITE_DESCRIPTION,
     areaServed: ["Cherkasy", "Ukraine"],

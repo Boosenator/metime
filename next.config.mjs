@@ -18,7 +18,14 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    unoptimized: isStatic,
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pvkfjwkaaidqblea.public.blob.vercel-storage.com",
+      },
+    ],
   },
   ...(!isStatic && {
     async headers() {
