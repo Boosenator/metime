@@ -3,7 +3,7 @@ import { absoluteUrl } from "@/lib/seo"
 
 const deployDate = process.env.VERCEL_GIT_COMMIT_DATE
   ? new Date(process.env.VERCEL_GIT_COMMIT_DATE)
-  : new Date("2025-04-01")
+  : new Date()
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

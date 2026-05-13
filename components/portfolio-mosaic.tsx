@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
+import Image from "next/image"
 import { getPortfolioImageSrc, photoAlt } from "@/lib/portfolio/image-src"
 import type { Cell, GridConfig, PhotoMeta } from "@/lib/portfolio/types"
 
@@ -72,11 +73,13 @@ function MosaicCell({
           loading={index < 24 ? "eager" : "lazy"}
           aria-hidden="true"
         />
-        <img
+        <Image
+          fill
           src={src}
           alt={photoAlt(cell.photo)}
-          className="relative z-[1] h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-          loading={index < 24 ? "eager" : "lazy"}
+          className="object-cover z-[1] transition-transform duration-300 group-hover:scale-[1.04]"
+          sizes="(max-width: 1023px) 50vw, 10vw"
+          priority={index < 6}
         />
         <div
           className="absolute inset-0 z-[2] bg-gradient-to-t from-black/65 via-black/10 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"

@@ -6,28 +6,32 @@ import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
 import { absoluteUrl, buildBreadcrumbJsonLd, buildPortfolioJsonLd, OG_IMAGE_PORTFOLIO, SITE_NAME } from "@/lib/seo"
 
-export const metadata: Metadata = {
-  title: "Портфоліо",
-  description: "Портфоліо MeTime Studio: фотоісторії, мозаїка робіт і приклади зйомок у різних жанрах.",
-  alternates: {
-    canonical: "/portfolio",
-  },
-  openGraph: {
-    title: `Портфоліо | ${SITE_NAME}`,
-    description: "Добірка фото та візуальних історій MeTime Studio.",
-    url: absoluteUrl("/portfolio"),
-    images: [
-      {
-        url: OG_IMAGE_PORTFOLIO,
-        width: 1920,
-        height: 1280,
-        alt: `${SITE_NAME} — портфоліо фотографій`,
-      },
-    ],
-  },
-}
+export const revalidate = 3600
 
-export const dynamic = "force-dynamic"
+export async function generateMetadata(): Promise<Metadata> {
+  const { photos } = await readPortfolioData()
+  const count = photos.filter((p) => !p.excluded).length
+  return {
+    title: "Портфоліо",
+    description: `Портфоліо MeTime Studio — ${count}+ робіт з весільної, танцювальної, дитячої та портретної зйомки у Черкасах.`,
+    alternates: {
+      canonical: "/portfolio",
+    },
+    openGraph: {
+      title: `Портфоліо | ${SITE_NAME}`,
+      description: `${count}+ фотоісторій MeTime Studio: весілля, танці, діти, портрет, бренд-зйомка у Черкасах.`,
+      url: absoluteUrl("/portfolio"),
+      images: [
+        {
+          url: OG_IMAGE_PORTFOLIO,
+          width: 1920,
+          height: 1280,
+          alt: `${SITE_NAME} — портфоліо фотографій`,
+        },
+      ],
+    },
+  }
+}
 
 export default async function PortfolioPage() {
   const { photos, layout } = await readPortfolioData()

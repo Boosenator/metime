@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
 import { saveHeroVideosData, saveLayoutData, savePhotosData, saveVideosData } from "@/lib/portfolio/storage"
 import type { HeroVideoConfig, LayoutData, PhotoMeta, VideoMeta } from "@/lib/portfolio/types"
@@ -112,6 +113,8 @@ export async function PUT(request: Request) {
       await saveHeroVideosData(validatedHeroVideos)
     }
     await saveLayoutData(validated)
+    revalidatePath("/")
+    revalidatePath("/portfolio")
     return NextResponse.json({ ok: true, cells: validated.cells.length })
   } catch (error) {
     console.error("Failed to save portfolio layout", error)
