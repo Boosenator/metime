@@ -5,25 +5,40 @@ import { createPortal } from "react-dom"
 import { X, ChevronLeft, ChevronRight } from "lucide-react"
 import { getPortfolioImageSrc, photoAlt } from "@/lib/portfolio/image-src"
 import type { Cell, GridConfig, PhotoMeta } from "@/lib/portfolio/types"
-import { useCardTilt } from "@/hooks/use-card-tilt"
 
 type PopulatedCell = Cell & { photo: PhotoMeta }
+
+function cellCenter(cell: PopulatedCell) {
+  return { cx: cell.x + cell.spanX / 2, cy: cell.y + cell.spanY / 2 }
+}
+
+function getNeighborTransform(cell: PopulatedCell, hovered: PopulatedCell): string {
+  const { cx: hcx, cy: hcy } = cellCenter(hovered)
+  const { cx, cy } = cellCenter(cell)
+  const dx = cx - hcx
+  const dy = cy - hcy
+  const dist = Math.sqrt(dx * dx + dy * dy)
+  const THRESHOLD = 2.5
+  if (dist >= THRESHOLD || dist < 0.001) return ""
+  const magnitude = ((THRESHOLD - dist) / THRESHOLD) * 5
+  return `translate(${((dx / dist) * magnitude).toFixed(2)}px, ${((dy / dist) * magnitude).toFixed(2)}px)`
+}
 
 function MosaicCell({
   cell,
   index,
+  neighborTransform,
   onClick,
-  onPreviewStart,
-  onPreviewEnd,
+  onHoverStart,
+  onHoverEnd,
 }: {
   cell: PopulatedCell
   index: number
+  neighborTransform: string
   onClick: () => void
-  onPreviewStart: (photo: PhotoMeta) => void
-  onPreviewEnd: () => void
+  onHoverStart: () => void
+  onHoverEnd: () => void
 }) {
-  const { ref, onMouseMove, onMouseEnter, onMouseLeave } = useCardTilt()
-
   const src = getPortfolioImageSrc(cell.photo)
   const mobileH =
     cell.spanY > 1
@@ -32,22 +47,22 @@ function MosaicCell({
 
   return (
     <div
-      ref={ref as React.RefObject<HTMLDivElement>}
       className="mosaic-cell group relative cursor-pointer overflow-hidden rounded-[1rem] border border-white/8 bg-dark-card/60 shadow-[0_12px_32px_rgba(0,0,0,0.18)] focus:outline-none focus-visible:ring-2 focus-visible:ring-wine/70 lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none"
       style={
         {
           height: mobileH,
           "--cell-col": `${cell.x + 1} / span ${cell.spanX}`,
           "--cell-row": `${cell.y + 1} / span ${cell.spanY}`,
+          transform: neighborTransform || undefined,
+          transition: "transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
         } as CSSProperties
       }
       tabIndex={0}
-      onClick={() => { onMouseLeave(); onPreviewEnd(); onClick() }}
-      onMouseMove={onMouseMove}
-      onMouseEnter={(event) => { onMouseEnter(event); onPreviewStart(cell.photo) }}
-      onMouseLeave={() => { onMouseLeave(); onPreviewEnd() }}
-      onFocus={() => onPreviewStart(cell.photo)}
-      onBlur={onPreviewEnd}
+      onClick={onClick}
+      onMouseEnter={onHoverStart}
+      onMouseLeave={onHoverEnd}
+      onFocus={onHoverStart}
+      onBlur={onHoverEnd}
     >
       <div className="absolute inset-[4px] overflow-hidden rounded-[calc(1rem-4px)] bg-black sm:inset-[6px] lg:inset-0 lg:rounded-none">
         <img
@@ -60,7 +75,7 @@ function MosaicCell({
         <img
           src={src}
           alt={photoAlt(cell.photo)}
-          className="relative z-[1] h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          className="relative z-[1] h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
           loading={index < 24 ? "eager" : "lazy"}
         />
         <div
@@ -80,7 +95,7 @@ export function PortfolioMosaic({
   grid: GridConfig
 }) {
   const [lightbox, setLightbox] = useState<number | null>(null)
-  const [previewPhoto, setPreviewPhoto] = useState<PhotoMeta | null>(null)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
 
   const close = useCallback(() => {
     setLightbox(null)
@@ -134,81 +149,68 @@ export function PortfolioMosaic({
           }
         }
       `}</style>
-      {/* Mosaic grid */}
       <div className="mosaic-grid grid grid-cols-2 gap-3 overflow-x-clip px-4 sm:gap-4 lg:gap-[2px] lg:px-6">
         {cells.map((cell, i) => (
           <MosaicCell
             key={cell.photoId}
             cell={cell}
             index={i}
+            neighborTransform={
+              hoveredIndex !== null && hoveredIndex !== i
+                ? getNeighborTransform(cell, cells[hoveredIndex])
+                : ""
+            }
             onClick={() => open(i)}
-            onPreviewStart={setPreviewPhoto}
-            onPreviewEnd={() => setPreviewPhoto((current) => (current?.id === cell.photo.id ? null : current))}
+            onHoverStart={() => setHoveredIndex(i)}
+            onHoverEnd={() => setHoveredIndex((cur) => (cur === i ? null : cur))}
           />
         ))}
       </div>
 
-      {/* Lightbox — portal to body to escape ancestor transforms */}
-      {previewPhoto && typeof document !== "undefined" && createPortal(
-        <div className="pointer-events-none fixed inset-0 z-[90] hidden items-center justify-center lg:flex">
-          <div className="h-[min(56vh,620px)] w-[min(36vw,540px)] rounded-2xl border border-white/15 bg-black/92 p-3 shadow-[0_28px_80px_rgba(0,0,0,0.55)]">
-            <img
-              src={getPortfolioImageSrc(previewPhoto)}
-              alt={photoAlt(previewPhoto)}
-              className="h-full w-full object-contain"
-            />
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {lightbox !== null && cells[lightbox] && typeof document !== "undefined" && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center"
-          style={{ backgroundColor: "rgba(0,0,0,0.95)" }}
-          onClick={close}
-        >
-          <button
-            onClick={close}
-            className="absolute right-6 top-6 text-cream hover:text-wine transition-colors"
-            aria-label="Close"
-          >
-            <X className="h-8 w-8" />
-          </button>
-
-          <button
-            onClick={(e) => { e.stopPropagation(); navigate("prev") }}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:left-8"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="h-10 w-10" />
-          </button>
-
+      {lightbox !== null && cells[lightbox] && typeof document !== "undefined" &&
+        createPortal(
           <div
-            className="relative h-[80vh] w-[90vw] max-w-5xl"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            style={{ backgroundColor: "rgba(0,0,0,0.95)" }}
+            onClick={close}
           >
-            <img
-              src={getPortfolioImageSrc(cells[lightbox].photo)}
-              alt={photoAlt(cells[lightbox].photo)}
-              className="h-full w-full object-contain"
-            />
-          </div>
-
-          <button
-            onClick={(e) => { e.stopPropagation(); navigate("next") }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:right-8"
-            aria-label="Next"
-          >
-            <ChevronRight className="h-10 w-10" />
-          </button>
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-widest text-gray-mid">
-            {lightbox + 1} / {cells.length}
-          </div>
-        </div>,
-        document.body
-      )}
+            <button
+              onClick={close}
+              className="absolute right-6 top-6 text-cream hover:text-wine transition-colors"
+              aria-label="Close"
+            >
+              <X className="h-8 w-8" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate("prev") }}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:left-8"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-10 w-10" />
+            </button>
+            <div
+              className="relative h-[80vh] w-[90vw] max-w-5xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <img
+                src={getPortfolioImageSrc(cells[lightbox].photo)}
+                alt={photoAlt(cells[lightbox].photo)}
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); navigate("next") }}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:right-8"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-10 w-10" />
+            </button>
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-widest text-gray-mid">
+              {lightbox + 1} / {cells.length}
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   )
 }

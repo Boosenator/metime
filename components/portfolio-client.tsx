@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback, useEffect, useRef, type CSSProperties } from "react"
+import { useState, useCallback, useEffect, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
-import { Play, X, ChevronLeft, ChevronRight, Images, LayoutGrid } from "lucide-react"
+import { Play, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { VideoPosterFrame } from "@/components/video-poster-frame"
@@ -156,7 +156,6 @@ export function PortfolioClient({
 }) {
   const { t } = useI18n()
   const [mode, setMode] = useState<"photo" | "video">("photo")
-  const [photoView, setPhotoView] = useState<"mosaic" | "grid">("mosaic")
   const [isDesktop, setIsDesktop] = useState(false)
   const [photoFilter, setPhotoFilter] = useState("all")
   const [videoFilter, setVideoFilter] = useState("all")
@@ -240,14 +239,7 @@ export function PortfolioClient({
 
   useEffect(() => {
     const media = window.matchMedia("(min-width: 1024px)")
-    const syncDesktop = () => {
-      const nextIsDesktop = media.matches
-      setIsDesktop(nextIsDesktop)
-      if (!nextIsDesktop) {
-        setPhotoView("grid")
-      }
-    }
-
+    const syncDesktop = () => setIsDesktop(media.matches)
     syncDesktop()
     media.addEventListener("change", syncDesktop)
     return () => media.removeEventListener("change", syncDesktop)
@@ -292,52 +284,34 @@ export function PortfolioClient({
             ))}
           </div>
 
-          {/* Mosaic / Grid toggle — only in photo mode */}
-          {mode === "photo" && isDesktop && (
-            <div className="hidden items-center gap-1 lg:flex">
-              <button
-                onClick={() => setPhotoView("mosaic")}
-                aria-label="Мозаїка"
-                className={`flex h-8 w-8 items-center justify-center transition-colors ${
-                  photoView === "mosaic" ? "text-wine" : "text-gray-mid hover:text-cream"
-                }`}
-              >
-                <Images className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => setPhotoView("grid")}
-                aria-label="Сітка"
-                className={`flex h-8 w-8 items-center justify-center transition-colors ${
-                  photoView === "grid" ? "text-wine" : "text-gray-mid hover:text-cream"
-                }`}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
       {/* Content area */}
       <div className={`transition-opacity duration-300 ${crossfade ? "opacity-0" : "opacity-100"}`}>
 
-        {/* ── Photo mosaic ─────────────────────────────────────────────── */}
-        {mode === "photo" && isDesktop && photoView === "mosaic" && (
-          <PortfolioMosaic cells={cells} grid={grid} />
-        )}
-
-        {/* ── Photo grid with category filters ─────────────────────────── */}
-        {mode === "photo" && (!isDesktop || photoView === "grid") && (
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
-            <div className="mb-6">
-              <CategoryTabs
-                categories={photoCategories}
-                active={photoFilter}
-                onChange={setPhotoFilter}
-              />
+        {/* ── Photo mode ───────────────────────────────────────────────── */}
+        {mode === "photo" && (
+          <>
+            {/* Category tabs — always visible; selecting non-all switches to grid */}
+            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+              <div className="mb-6">
+                <CategoryTabs
+                  categories={photoCategories}
+                  active={photoFilter}
+                  onChange={setPhotoFilter}
+                />
+              </div>
             </div>
-            <PhotoGrid photos={filteredPhotos} onOpen={openGallery} />
-          </div>
+
+            {isDesktop && photoFilter === "all" ? (
+              <PortfolioMosaic cells={cells} grid={grid} />
+            ) : (
+              <div className="mx-auto max-w-7xl px-6 lg:px-8">
+                <PhotoGrid photos={filteredPhotos} onOpen={openGallery} />
+              </div>
+            )}
+          </>
         )}
 
         {/* ── Video with category filters ───────────────────────────────── */}
