@@ -22,8 +22,13 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic"
 
 const CATEGORY_LABELS: Record<string, string> = {
-  wedding: "Весілля", dance: "Танець", kids: "Діти", brand: "Бренд",
-  lovestory: "Love Story", portrait: "Портрет", custom: "Різне",
+  wedding: "Весілля",
+  dance: "Танець",
+  kids: "Діти",
+  brand: "Бренд",
+  lovestory: "Love Story",
+  portrait: "Портрет",
+  custom: "Різне",
 }
 
 type ArticleCard = {
@@ -35,11 +40,18 @@ type ArticleCard = {
   description: string
 }
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("uk-UA", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  })
+}
+
 export default async function BlogPage() {
   const allBlogPosts = await readBlogPosts()
   const blogPosts = allBlogPosts.filter((p) => p.published)
 
-  // Merge service hub topics into the listing
   const serviceTopics: ArticleCard[] = SERVICES.flatMap((s) =>
     s.topics.map((t) => ({
       key: `${s.slug}-${t.slug}`,
@@ -81,45 +93,66 @@ export default async function BlogPage() {
       <Navigation />
       <main className="min-h-screen bg-dark pb-24 pt-28">
         <div className="mx-auto max-w-4xl px-6 lg:px-8">
-          <div className="mb-16">
-            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-wine">Блог</p>
-            <h1 className="font-serif text-5xl font-light text-cream md:text-7xl">
-              Корисне
+
+          {/* Breadcrumb */}
+          <nav aria-label="Breadcrumb" className="mb-10">
+            <ol className="flex items-center gap-2 text-xs text-gray-mid">
+              <li><a href="/" className="transition-colors hover:text-cream">Головна</a></li>
+              <li aria-hidden="true" className="text-white/20">/</li>
+              <li className="text-cream">Блог</li>
+            </ol>
+          </nav>
+
+          {/* Hero */}
+          <div className="mb-16 border-b border-white/8 pb-12">
+            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-wine">Корисне</p>
+            <h1 className="mb-4 font-serif text-5xl font-light text-cream md:text-7xl">
+              Блог
             </h1>
-            <p className="mt-4 max-w-xl text-gray-light">
-              Поради про підготовку до зйомки, відповіді на часті питання і корисні гайди від команди MeTime Studio.
-            </p>
+            <div className="flex items-end justify-between gap-4">
+              <p className="max-w-xl text-gray-light">
+                Поради про підготовку до зйомки, відповіді на часті питання і корисні гайди від команди MeTime Studio.
+              </p>
+              <span className="shrink-0 text-xs text-gray-mid">
+                {all.length} {all.length === 1 ? "матеріал" : all.length < 5 ? "матеріали" : "матеріалів"}
+              </span>
+            </div>
           </div>
 
-          <div className="divide-y divide-white/8">
+          {/* Articles */}
+          <div className="grid gap-px bg-white/5 sm:grid-cols-2">
             {all.map((item) => (
               <a
                 key={item.key}
                 href={item.href}
-                className="group block py-8"
+                className="group relative flex flex-col bg-dark p-8 transition-colors duration-300 hover:bg-white/[0.03]"
               >
-                <div className="mb-2 flex items-center gap-3">
-                  <span className="text-xs uppercase tracking-[0.2em] text-wine">
+                {/* Wine left border on hover */}
+                <span className="absolute left-0 top-0 h-0 w-px bg-wine transition-all duration-500 group-hover:h-full" />
+
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="border border-wine/40 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-wine">
                     {CATEGORY_LABELS[item.category] ?? item.category}
                   </span>
-                  <span className="text-xs text-gray-mid">
-                    {new Date(item.date).toLocaleDateString("uk-UA", {
-                      day: "numeric", month: "long", year: "numeric",
-                    })}
-                  </span>
+                  <span className="text-xs text-gray-mid">{formatDate(item.date)}</span>
                 </div>
-                <h2 className="mb-2 font-serif text-2xl font-light text-cream transition-colors duration-300 group-hover:text-wine md:text-3xl">
+
+                <h2 className="mb-3 font-serif text-xl font-light text-cream transition-colors duration-300 group-hover:text-wine md:text-2xl">
                   {item.title}
                 </h2>
-                <p className="text-sm leading-relaxed text-gray-light line-clamp-2">
+
+                <p className="mb-6 flex-1 text-sm leading-relaxed text-gray-mid line-clamp-3">
                   {item.description}
                 </p>
-                <span className="mt-3 inline-block text-xs uppercase tracking-[0.2em] text-wine opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                  Читати →
+
+                <span className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-wine">
+                  Читати
+                  <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </span>
               </a>
             ))}
           </div>
+
         </div>
       </main>
       <Footer />
