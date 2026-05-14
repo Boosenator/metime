@@ -3,6 +3,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
 import { readBlogPosts } from "@/lib/blog/storage"
+import { SERVICES } from "@/lib/services/data"
 import { absoluteUrl, buildBreadcrumbJsonLd, SITE_NAME, OG_IMAGE } from "@/lib/seo"
 
 export const metadata: Metadata = {
@@ -25,17 +26,43 @@ const CATEGORY_LABELS: Record<string, string> = {
   lovestory: "Love Story", portrait: "Портрет", custom: "Різне",
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("uk-UA", {
-    day: "numeric", month: "long", year: "numeric",
-  })
+type ArticleCard = {
+  key: string
+  href: string
+  category: string
+  date: string
+  title: string
+  description: string
 }
 
 export default async function BlogPage() {
-  const all = await readBlogPosts()
-  const posts = all
-    .filter((p) => p.published)
-    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
+  const allBlogPosts = await readBlogPosts()
+  const blogPosts = allBlogPosts.filter((p) => p.published)
+
+  // Merge service hub topics into the listing
+  const serviceTopics: ArticleCard[] = SERVICES.flatMap((s) =>
+    s.topics.map((t) => ({
+      key: `${s.slug}-${t.slug}`,
+      href: `/${s.slug}/${t.slug}`,
+      category: s.slug,
+      date: t.publishedAt,
+      title: t.title,
+      description: t.description,
+    }))
+  )
+
+  const dynamicPosts: ArticleCard[] = blogPosts.map((p) => ({
+    key: p.id,
+    href: `/blog/${p.slug}`,
+    category: p.category,
+    date: p.publishedAt,
+    title: p.title,
+    description: p.description,
+  }))
+
+  const all: ArticleCard[] = [...dynamicPosts, ...serviceTopics].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  )
 
   return (
     <I18nProvider>
@@ -64,37 +91,35 @@ export default async function BlogPage() {
             </p>
           </div>
 
-          {posts.length === 0 ? (
-            <p className="text-gray-mid">Скоро тут з'являться перші статті.</p>
-          ) : (
-            <div className="divide-y divide-white/8">
-              {posts.map((post) => (
-                <a
-                  key={post.id}
-                  href={`/blog/${post.slug}`}
-                  className="group block py-8 transition-colors"
-                >
-                  <div className="mb-2 flex items-center gap-3">
-                    <span className="text-xs uppercase tracking-[0.2em] text-wine">
-                      {CATEGORY_LABELS[post.category] ?? post.category}
-                    </span>
-                    <span className="text-xs text-gray-mid">
-                      {formatDate(post.publishedAt)}
-                    </span>
-                  </div>
-                  <h2 className="mb-2 font-serif text-2xl font-light text-cream transition-colors group-hover:text-wine md:text-3xl">
-                    {post.title}
-                  </h2>
-                  <p className="text-sm leading-relaxed text-gray-light line-clamp-2">
-                    {post.description}
-                  </p>
-                  <span className="mt-3 inline-block text-xs uppercase tracking-[0.2em] text-wine opacity-0 transition-opacity group-hover:opacity-100">
-                    Читати →
+          <div className="divide-y divide-white/8">
+            {all.map((item) => (
+              <a
+                key={item.key}
+                href={item.href}
+                className="group block py-8"
+              >
+                <div className="mb-2 flex items-center gap-3">
+                  <span className="text-xs uppercase tracking-[0.2em] text-wine">
+                    {CATEGORY_LABELS[item.category] ?? item.category}
                   </span>
-                </a>
-              ))}
-            </div>
-          )}
+                  <span className="text-xs text-gray-mid">
+                    {new Date(item.date).toLocaleDateString("uk-UA", {
+                      day: "numeric", month: "long", year: "numeric",
+                    })}
+                  </span>
+                </div>
+                <h2 className="mb-2 font-serif text-2xl font-light text-cream transition-colors duration-300 group-hover:text-wine md:text-3xl">
+                  {item.title}
+                </h2>
+                <p className="text-sm leading-relaxed text-gray-light line-clamp-2">
+                  {item.description}
+                </p>
+                <span className="mt-3 inline-block text-xs uppercase tracking-[0.2em] text-wine opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                  Читати →
+                </span>
+              </a>
+            ))}
+          </div>
         </div>
       </main>
       <Footer />
