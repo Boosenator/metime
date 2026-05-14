@@ -146,7 +146,6 @@ export default async function TopicPage({
   if (!result) notFound()
 
   const { service, topic } = result
-  const related = service.topics.filter((t) => t.slug !== topicSlug).slice(0, 2)
 
   const faqItems = topic.blocks
     .filter((b): b is { type: "faq"; items: FaqItem[] } => b.type === "faq")
@@ -219,30 +218,6 @@ export default async function TopicPage({
             </a>
           </div>
 
-          {/* Related */}
-          {related.length > 0 && (
-            <div className="mt-16">
-              <p className="mb-6 text-xs uppercase tracking-[0.3em] text-wine">
-                Читати також
-              </p>
-              <div className="grid gap-4 md:grid-cols-2">
-                {related.map((rel) => (
-                  <a
-                    key={rel.slug}
-                    href={`/${serviceSlug}/${rel.slug}`}
-                    className="group border border-white/10 p-6 transition-colors duration-300 hover:border-wine/40"
-                  >
-                    <h3 className="mb-2 font-serif text-lg font-light text-cream transition-colors duration-300 group-hover:text-wine">
-                      {rel.title}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-gray-mid">
-                      {rel.description}
-                    </p>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
         </article>
       </main>
       <Footer />
