@@ -382,7 +382,7 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
               Google Preview
             </p>
             <p className="text-sm text-blue-400 underline">
-              v0-metime.vercel.app › blog › {data.slug || "..."}
+              metime.in.ua › blog › {data.slug || "..."}
             </p>
             <p className="text-sm font-medium text-cream">{data.title} | MeTime Studio</p>
             <p className="text-xs text-gray-mid">{data.description}</p>

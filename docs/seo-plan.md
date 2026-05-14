@@ -1,7 +1,7 @@
 # SEO Plan — MeTime Studio
 
 **Аудит проведено:** 2026-05-12  
-**Сайт:** https://v0-metime.vercel.app  
+**Сайт:** https://metime.in.ua  
 **Стек:** Next.js 13+ App Router, Vercel, TypeScript
 
 ---
@@ -266,7 +266,7 @@ alt={photo.altText ?? `${SITE_NAME} — ${photo.category ?? "фотографі�
 #### 12. Google Search Console
 
 - Перевірити що верифікація активна (`public/google*.html` є)
-- Подати sitemap вручну: `https://v0-metime.vercel.app/sitemap.xml`
+- Подати sitemap вручну: `https://metime.in.ua/sitemap.xml`
 - Слідкувати за: Coverage → індексація, Core Web Vitals, Search results → CTR
 
 #### 13. Core Web Vitals цілі

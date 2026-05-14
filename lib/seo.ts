@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const SITE_NAME = "MeTime Studio"
-export const SITE_URL = "https://v0-metime.vercel.app"
+export const SITE_URL = "https://metime.in.ua"
 export const DEFAULT_LOCALE = "uk-UA"
 export const SITE_TITLE = "MeTime Studio | Фото та відеозйомка в Черкасах"
 export const SITE_DESCRIPTION =
