@@ -73,9 +73,11 @@ export default async function ServicePage({
             <h1 className="mb-6 font-serif text-5xl font-light text-cream md:text-7xl">
               {service.name}
             </h1>
-            <p className="max-w-2xl text-lg leading-relaxed text-gray-light">
-              {service.intro}
-            </p>
+            <div className="max-w-2xl space-y-4 text-lg leading-relaxed text-gray-light">
+              {service.intro.split("\n\n").map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
           </div>
 
           {/* Topics grid */}

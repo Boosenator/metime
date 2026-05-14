@@ -79,6 +79,28 @@ function renderBlock(block: TopicBlock, i: number) {
           ))}
         </ul>
       )
+    case "links":
+      return (
+        <div key={i} className="my-10 border border-wine/20 p-6">
+          {block.heading && (
+            <p className="mb-4 text-xs uppercase tracking-[0.25em] text-wine">
+              {block.heading}
+            </p>
+          )}
+          <ul className="space-y-2">
+            {block.items.map((item, j) => (
+              <li key={j}>
+                <a
+                  href={item.href}
+                  className="text-sm text-cream underline underline-offset-4 transition-colors hover:text-wine"
+                >
+                  {item.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
     default:
       return null
   }
