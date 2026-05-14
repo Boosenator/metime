@@ -10,10 +10,11 @@ export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
 
   const navLinks = [
-    { label: t.nav.portfolio, href: "#portfolio" },
-    { label: t.nav.pricing, href: "#pricing" },
-    { label: t.nav.team, href: "#team" },
-    { label: t.nav.contact, href: "#contact" },
+    { label: t.nav.portfolio, href: "/#portfolio" },
+    { label: t.nav.pricing, href: "/#pricing" },
+    { label: t.nav.team, href: "/#team" },
+    { label: "Блог", href: "/blog" },
+    { label: t.nav.contact, href: "/#contact" },
   ]
 
   useEffect(() => {
