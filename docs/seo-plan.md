@@ -1,300 +1,193 @@
-# SEO Plan — MeTime Studio
+# SEO — MeTime Studio
 
-**Аудит проведено:** 2026-05-12  
-**Сайт:** https://metime.in.ua  
-**Стек:** Next.js 13+ App Router, Vercel, TypeScript
-
----
-
-## Поточний стан
-
-### Що вже реалізовано
-
-| Елемент | Файл | Статус |
-|---|---|---|
-| Централізований SEO конфіг | `lib/seo.ts` | ✅ |
-| Metadata API (Next.js) | `app/layout.tsx`, `app/*/page.tsx` | ✅ |
-| Open Graph теги | усі публічні сторінки | ✅ |
-| Twitter Cards | усі публічні сторінки | ✅ |
-| JSON-LD: LocalBusiness | `app/page.tsx` | ✅ |
-| JSON-LD: WebSite | `app/page.tsx` | ✅ |
-| JSON-LD: CollectionPage | `app/portfolio/page.tsx` | ✅ |
-| Canonical URLs | усі публічні сторінки | ✅ |
-| robots.txt (динамічний) | `app/robots.ts` | ✅ |
-| sitemap.xml (динамічний) | `app/sitemap.ts` | ✅ |
-| Alt-теги на зображеннях | компоненти | ✅ |
-| Font display:swap | `app/layout.tsx` | ✅ |
-| Favicon / Apple icon | `app/layout.tsx` | ✅ |
-| Web App Manifest | `app/manifest.ts` | ✅ |
-| Google Search Console | `public/google*.html` | ✅ |
-| Admin noindex | `app/admin/*/page.tsx` | ✅ |
+**Домен:** https://metime.in.ua  
+**Стек:** Next.js App Router · Vercel · TypeScript  
+**Останнє оновлення:** 2026-05-14
 
 ---
 
-## Задачі по пріоритету
+## Виконано ✅
+
+| Задача | Файл |
+|---|---|
+| SITE_URL → metime.in.ua | `lib/seo.ts` |
+| Виправлено H1 typo: MiTime → MeTime | `app/portfolio/page.tsx` |
+| inLanguage: ["uk-UA", "en"] → "uk-UA" | `lib/seo.ts` |
+| lastModified у sitemap → VERCEL_GIT_COMMIT_DATE | `app/sitemap.ts` |
+| Формат дат sitemap → YYYY-MM-DD (W3C spec) | `app/sitemap.ts` |
+| Keywords розширено 10 → 18 | `lib/seo.ts` |
+| OG Image для портфоліо → унікальний з Blob | `lib/seo.ts` |
+| BreadcrumbList JSON-LD на /portfolio та /blog | сторінки |
+| LocalBusiness JSON-LD + hasOfferCatalog (6 послуг) | `lib/seo.ts` |
+| VideoObject JSON-LD для відео | `lib/seo.ts` |
+| buildServiceJsonLd + buildArticleJsonLd | `lib/seo.ts` |
+| HTTP security headers (non-static) | `next.config.mjs` |
+| images: unoptimized → isStatic + WebP/AVIF formats | `next.config.mjs` |
+| next/image у мозаїці + blur → dominantColor div | `components/portfolio-mosaic.tsx` |
+| Alt-теги → category-aware (photoAlt helper) | `lib/portfolio/image-src.ts` |
+| GTM підключено (GTM-N8RD2TDH) | `app/layout.tsx` |
+| Навігаційні якорі #portfolio → /#portfolio | `components/navigation.tsx` |
+| Content hub: 4 сервіси + 12 статей | `lib/services/data.ts` |
+| Блог: адмінка + публічні сторінки | `app/blog/`, `app/admin/blog/` |
+| Sitemap розширено до 15+ URL | `app/sitemap.ts` |
+| GSC верифікація | `public/google*.html` |
 
 ---
 
-### 🔴 Критично (виправити негайно)
+## Залишилось зробити
 
-#### 1. Опечатка в H1 на сторінці портфоліо
+### 🔴 Критично
 
-**Файл:** `app/portfolio/page.tsx:59`  
-**Проблема:** `MiTime Studio` замість `MeTime Studio`  
-**Вплив:** H1 — найважливіший заголовок для SEO. Некоректна назва бренду шкодить.  
-**Виправлення:** Замінити рядок.
+**1. Google Business Profile**
+Найбільший вплив на локальний пошук ("фотограф Черкаси" в Google Maps / Local Pack). Якщо не створений — зробити зараз.
+- Категорії: "Фотограф" + "Відеограф" + "Студія відеозйомки"
+- URL сайту: https://metime.in.ua
+- Реальні координати (49.4444, 32.0598)
+- Години роботи
+- Фото профілю і портфоліо
+- Стимулювати клієнтів залишати відгуки
 
-```diff
-- <h1 className="font-serif text-4xl font-light text-cream md:text-6xl">MiTime Studio</h1>
-+ <h1 className="font-serif text-4xl font-light text-cream md:text-6xl">MeTime Studio</h1>
-```
-
----
-
-#### 2. `inLanguage` у WebSite JSON-LD заявляє неіснуючу мову
-
-**Файл:** `lib/seo.ts:124`  
-**Проблема:** `inLanguage: ["uk-UA", "en"]` — англійська версія не існує. Google може вважати сайт двомовним і шукати `hreflang` теги, яких немає.  
-**Вплив:** Плутанина для краулерів, потенційна втрата релевантності.  
-**Виправлення:**
-
-```diff
-- inLanguage: ["uk-UA", "en"],
-+ inLanguage: "uk-UA",
-```
+**2. Логотип `href="#"` → `href="/"`**
+Файли: `components/navigation.tsx`, `components/footer.tsx`
+Логотип — найсильніше внутрішнє посилання на головну. З `#` PageRank не передається.
 
 ---
 
-### 🟠 Важливо (зробити найближчим часом)
+### 🟠 Важливо
 
-#### 3. `lastModified` у sitemap завжди рівний поточному часу
-
-**Файл:** `app/sitemap.ts`  
-**Проблема:** `lastModified: new Date()` — дата змінюється при кожному запиті. Google може ігнорувати або знецінити сигнал свіжості.  
-**Виправлення:** Використати реальну дату останнього деплою або статичну дату релізу.
+**3. LocalBusiness JSON-LD — додати критичні поля**
+Файл: `lib/seo.ts` → `buildStudioJsonLd()`
 
 ```ts
-// Варіант 1: дата з env (встановлюється при деплої на Vercel)
-const deployDate = process.env.VERCEL_GIT_COMMIT_DATE
-  ? new Date(process.env.VERCEL_GIT_COMMIT_DATE)
-  : new Date("2025-01-01")
-
-// Варіант 2: статична дата останнього значного оновлення контенту
-const LAST_UPDATED = new Date("2025-04-01")
-```
-
----
-
-#### 4. Розширити список ключових слів
-
-**Файл:** `lib/seo.ts:36-47`  
-**Проблема:** Зараз 10 ключових слів. Відсутні важливі категорії зйомок, які реально надаються.  
-**Виправлення:** Додати:
-
-```ts
-"танцювальна зйомка Черкаси",
-"дитяча зйомка Черкаси",
-"сімейна фотосесія Черкаси",
-"dance photography Ukraine",
-"відеограф Черкаська область",
-"весільне відео Черкаси",
-"бранч зйомка",
-"studio photography Cherkasy",
-```
-
----
-
-#### 5. Унікальне OG-зображення для сторінки портфоліо
-
-**Файли:** `lib/seo.ts:11`, `app/portfolio/page.tsx:19`  
-**Проблема:** Обидві сторінки використовують `hero.jpg`. При репості посилання на портфоліо у соцмережах відображається однакова картинка.  
-**Виправлення:**
-1. Підготувати зображення `public/images/og-portfolio.jpg` (1200×630) — колаж із портфоліо
-2. Додати константу в `lib/seo.ts`:
-   ```ts
-   export const OG_IMAGE_PORTFOLIO = "/images/og-portfolio.jpg"
-   ```
-3. Використати в `app/portfolio/page.tsx`
-
----
-
-#### 6. Додати `twitter:site` handle
-
-**Файл:** `lib/seo.ts:71-76`  
-**Проблема:** Відсутній `twitter.creator` / `twitter.site`. Twitter/X використовує це для атрибуції.  
-**Виправлення** (якщо є Twitter/X акаунт):
-
-```ts
-twitter: {
-  card: "summary_large_image",
-  site: "@metime_ck",     // або реальний Twitter handle
-  creator: "@metime_ck",
-  title: SITE_TITLE,
-  description: SITE_DESCRIPTION,
-  images: [OG_IMAGE],
+"@id": `${SITE_URL}/#studio`,
+geo: {
+  "@type": "GeoCoordinates",
+  latitude: 49.4444,
+  longitude: 32.0598,
 },
+logo: {
+  "@type": "ImageObject",
+  url: absoluteUrl("/icon.svg"),
+},
+hasMap: "https://maps.google.com/?q=MeTime+Studio+Cherkasy",
+openingHoursSpecification: [{
+  "@type": "OpeningHoursSpecification",
+  dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+  opens: "09:00",
+  closes: "21:00",
+}],
+```
+
+**4. ISR замість `force-dynamic`**
+Файли: `app/page.tsx`, `app/portfolio/page.tsx`
+Кожен запит — повний SSR з читанням Blob. Холодні старти = повільний TTFB.
+
+```ts
+// замінити:
+export const dynamic = "force-dynamic"
+// на:
+export const revalidate = 3600
+```
+При збереженні через адмінку — тригерити `revalidatePath('/')`.
+
+**5. H1 на `/portfolio` — без ключових слів**
+Файл: `app/portfolio/page.tsx`
+Поточний H1: `"MeTime Studio"` — назва бренду, не пошуковий запит.
+
+```tsx
+// замінити на:
+<h1>Портфоліо MeTime Studio — фото та відеозйомка в Черкасах</h1>
+```
+
+**6. Meta description портфоліо — без міста і кількості**
+Файл: `app/portfolio/page.tsx`
+
+```ts
+// замінити на:
+description: "Портфоліо MeTime Studio — 170+ робіт з весільної, танцювальної, дитячої та бренд-зйомки у Черкасах."
+```
+
+**7. Image Sitemap для фото портфоліо**
+170 зображень з Blob не індексуються через Image Search. Google Images — окремий трафік для фотостудії.
+Реалізація: `app/image-sitemap.xml/route.ts` з усіма фото URLs та alt текстами з `photos.json`.
+
+**8. Copyright → динамічний рік**
+Файл: `lib/i18n.tsx`
+Зараз: `"© 2025 MeTime."` — вже застаріло.
+
+```tsx
+{`© ${new Date().getFullYear()} MeTime. `}
 ```
 
 ---
 
-### 🟡 Корисно (зробити при можливості)
+### 🟡 Корисно
 
-#### 7. BreadcrumbList JSON-LD на сторінці портфоліо
+**9. Service + Offer schema з цінами**
+Прайс-лист є в `lib/i18n.tsx`. Додавання `Offer` з `priceSpecification` може дати цінові rich snippets у видачі.
 
-**Файл:** `app/portfolio/page.tsx` + `lib/seo.ts`  
-**Навіщо:** Google відображає хлібні крихти прямо в пошуковій видачі → вищий CTR.  
-**Реалізація:** Додати функцію `buildBreadcrumbJsonLd()` у `lib/seo.ts`:
-
-```ts
-export function buildBreadcrumbJsonLd(items: { name: string; url: string }[]) {
-  return {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: items.map((item, i) => ({
-      "@type": "ListItem",
-      position: i + 1,
-      name: item.name,
-      item: absoluteUrl(item.url),
-    })),
-  }
+```json
+{
+  "@type": "Service",
+  "name": "Весільна відеозйомка",
+  "offers": [
+    { "@type": "Offer", "name": "Minimal", "price": "6000", "priceCurrency": "UAH" }
+  ]
 }
 ```
 
-Використання на `/portfolio`:
-```ts
-buildBreadcrumbJsonLd([
-  { name: "Головна", url: "/" },
-  { name: "Портфоліо", url: "/portfolio" },
-])
-```
+**10. Person schema для команди**
+Андрій, Нікіта, Анна, Ігор є в i18n. `Person` schema з `jobTitle` + `worksFor` покращує Knowledge Panel для запитів типу "відеограф Черкаси Андрій".
+
+**11. VideoObject thumbnailUrl — унікальний для кожного відео**
+Файл: `lib/seo.ts` → `buildVideoObjectJsonLd()`
+Зараз всі відео мають `thumbnailUrl: OG_IMAGE` (hero.jpg). Google очікує унікальне зображення.
+Мінімум — передавати категорійне фото з `photos.json` за категорією відео.
+
+**12. Hero subtitle: англійський текст на українській сторінці**
+Файл: `lib/i18n.tsx:109`
+`"Photo & Video Production Studio"` — EN текст на UK сторінці. Для ботів байдуже, але для UX варто перекласти.
+
+**13. Alt-теги — унікальні замість категорійних дублікатів**
+Файл: `lib/portfolio/image-src.ts`
+Зараз ~20 фото мають однаковий alt `"MeTime Studio — танцювальна зйомка"`.
+Мінімум: `"MeTime Studio — танцювальна зйомка №12"`.
+Ідеально: додати поле `caption` у `PhotoMeta` і заповнювати при upload через адмінку.
+
+**14. OG Image портфоліо — захистити від зміни Blob URL**
+Файл: `lib/seo.ts`
+Поточний `OG_IMAGE_PORTFOLIO` — зовнішній Blob URL. Якщо storage переїде — broken image у всіх шерах.
+Краще: завантажити як `/public/images/og-portfolio.jpg` і використовувати локальний шлях.
 
 ---
 
-#### 8. Розширити JSON-LD LocalBusiness
+### 🔵 Довгострокові
 
-**Файл:** `lib/seo.ts:97-116`  
-**Що додати:**
+**15. EN-версія сайту з i18n routing**
+Переклади є (`SITE_DESCRIPTION_EN`), але URL завжди `/` — Google індексує тільки одну версію.
+Потребує Next.js i18n routing: `/uk/` і `/en/` з hreflang тегами. Великий рефакторинг.
 
-```ts
-// Години роботи (якщо актуально)
-openingHoursSpecification: [
-  {
-    "@type": "OpeningHoursSpecification",
-    dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-    opens: "09:00",
-    closes: "21:00",
-  },
-],
-// Додаткові соцмережі у sameAs
-sameAs: [
-  CONTACT_INFO.instagramUrl,
-  // "https://facebook.com/metime_ck",  // якщо є
-  // "https://www.youtube.com/@metime",  // якщо є
-],
-// Послуги
-hasOfferCatalog: {
-  "@type": "OfferCatalog",
-  name: "Послуги фото та відеозйомки",
-  itemListElement: [
-    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Весільна зйомка" } },
-    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Love story" } },
-    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Танцювальна зйомка" } },
-    { "@type": "Offer", itemOffered: { "@type": "Service", name: "Бренд-зйомка" } },
-  ],
-},
-```
+**16. FAQPage schema**
+Секція "Не знайшов ідеальний пакет?" і питання у статтях блогу — натуральні FAQ.
+Google може показати FAQ блок у результатах → вищий CTR без росту позицій.
+
+**17. NAP консистентність у каталогах**
+Name, Address, Phone — однаковий скрізь: сайт, GBP, Prom.ua, OLX, будь-які каталоги.
+Розбіжності у NAP негативно впливають на локальний пошук.
 
 ---
 
-#### 9. Оптимізація зображень
+## Моніторинг
 
-**Файл:** `next.config.mjs:13`  
-**Проблема:** `images: { unoptimized: true }` — Next.js не конвертує в WebP/AVIF, не стискає, не resize. Впливає на LCP.  
-**Застереження:** Якщо сайт деплоїться як статичний (`output: "export"`), оптимізація зображень Next.js не працює без сервера.  
-**Варіанти вирішення:**
-- Якщо деплой на Vercel як SSR (без `STATIC_EXPORT=true`) → прибрати `unoptimized: true`
-- Якщо статичний деплой → оптимізувати зображення вручну перед завантаженням (squoosh, sharp скрипт)
-- Або підключити Cloudinary / Imgix для трансформацій
-
----
-
-#### 10. HTTP заголовки для SEO та безпеки
-
-**Файл:** `next.config.mjs`  
-**Навіщо:** Cache-Control та security headers впливають на трастовість і швидкість.
-
-```js
-async headers() {
-  return [
-    {
-      source: "/:path*",
-      headers: [
-        { key: "X-Content-Type-Options", value: "nosniff" },
-        { key: "X-Frame-Options", value: "SAMEORIGIN" },
-        { key: "Referrer-Policy", value: "origin-when-cross-origin" },
-      ],
-    },
-    {
-      source: "/images/:path*",
-      headers: [
-        { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-      ],
-    },
-  ]
-},
-```
-
-**Застереження:** Не працює при `output: "export"` (статичний деплой).
+| Інструмент | Що перевіряти | Частота |
+|---|---|---|
+| Google Search Console | Coverage, Core Web Vitals, CTR по запитах | Щотижня |
+| PageSpeed Insights | LCP < 2.5s, INP < 200ms, CLS < 0.1 | Щомісяця |
+| Google Business Profile | Відгуки, перегляди, дзвінки | Щотижня |
+| Sitemap | https://metime.in.ua/sitemap.xml | Після деплоїв |
 
 ---
 
-#### 11. Покращити alt-теги на портфоліо фото
+## Наступні пріоритети одним рядком
 
-**Файли:** `components/portfolio-mosaic.tsx`, `components/portfolio-client.tsx`  
-**Проблема:** Alt-текст рівний `photo.filename` (наприклад `DSC_0042.jpg`) — не інформативний.  
-**Виправлення:** Якщо фото мають категорію або опис у `data/` — використати їх. Або додати поле `altText` до моделі фото.
-
-Приклад:
-```ts
-alt={photo.altText ?? `${SITE_NAME} — ${photo.category ?? "фотографія"}`}
-```
-
----
-
-### 🔵 Моніторинг (налаштувати та регулярно перевіряти)
-
-#### 12. Google Search Console
-
-- Перевірити що верифікація активна (`public/google*.html` є)
-- Подати sitemap вручну: `https://metime.in.ua/sitemap.xml`
-- Слідкувати за: Coverage → індексація, Core Web Vitals, Search results → CTR
-
-#### 13. Core Web Vitals цілі
-
-| Метрика | Ціль |
-|---|---|
-| LCP (Largest Contentful Paint) | < 2.5s |
-| INP (Interaction to Next Paint) | < 200ms |
-| CLS (Cumulative Layout Shift) | < 0.1 |
-
-Інструменти: PageSpeed Insights, Vercel Speed Insights.
-
----
-
-## Зведений план виконання
-
-| Пріоритет | Задача | Файл | Час |
-|---|---|---|---|
-| 🔴 | Виправити опечатку h1 | `app/portfolio/page.tsx` | 2 хв |
-| 🔴 | Виправити `inLanguage` | `lib/seo.ts` | 2 хв |
-| 🟠 | Виправити `lastModified` у sitemap | `app/sitemap.ts` | 15 хв |
-| 🟠 | Розширити keywords | `lib/seo.ts` | 10 хв |
-| 🟠 | OG зображення для портфоліо | `lib/seo.ts` + `app/portfolio/page.tsx` | 30 хв + підготовка зображення |
-| 🟠 | Додати `twitter:site` | `lib/seo.ts` | 5 хв |
-| 🟡 | BreadcrumbList JSON-LD | `lib/seo.ts` + `app/portfolio/page.tsx` | 20 хв |
-| 🟡 | Розширити LocalBusiness JSON-LD | `lib/seo.ts` | 20 хв |
-| 🟡 | Оптимізація зображень | `next.config.mjs` | 1-2 год |
-| 🟡 | HTTP заголовки | `next.config.mjs` | 30 хв |
-| 🟡 | Покращити alt-теги | компоненти портфоліо | 30 хв |
-| 🔵 | Подати sitemap у GSC | Google Search Console | 5 хв |
-| 🔵 | Налаштувати моніторинг CWV | Vercel / GSC | 15 хв |
+**Зробити зараз:** логотип href="/" + LocalBusiness geo/id + ISR замість force-dynamic + H1 портфоліо + meta description портфоліо + copyright динамічний + GBP (якщо не зроблено).
