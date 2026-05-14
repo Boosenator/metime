@@ -28,6 +28,7 @@ function getNeighborTransform(cell: PopulatedCell, hovered: PopulatedCell): stri
 function MosaicCell({
   cell,
   index,
+  gridCols,
   neighborTransform,
   onClick,
   onHoverStart,
@@ -35,6 +36,7 @@ function MosaicCell({
 }: {
   cell: PopulatedCell
   index: number
+  gridCols: number
   neighborTransform: string
   onClick: () => void
   onHoverStart: () => void
@@ -45,6 +47,7 @@ function MosaicCell({
     cell.spanY > 1
       ? `clamp(${180 * cell.spanY}px, ${34 * cell.spanY}vw, ${280 * cell.spanY}px)`
       : "clamp(180px,34vw,280px)"
+  const desktopSizePct = Math.round((cell.spanX / gridCols) * 100)
 
   return (
     <div
@@ -66,11 +69,10 @@ function MosaicCell({
       onBlur={onHoverEnd}
     >
       <div className="absolute inset-[4px] overflow-hidden rounded-[calc(1rem-4px)] bg-black sm:inset-[6px] lg:inset-0 lg:rounded-none">
-        <img
-          src={src}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-45 blur-xl scale-110 transition-transform duration-300 group-hover:scale-[1.14]"
-          loading={index < 24 ? "eager" : "lazy"}
+        {/* Blur layer — dominantColor div замість другого image-запиту */}
+        <div
+          className="absolute inset-0 scale-110 opacity-45 blur-xl transition-transform duration-300 group-hover:scale-[1.14]"
+          style={{ backgroundColor: cell.photo.dominantColor }}
           aria-hidden="true"
         />
         <Image
@@ -78,7 +80,7 @@ function MosaicCell({
           src={src}
           alt={photoAlt(cell.photo)}
           className="object-cover z-[1] transition-transform duration-300 group-hover:scale-[1.04]"
-          sizes="(max-width: 1023px) 50vw, 10vw"
+          sizes={`(max-width: 1023px) 50vw, ${desktopSizePct}vw`}
           priority={index < 6}
         />
         <div
@@ -158,6 +160,7 @@ export function PortfolioMosaic({
             key={cell.photoId}
             cell={cell}
             index={i}
+            gridCols={grid.cols}
             neighborTransform={
               hoveredIndex !== null && hoveredIndex !== i
                 ? getNeighborTransform(cell, cells[hoveredIndex])
@@ -195,10 +198,13 @@ export function PortfolioMosaic({
               className="relative h-[80vh] w-[90vw] max-w-5xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <img
+              <Image
+                fill
                 src={getPortfolioImageSrc(cells[lightbox].photo)}
                 alt={photoAlt(cells[lightbox].photo)}
-                className="h-full w-full object-contain"
+                className="object-contain"
+                sizes="90vw"
+                priority
               />
             </div>
             <button
