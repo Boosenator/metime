@@ -212,6 +212,48 @@ export function buildVideoObjectJsonLd(video: {
   }
 }
 
+export function buildServiceJsonLd(service: { name: string; description: string; slug: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.name,
+    description: service.description,
+    url: absoluteUrl(`/${service.slug}`),
+    provider: {
+      "@type": "LocalBusiness",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+    areaServed: { "@type": "City", name: "Cherkasy" },
+  }
+}
+
+export function buildArticleJsonLd(article: {
+  title: string
+  description: string
+  publishedAt: string
+  slug: string
+  serviceSlug: string
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article.title,
+    description: article.description,
+    datePublished: article.publishedAt,
+    url: absoluteUrl(`/${article.serviceSlug}/${article.slug}`),
+    author: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+      logo: { "@type": "ImageObject", url: absoluteUrl("/icon.svg") },
+    },
+    image: absoluteUrl(OG_IMAGE),
+    inLanguage: "uk-UA",
+  }
+}
+
 export function buildBreadcrumbJsonLd(items: { name: string; url: string }[]) {
   return {
     "@context": "https://schema.org",

@@ -1,0 +1,24 @@
+export type TopicBlock =
+  | { type: "p"; text: string }
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "ul"; items: string[] }
+
+export type ServiceTopic = {
+  slug: string
+  title: string
+  description: string
+  keywords: string[]
+  publishedAt: string
+  blocks: TopicBlock[]
+}
+
+export type ServiceData = {
+  slug: string
+  name: string
+  title: string
+  description: string
+  keywords: string[]
+  intro: string
+  topics: ServiceTopic[]
+}
