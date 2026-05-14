@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
 import { savePricingData } from "@/lib/pricing/storage"
 import type { PricingCustomCategory, PricingData, PricingLocaleData, PricingPackageItem, PricingStandardCategory } from "@/lib/pricing/types"
@@ -65,6 +66,7 @@ export async function PUT(request: Request) {
 
   try {
     await savePricingData(normalized)
+    revalidatePath("/")
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Failed to save pricing data", error)

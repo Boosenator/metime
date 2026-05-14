@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
 import {
   deletePortfolioImage,
@@ -43,7 +44,8 @@ export async function DELETE(request: Request) {
     await deletePortfolioImage(photo)
     await savePhotosData(nextPhotos)
     await saveLayoutData(nextLayout)
-
+    revalidatePath("/")
+    revalidatePath("/portfolio")
     return NextResponse.json({ ok: true })
   } catch (error) {
     console.error("Failed to delete portfolio photo", error)

@@ -187,11 +187,11 @@ export function buildPortfolioJsonLd(imageCount: number) {
   }
 }
 
-export function buildVideoObjectJsonLd(video: {
-  title?: string
-  filename: string
-  uploadedAt: string
-}, contentUrl: string) {
+export function buildVideoObjectJsonLd(
+  video: { title?: string; filename: string; uploadedAt: string; category?: string },
+  contentUrl: string,
+  thumbnailUrl?: string
+) {
   const name = video.title
     || video.filename.replace(/\.[^.]+$/, "").replace(/^\d+-/, "").replace(/[-_]+/g, " ").trim()
     || video.filename
@@ -201,7 +201,7 @@ export function buildVideoObjectJsonLd(video: {
     "@type": "VideoObject",
     name,
     description: SITE_DESCRIPTION,
-    thumbnailUrl: absoluteUrl(OG_IMAGE),
+    thumbnailUrl: thumbnailUrl ?? absoluteUrl(OG_IMAGE),
     uploadDate: video.uploadedAt,
     contentUrl,
     publisher: {
@@ -210,6 +210,51 @@ export function buildVideoObjectJsonLd(video: {
       url: SITE_URL,
     },
   }
+}
+
+export function buildPersonsJsonLd() {
+  return [
+    { name: "Андрій", jobTitle: "Відеограф" },
+    { name: "Нікіта", jobTitle: "Відеограф / Фотограф" },
+    { name: "Анна", jobTitle: "Монтажер" },
+    { name: "Ігор", jobTitle: "Менеджер" },
+  ].map((m) => ({
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: m.name,
+    jobTitle: m.jobTitle,
+    worksFor: {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#studio`,
+      name: SITE_NAME,
+    },
+    url: SITE_URL,
+  }))
+}
+
+export function buildServiceOffersJsonLd(
+  services: Array<{
+    name: string
+    slug: string
+    packages: Array<{ name: string; price: string | null }>
+  }>
+) {
+  return services.map((service) => ({
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.name,
+    url: absoluteUrl(`/${service.slug}`),
+    provider: { "@type": "LocalBusiness", "@id": `${SITE_URL}/#studio` },
+    areaServed: { "@type": "City", name: "Cherkasy" },
+    offers: service.packages
+      .filter((p) => p.price)
+      .map((pkg) => ({
+        "@type": "Offer",
+        name: pkg.name,
+        price: pkg.price!.replace(/\D/g, ""),
+        priceCurrency: "UAH",
+      })),
+  }))
 }
 
 export function buildServiceJsonLd(service: { name: string; description: string; slug: string }) {
