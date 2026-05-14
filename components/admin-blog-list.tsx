@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, Globe, EyeOff } from "lucide-react"
+import { Plus, Pencil, Trash2, Globe, EyeOff, Lock, ExternalLink } from "lucide-react"
 import type { BlogPost } from "@/lib/blog/types"
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -16,7 +16,24 @@ function formatDate(iso: string) {
   })
 }
 
-export function AdminBlogList({ initialPosts }: { initialPosts: BlogPost[] }) {
+type StaticTopic = {
+  id: string
+  serviceSlug: string
+  serviceName: string
+  slug: string
+  title: string
+  description: string
+  publishedAt: string
+  href: string
+}
+
+export function AdminBlogList({
+  initialPosts,
+  staticTopics,
+}: {
+  initialPosts: BlogPost[]
+  staticTopics: StaticTopic[]
+}) {
   const router = useRouter()
   const [posts, setPosts] = useState(initialPosts)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -37,6 +54,8 @@ export function AdminBlogList({ initialPosts }: { initialPosts: BlogPost[] }) {
     }
   }
 
+  const totalCount = posts.length + staticTopics.length
+
   return (
     <div className="min-h-screen bg-dark">
       {/* Header */}
@@ -44,15 +63,17 @@ export function AdminBlogList({ initialPosts }: { initialPosts: BlogPost[] }) {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <div>
             <h1 className="font-serif text-2xl font-light text-cream">Блог</h1>
-            <p className="text-xs text-gray-mid">{posts.length} постів</p>
+            <p className="text-xs text-gray-mid">
+              {posts.length} динамічних · {staticTopics.length} статичних · {totalCount} всього
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <input
               type="password"
-              placeholder="Пароль адміна"
+              placeholder="Пароль"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-32 border border-white/15 bg-transparent px-2 py-1 text-xs text-cream placeholder:text-gray-mid focus:border-wine focus:outline-none"
+              className="w-28 border border-white/15 bg-transparent px-2 py-1 text-xs text-cream placeholder:text-gray-mid focus:border-wine focus:outline-none"
             />
             <button
               onClick={() => router.push("/admin/blog/new")}
@@ -66,70 +87,113 @@ export function AdminBlogList({ initialPosts }: { initialPosts: BlogPost[] }) {
       </div>
 
       <div className="mx-auto max-w-5xl px-6 py-8">
-        {posts.length === 0 ? (
-          <div className="py-24 text-center">
-            <p className="mb-2 text-gray-mid">Поки немає постів</p>
+
+        {/* Dynamic posts */}
+        {posts.length > 0 && (
+          <div className="mb-10">
+            <p className="mb-4 text-xs uppercase tracking-[0.25em] text-wine">Пости з адмінки</p>
+            <div className="divide-y divide-white/8">
+              {posts
+                .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+                .map((post) => (
+                  <div key={post.id} className="group flex items-start justify-between gap-4 py-5">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-3">
+                        <span className={`text-xs uppercase tracking-[0.15em] ${post.published ? "text-green-400" : "text-gray-mid"}`}>
+                          {post.published
+                            ? <><Globe className="mr-1 inline h-3 w-3" />Опублікований</>
+                            : <><EyeOff className="mr-1 inline h-3 w-3" />Чернетка</>}
+                        </span>
+                        <span className="text-xs text-gray-mid">
+                          {CATEGORY_LABELS[post.category] ?? post.category}
+                        </span>
+                      </div>
+                      <h2 className="mb-1 truncate font-serif text-lg font-light text-cream">
+                        {post.title || <span className="italic text-gray-mid">Без назви</span>}
+                      </h2>
+                      <p className="text-xs text-gray-mid">
+                        /blog/{post.slug} · {formatDate(post.updatedAt)}
+                      </p>
+                    </div>
+
+                    <div className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        onClick={() => router.push(`/admin/blog/${post.id}`)}
+                        className="flex items-center gap-1.5 border border-white/15 px-3 py-1.5 text-xs text-gray-mid transition-colors hover:border-wine hover:text-cream"
+                      >
+                        <Pencil className="h-3 w-3" />
+                        Редагувати
+                      </button>
+                      <button
+                        onClick={() => deletePost(post.id)}
+                        disabled={deleting === post.id}
+                        className="border border-white/15 p-1.5 text-gray-mid transition-colors hover:border-red-400 hover:text-red-400 disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
+        {posts.length === 0 && (
+          <div className="mb-10 rounded border border-white/8 py-10 text-center">
+            <p className="mb-3 text-sm text-gray-mid">Динамічних постів ще немає</p>
             <button
               onClick={() => router.push("/admin/blog/new")}
-              className="mt-4 text-sm text-wine underline"
+              className="text-xs text-wine underline"
             >
               Створити перший пост
             </button>
           </div>
-        ) : (
-          <div className="divide-y divide-white/8">
-            {posts
-              .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-              .map((post) => (
-                <div
-                  key={post.id}
-                  className="group flex items-start justify-between gap-4 py-5"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="mb-1 flex items-center gap-3">
-                      <span
-                        className={`text-xs uppercase tracking-[0.15em] ${
-                          post.published ? "text-green-400" : "text-gray-mid"
-                        }`}
-                      >
-                        {post.published ? (
-                          <><Globe className="mr-1 inline h-3 w-3" />Опублікований</>
-                        ) : (
-                          <><EyeOff className="mr-1 inline h-3 w-3" />Чернетка</>
-                        )}
-                      </span>
-                      <span className="text-xs text-gray-mid">
-                        {CATEGORY_LABELS[post.category] ?? post.category}
-                      </span>
-                    </div>
-                    <h2 className="mb-1 font-serif text-lg font-light text-cream truncate">
-                      {post.title || <span className="text-gray-mid italic">Без назви</span>}
-                    </h2>
-                    <p className="text-xs text-gray-mid">
-                      /blog/{post.slug} · оновлено {formatDate(post.updatedAt)}
-                    </p>
-                  </div>
-
-                  <div className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <button
-                      onClick={() => router.push(`/admin/blog/${post.id}`)}
-                      className="flex items-center gap-1.5 border border-white/15 px-3 py-1.5 text-xs text-gray-mid transition-colors hover:border-wine hover:text-cream"
-                    >
-                      <Pencil className="h-3 w-3" />
-                      Редагувати
-                    </button>
-                    <button
-                      onClick={() => deletePost(post.id)}
-                      disabled={deleting === post.id}
-                      className="border border-white/15 p-1.5 text-gray-mid transition-colors hover:border-red-400 hover:text-red-400 disabled:opacity-50"
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-          </div>
         )}
+
+        {/* Static service topics */}
+        <div>
+          <div className="mb-4 flex items-center gap-3">
+            <p className="text-xs uppercase tracking-[0.25em] text-gray-mid">
+              Статичні матеріали
+            </p>
+            <span className="flex items-center gap-1 text-xs text-gray-mid/60">
+              <Lock className="h-3 w-3" />
+              редагуються в коді
+            </span>
+          </div>
+          <div className="divide-y divide-white/5">
+            {staticTopics.map((topic) => (
+              <div key={topic.id} className="group flex items-start justify-between gap-4 py-4">
+                <div className="min-w-0 flex-1">
+                  <div className="mb-1 flex items-center gap-3">
+                    <span className="text-xs uppercase tracking-[0.15em] text-green-400/70">
+                      <Globe className="mr-1 inline h-3 w-3" />
+                      Опублікований
+                    </span>
+                    <span className="text-xs text-gray-mid">{topic.serviceName}</span>
+                  </div>
+                  <h2 className="mb-1 truncate font-serif text-lg font-light text-cream/80">
+                    {topic.title}
+                  </h2>
+                  <p className="text-xs text-gray-mid">
+                    {topic.href} · {formatDate(topic.publishedAt)}
+                  </p>
+                </div>
+
+                <a
+                  href={topic.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex shrink-0 items-center gap-1.5 border border-white/10 px-3 py-1.5 text-xs text-gray-mid opacity-0 transition-all hover:border-white/30 hover:text-cream group-hover:opacity-100"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                  Відкрити
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   )
