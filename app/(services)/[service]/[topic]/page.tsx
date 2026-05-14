@@ -9,9 +9,11 @@ import {
   absoluteUrl,
   buildArticleJsonLd,
   buildBreadcrumbJsonLd,
+  buildFaqJsonLd,
   SITE_NAME,
   OG_IMAGE,
 } from "@/lib/seo"
+import type { FaqItem } from "@/lib/services/types"
 
 export function generateStaticParams() {
   return SERVICES.flatMap((s) =>
@@ -103,6 +105,32 @@ function renderBlock(block: TopicBlock, i: number) {
           </ul>
         </div>
       )
+    case "faq":
+      return (
+        <div key={i} className="my-10 space-y-3">
+          <p className="mb-5 text-xs uppercase tracking-[0.25em] text-wine">
+            Часті запитання
+          </p>
+          {block.items.map((item, j) => (
+            <details
+              key={j}
+              className="group border border-white/10 transition-colors open:border-wine/30"
+            >
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-6 py-5">
+                <span className="font-serif text-lg font-light text-cream">
+                  {item.q}
+                </span>
+                <span className="mt-1 shrink-0 text-xl leading-none text-wine transition-transform duration-300 group-open:rotate-45">
+                  +
+                </span>
+              </summary>
+              <p className="border-t border-white/8 px-6 py-5 leading-relaxed text-gray-light">
+                {item.a}
+              </p>
+            </details>
+          ))}
+        </div>
+      )
     default:
       return null
   }
@@ -119,6 +147,10 @@ export default async function TopicPage({
 
   const { service, topic } = result
   const related = service.topics.filter((t) => t.slug !== topicSlug).slice(0, 2)
+
+  const faqItems = topic.blocks
+    .filter((b): b is { type: "faq"; items: FaqItem[] } => b.type === "faq")
+    .flatMap((b) => b.items)
 
   return (
     <I18nProvider>
@@ -139,6 +171,7 @@ export default async function TopicPage({
               { name: service.name, url: `/${serviceSlug}` },
               { name: topic.title, url: `/${serviceSlug}/${topicSlug}` },
             ]),
+            ...(faqItems.length > 0 ? [buildFaqJsonLd(faqItems)] : []),
           ]),
         }}
       />

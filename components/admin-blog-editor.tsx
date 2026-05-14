@@ -85,6 +85,52 @@ function BlockRow({
             }
           />
         )}
+        {block.type === "faq" && (
+          <div className="w-full space-y-3">
+            {block.items.map((item, j) => (
+              <div key={j} className="flex gap-2">
+                <div className="flex-1 space-y-1">
+                  <input
+                    className="w-full bg-transparent text-sm text-cream outline-none placeholder:text-gray-mid border-b border-white/10 pb-1 focus:border-wine"
+                    value={item.q}
+                    placeholder="Питання..."
+                    onChange={(e) => {
+                      const items = [...block.items]
+                      items[j] = { ...items[j], q: e.target.value }
+                      onChange({ type: "faq", items })
+                    }}
+                  />
+                  <textarea
+                    rows={2}
+                    className="w-full resize-none bg-transparent text-sm leading-relaxed text-gray-light outline-none placeholder:text-gray-mid"
+                    value={item.a}
+                    placeholder="Відповідь..."
+                    onChange={(e) => {
+                      const items = [...block.items]
+                      items[j] = { ...items[j], a: e.target.value }
+                      onChange({ type: "faq", items })
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    const items = block.items.filter((_, i) => i !== j)
+                    onChange({ type: "faq", items })
+                  }}
+                  className="shrink-0 self-start text-gray-mid hover:text-red-400 text-xs mt-1"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => onChange({ type: "faq", items: [...block.items, { q: "", a: "" }] })}
+              className="text-xs text-wine underline"
+            >
+              + Питання
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="flex shrink-0 flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -116,14 +162,20 @@ function BlockRow({
 function AddBlockBar({ onAdd }: { onAdd: (type: TopicBlock["type"]) => void }) {
   return (
     <div className="flex flex-wrap gap-2">
-      {(["p", "h2", "h3", "ul"] as TopicBlock["type"][]).map((type) => (
+      {([
+        { type: "p", label: "Абзац" },
+        { type: "h2", label: "H2" },
+        { type: "h3", label: "H3" },
+        { type: "ul", label: "Список" },
+        { type: "faq", label: "FAQ" },
+      ] as { type: TopicBlock["type"]; label: string }[]).map(({ type, label }) => (
         <button
           key={type}
           onClick={() => onAdd(type)}
           className="flex items-center gap-1.5 border border-white/15 px-3 py-1.5 text-xs uppercase tracking-[0.15em] text-gray-mid transition-colors hover:border-wine hover:text-wine"
         >
           <Plus className="h-3 w-3" />
-          {type === "p" ? "Абзац" : type === "h2" ? "H2" : type === "h3" ? "H3" : "Список"}
+          {label}
         </button>
       ))}
     </div>
@@ -142,6 +194,8 @@ const EMPTY_POST: Omit<BlogPost, "id" | "publishedAt" | "updatedAt"> = {
 
 function newBlock(type: TopicBlock["type"]): TopicBlock {
   if (type === "ul") return { type: "ul", items: [""] }
+  if (type === "faq") return { type: "faq", items: [{ q: "", a: "" }] }
+  if (type === "links") return { type: "links", items: [{ text: "", href: "" }] }
   return { type, text: "" } as TopicBlock
 }
 
