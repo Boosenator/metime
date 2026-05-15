@@ -253,9 +253,37 @@ export function PortfolioClient({
     }
   }, [hasVideos, mode])
 
-  // Show scroll action buttons after scrolling 400px
+  const PAGE_SECTIONS = ["portfolio", "pricing", "team", "contact"]
+
+  const getCurrentSectionIdx = useCallback(() => {
+    const mid = window.scrollY + window.innerHeight / 3
+    let idx = -1
+    for (let i = 0; i < PAGE_SECTIONS.length; i++) {
+      const el = document.getElementById(PAGE_SECTIONS[i])
+      if (el && el.offsetTop <= mid) idx = i
+    }
+    return idx
+  }, [])
+
+  const scrollToPrev = useCallback(() => {
+    const idx = getCurrentSectionIdx()
+    if (idx <= 0) {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    } else {
+      document.getElementById(PAGE_SECTIONS[idx - 1])?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [getCurrentSectionIdx])
+
+  const scrollToNext = useCallback(() => {
+    const idx = getCurrentSectionIdx()
+    const next = idx + 1
+    if (next < PAGE_SECTIONS.length) {
+      document.getElementById(PAGE_SECTIONS[next])?.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [getCurrentSectionIdx])
+
   useEffect(() => {
-    const onScroll = () => setShowScrollActions(window.scrollY > 400)
+    const onScroll = () => setShowScrollActions(window.scrollY > 300)
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
@@ -413,19 +441,19 @@ export function PortfolioClient({
       {showScrollActions && typeof document !== "undefined" && createPortal(
         <div className="fixed bottom-6 right-4 z-40 flex flex-col">
           <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            onClick={scrollToPrev}
             className="flex h-10 w-10 items-center justify-center border border-white/15 bg-dark/85 text-gray-mid backdrop-blur-sm transition-all duration-300 hover:border-wine hover:text-cream"
-            aria-label="На початок"
+            aria-label="Попередній розділ"
           >
             <ChevronUp className="h-4 w-4" />
           </button>
-          <a
-            href="/#pricing"
+          <button
+            onClick={scrollToNext}
             className="flex h-10 w-10 items-center justify-center border-x border-b border-white/15 bg-dark/85 text-gray-mid backdrop-blur-sm transition-all duration-300 hover:border-wine hover:text-cream"
-            aria-label="До цін"
+            aria-label="Наступний розділ"
           >
             <ChevronDown className="h-4 w-4" />
-          </a>
+          </button>
         </div>,
         document.body
       )}
