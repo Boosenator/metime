@@ -37,8 +37,11 @@ export function Navigation() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-dark/90 backdrop-blur-md py-3 md:py-5">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8">
+      <header
+        className="fixed top-0 left-0 right-0 z-50 bg-dark/90 backdrop-blur-md"
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3 md:py-5 lg:px-8">
           {/* Logo */}
           <a href="/" className="flex flex-col leading-none">
             <span className="font-serif text-2xl font-semibold tracking-wide text-cream lg:text-3xl">
