@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
-import { SERVICES, getTopic } from "@/lib/services/data"
+import { readServicesSync, getTopicSync as getTopic } from "@/lib/services/storage"
 import type { TopicBlock } from "@/lib/services/types"
 import {
   absoluteUrl,
@@ -16,7 +16,7 @@ import {
 import type { FaqItem } from "@/lib/services/types"
 
 export function generateStaticParams() {
-  return SERVICES.flatMap((s) =>
+  return readServicesSync().flatMap((s) =>
     s.topics.map((t) => ({ service: s.slug, topic: t.slug }))
   )
 }

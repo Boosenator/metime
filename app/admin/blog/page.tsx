@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { readBlogPosts } from "@/lib/blog/storage"
-import { SERVICES } from "@/lib/services/data"
+import { readServicesSync } from "@/lib/services/storage"
 import { AdminBlogList } from "@/components/admin-blog-list"
 
 export const metadata: Metadata = {
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic"
 export default async function AdminBlogPage() {
   const posts = await readBlogPosts()
 
-  const staticTopics = SERVICES.flatMap((s) =>
+  const staticTopics = readServicesSync().flatMap((s) =>
     s.topics.map((t) => ({
       id: `${s.slug}__${t.slug}`,
       serviceSlug: s.slug,

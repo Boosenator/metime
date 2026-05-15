@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next"
 import { absoluteUrl } from "@/lib/seo"
-import { SERVICES } from "@/lib/services/data"
+import { readServicesSync } from "@/lib/services/storage"
 import { readBlogPosts } from "@/lib/blog/storage"
 
 function dateStr(date: Date | string): string {
@@ -15,14 +15,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await readBlogPosts()
   const publishedPosts = posts.filter((p) => p.published)
 
-  const serviceEntries: MetadataRoute.Sitemap = SERVICES.map((s) => ({
+  const services = readServicesSync()
+
+  const serviceEntries: MetadataRoute.Sitemap = services.map((s) => ({
     url: absoluteUrl(`/${s.slug}`),
     lastModified: deployDateStr,
     changeFrequency: "monthly",
     priority: 0.8,
   }))
 
-  const topicEntries: MetadataRoute.Sitemap = SERVICES.flatMap((s) =>
+  const topicEntries: MetadataRoute.Sitemap = services.flatMap((s) =>
     s.topics.map((t) => ({
       url: absoluteUrl(`/${s.slug}/${t.slug}`),
       lastModified: dateStr(t.publishedAt),

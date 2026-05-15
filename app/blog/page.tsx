@@ -3,7 +3,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
 import { readBlogPosts } from "@/lib/blog/storage"
-import { SERVICES } from "@/lib/services/data"
+import { readServicesSync } from "@/lib/services/storage"
 import { absoluteUrl, buildBreadcrumbJsonLd, SITE_NAME, OG_IMAGE } from "@/lib/seo"
 
 export const metadata: Metadata = {
@@ -52,7 +52,7 @@ export default async function BlogPage() {
   const allBlogPosts = await readBlogPosts()
   const blogPosts = allBlogPosts.filter((p) => p.published)
 
-  const serviceTopics: ArticleCard[] = SERVICES.flatMap((s) =>
+  const serviceTopics: ArticleCard[] = readServicesSync().flatMap((s) =>
     s.topics.map((t) => ({
       key: `${s.slug}-${t.slug}`,
       href: `/${s.slug}/${t.slug}`,

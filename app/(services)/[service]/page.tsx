@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
-import { SERVICES, getService } from "@/lib/services/data"
+import { readServicesSync, getServiceSync as getService } from "@/lib/services/storage"
 import {
   absoluteUrl,
   buildBreadcrumbJsonLd,
@@ -13,7 +13,7 @@ import {
 } from "@/lib/seo"
 
 export function generateStaticParams() {
-  return SERVICES.map((s) => ({ service: s.slug }))
+  return readServicesSync().map((s) => ({ service: s.slug }))
 }
 
 export async function generateMetadata({

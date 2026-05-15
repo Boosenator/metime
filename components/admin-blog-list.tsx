@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, Globe, EyeOff, Lock, ExternalLink } from "lucide-react"
+import { Plus, Pencil, Trash2, Globe, EyeOff, ExternalLink } from "lucide-react"
 import type { BlogPost } from "@/lib/blog/types"
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -152,14 +152,10 @@ export function AdminBlogList({
 
         {/* Static service topics */}
         <div>
-          <div className="mb-4 flex items-center gap-3">
+          <div className="mb-4">
             <p className="text-xs uppercase tracking-[0.25em] text-gray-mid">
-              Статичні матеріали
+              Матеріали послуг
             </p>
-            <span className="flex items-center gap-1 text-xs text-gray-mid/60">
-              <Lock className="h-3 w-3" />
-              редагуються в коді
-            </span>
           </div>
           <div className="divide-y divide-white/5">
             {staticTopics.map((topic) => (
@@ -180,15 +176,23 @@ export function AdminBlogList({
                   </p>
                 </div>
 
-                <a
-                  href={topic.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex shrink-0 items-center gap-1.5 border border-white/10 px-3 py-1.5 text-xs text-gray-mid opacity-0 transition-all hover:border-white/30 hover:text-cream group-hover:opacity-100"
-                >
-                  <ExternalLink className="h-3 w-3" />
-                  Відкрити
-                </a>
+                <div className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    onClick={() => router.push(`/admin/services/${topic.serviceSlug}/${topic.slug}`)}
+                    className="flex items-center gap-1.5 border border-white/15 px-3 py-1.5 text-xs text-gray-mid transition-colors hover:border-wine hover:text-cream"
+                  >
+                    <Pencil className="h-3 w-3" />
+                    Редагувати
+                  </button>
+                  <a
+                    href={topic.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center border border-white/10 p-1.5 text-gray-mid transition-colors hover:border-white/30 hover:text-cream"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
               </div>
             ))}
           </div>
