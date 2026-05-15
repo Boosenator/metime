@@ -155,6 +155,8 @@ export function PortfolioClient({
   videos: VideoMeta[]
 }) {
   const { t } = useI18n()
+  const hasVideos = videos.length > 0
+  const portfolioTabs: Array<"photo" | "video"> = hasVideos ? ["video", "photo"] : ["photo"]
   const [mode, setMode] = useState<"photo" | "video">(hasVideos ? "video" : "photo")
   const [isDesktop, setIsDesktop] = useState(false)
   const [photoFilter, setPhotoFilter] = useState("all")
@@ -164,8 +166,6 @@ export function PortfolioClient({
   const [videoModal, setVideoModal] = useState<VideoMeta | null>(null)
   const [showScrollActions, setShowScrollActions] = useState(false)
   const touchStartX = useRef(0)
-  const hasVideos = videos.length > 0
-  const portfolioTabs: Array<"photo" | "video"> = hasVideos ? ["video", "photo"] : ["photo"]
 
   // Build gallery photo list from PhotoMeta
   const galleryPhotos: GalleryPhoto[] = photos.map((p, i) => ({
