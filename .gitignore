@@ -13,3 +13,4 @@ out/
 .claude/
 
 .mosaic-cache/
+*.tsbuildinfo
