@@ -37,9 +37,12 @@ export function Hero({
   }, [])
 
   return (
-    <section className="relative flex items-center justify-center overflow-hidden" style={{ height: "100svh" }}>
+    <section
+      className="relative flex items-center justify-center overflow-hidden"
+      style={{ height: "100svh", transform: "translateZ(0)" }}
+    >
       {/* Background video — Desktop (16:9) */}
-      <div className="absolute inset-0 hidden md:block">
+      <div className="absolute inset-0 hidden md:block" style={{ transform: "translateZ(0)" }}>
         {desktopVideoSrc ? (
           <video
             ref={desktopVideoRef}
@@ -66,7 +69,7 @@ export function Hero({
       </div>
 
       {/* Background video — Mobile (9:16) */}
-      <div className="absolute inset-0 md:hidden">
+      <div className="absolute inset-0 md:hidden" style={{ transform: "translateZ(0)" }}>
         {mobileVideoSrc ? (
           <video
             ref={mobileVideoRef}
