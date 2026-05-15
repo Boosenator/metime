@@ -37,7 +37,7 @@ export function Hero({
   }, [])
 
   return (
-    <section className="relative flex h-screen items-center justify-center overflow-hidden">
+    <section className="relative flex items-center justify-center overflow-hidden" style={{ height: "100svh" }}>
       {/* Background video — Desktop (16:9) */}
       <div className="absolute inset-0 hidden md:block">
         {desktopVideoSrc ? (
@@ -48,6 +48,7 @@ export function Hero({
             loop
             muted
             playsInline
+            preload="metadata"
             poster={HERO_POSTER}
             className="h-full w-full object-cover"
           />
@@ -74,6 +75,7 @@ export function Hero({
             loop
             muted
             playsInline
+            preload="metadata"
             poster={HERO_POSTER}
             className="h-full w-full object-cover"
           />

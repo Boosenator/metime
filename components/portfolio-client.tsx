@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useCallback, useEffect, type CSSProperties } from "react"
+import { useState, useCallback, useEffect, useRef, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
-import { Play, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { Play, X, ChevronLeft, ChevronRight, ChevronUp, ArrowDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { VideoPosterFrame } from "@/components/video-poster-frame"
@@ -155,15 +155,17 @@ export function PortfolioClient({
   videos: VideoMeta[]
 }) {
   const { t } = useI18n()
-  const [mode, setMode] = useState<"photo" | "video">("photo")
+  const [mode, setMode] = useState<"photo" | "video">(hasVideos ? "video" : "photo")
   const [isDesktop, setIsDesktop] = useState(false)
   const [photoFilter, setPhotoFilter] = useState("all")
   const [videoFilter, setVideoFilter] = useState("all")
   const [crossfade, setCrossfade] = useState(false)
   const [galleryLightbox, setGalleryLightbox] = useState<number | null>(null)
   const [videoModal, setVideoModal] = useState<VideoMeta | null>(null)
+  const [showScrollActions, setShowScrollActions] = useState(false)
+  const touchStartX = useRef(0)
   const hasVideos = videos.length > 0
-  const portfolioTabs: Array<"photo" | "video"> = hasVideos ? ["photo", "video"] : ["photo"]
+  const portfolioTabs: Array<"photo" | "video"> = hasVideos ? ["video", "photo"] : ["photo"]
 
   // Build gallery photo list from PhotoMeta
   const galleryPhotos: GalleryPhoto[] = photos.map((p, i) => ({
@@ -251,6 +253,13 @@ export function PortfolioClient({
     }
   }, [hasVideos, mode])
 
+  // Show scroll action buttons after scrolling 400px
+  useEffect(() => {
+    const onScroll = () => setShowScrollActions(window.scrollY > 400)
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
   return (
     <section id="portfolio" className="bg-dark py-16 lg:py-20">
       {/* Heading */}
@@ -336,13 +345,25 @@ export function PortfolioClient({
             className="fixed inset-0 z-[9999] flex items-center justify-center"
             style={{ backgroundColor: "rgba(0,0,0,0.95)" }}
             onClick={closeGallery}
+            onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX }}
+            onTouchEnd={(e) => {
+              const dx = e.changedTouches[0].clientX - touchStartX.current
+              if (Math.abs(dx) > 50) {
+                e.stopPropagation()
+                if (dx > 0) navigateGallery("prev")
+                else navigateGallery("next")
+              }
+            }}
           >
-            <button onClick={closeGallery} className="absolute right-6 top-6 text-cream hover:text-wine transition-colors" aria-label="Close">
-              <X className="h-8 w-8" />
+            <button onClick={closeGallery} className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center bg-black/40 text-cream hover:text-wine transition-colors md:right-6 md:top-6" aria-label="Close">
+              <X className="h-6 w-6" />
             </button>
-            <button onClick={(e) => { e.stopPropagation(); navigateGallery("prev") }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:left-8" aria-label="Previous">
-              <ChevronLeft className="h-10 w-10" />
+            <button
+              onClick={(e) => { e.stopPropagation(); navigateGallery("prev") }}
+              className="absolute left-2 top-1/2 z-10 -translate-y-1/2 flex h-12 w-12 items-center justify-center bg-black/40 text-cream hover:text-wine transition-colors md:left-8"
+              aria-label="Previous"
+            >
+              <ChevronLeft className="h-7 w-7" />
             </button>
             <div className="relative h-[80vh] w-[90vw] max-w-5xl" onClick={(e) => e.stopPropagation()}>
               <img
@@ -351,9 +372,12 @@ export function PortfolioClient({
                 className="h-full w-full object-contain"
               />
             </div>
-            <button onClick={(e) => { e.stopPropagation(); navigateGallery("next") }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:right-8" aria-label="Next">
-              <ChevronRight className="h-10 w-10" />
+            <button
+              onClick={(e) => { e.stopPropagation(); navigateGallery("next") }}
+              className="absolute right-2 top-1/2 z-10 -translate-y-1/2 flex h-12 w-12 items-center justify-center bg-black/40 text-cream hover:text-wine transition-colors md:right-8"
+              aria-label="Next"
+            >
+              <ChevronRight className="h-7 w-7" />
             </button>
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-widest text-gray-mid">
               {galleryLightbox + 1} / {filteredPhotos.length}
@@ -382,6 +406,25 @@ export function PortfolioClient({
               playsInline
             />
           </div>
+        </div>,
+        document.body
+      )}
+      {/* ── Floating scroll actions ───────────────────────────────────── */}
+      {showScrollActions && typeof document !== "undefined" && createPortal(
+        <div className="fixed bottom-6 right-4 z-40 flex flex-col gap-2">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex h-11 w-11 items-center justify-center border border-white/20 bg-dark/90 text-cream backdrop-blur-sm transition-colors hover:border-wine hover:text-wine"
+            aria-label="На початок"
+          >
+            <ChevronUp className="h-5 w-5" />
+          </button>
+          <a
+            href="/#pricing"
+            className="flex h-11 items-center justify-center border border-white/20 bg-dark/90 px-3 text-[10px] uppercase tracking-[0.15em] text-cream backdrop-blur-sm transition-colors hover:border-wine hover:text-wine"
+          >
+            Ціни
+          </a>
         </div>,
         document.body
       )}

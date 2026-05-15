@@ -5,8 +5,8 @@ import { useI18n } from "@/lib/i18n"
 
 const CONTACT_INFO = {
   email: "boosyonya@gmail.com",
-  phone: "+380988693231",
-  phoneDisplay: "+38 (098) 869-32-11",
+  phone: "+380988692311",
+  phoneDisplay: "+38 (098) 869-23-11",
   instagram: "metime_ck",
   instagramUrl: "https://instagram.com/metime_ck",
 }
