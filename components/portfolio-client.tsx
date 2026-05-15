@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
-import { Play, X, ChevronLeft, ChevronRight, ChevronUp, ArrowDown } from "lucide-react"
+import { Play, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { VideoPosterFrame } from "@/components/video-poster-frame"
@@ -411,19 +411,20 @@ export function PortfolioClient({
       )}
       {/* ── Floating scroll actions ───────────────────────────────────── */}
       {showScrollActions && typeof document !== "undefined" && createPortal(
-        <div className="fixed bottom-6 right-4 z-40 flex flex-col gap-2">
+        <div className="fixed bottom-6 right-4 z-40 flex flex-col">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex h-11 w-11 items-center justify-center border border-white/20 bg-dark/90 text-cream backdrop-blur-sm transition-colors hover:border-wine hover:text-wine"
+            className="flex h-10 w-10 items-center justify-center border border-white/15 bg-dark/85 text-gray-mid backdrop-blur-sm transition-all duration-300 hover:border-wine hover:text-cream"
             aria-label="На початок"
           >
-            <ChevronUp className="h-5 w-5" />
+            <ChevronUp className="h-4 w-4" />
           </button>
           <a
             href="/#pricing"
-            className="flex h-11 items-center justify-center border border-white/20 bg-dark/90 px-3 text-[10px] uppercase tracking-[0.15em] text-cream backdrop-blur-sm transition-colors hover:border-wine hover:text-wine"
+            className="flex h-10 w-10 items-center justify-center border-x border-b border-white/15 bg-dark/85 text-gray-mid backdrop-blur-sm transition-all duration-300 hover:border-wine hover:text-cream"
+            aria-label="До цін"
           >
-            Ціни
+            <ChevronDown className="h-4 w-4" />
           </a>
         </div>,
         document.body
