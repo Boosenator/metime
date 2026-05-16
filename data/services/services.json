@@ -30,6 +30,31 @@
             "text": "Більшість весільних проблем зі зйомкою виникають не через погоду і не через фотографа. Вони виникають через поганий таймлайн. За роки роботи в Черкасах ми бачили десятки весіль, де молодята недооцінювали скільки часу займає кожен блок — і потім квапились, нервували, а кадри виходили напруженими."
           },
           {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-5.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як підготуватися до весільної зйомки, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-67.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як підготуватися до весільної зйомки, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-9.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як підготуватися до весільної зйомки, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-11-wide.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як підготуватися до весільної зйомки, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-128.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як підготуватися до весільної зйомки, ???? 5"
+              }
+            ]
+          },
+          {
             "type": "h2",
             "text": "Будуйте таймлайн з запасом"
           },
@@ -132,7 +157,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "How to prepare for wedding photo and video coverage",
+            "description": "Timeline, locations, shot list, weather backup, and common mistakes: a practical wedding shoot guide from MeTime Studio.",
+            "keywords": [
+              "wedding shoot preparation",
+              "wedding photography timeline",
+              "wedding videography checklist",
+              "wedding photos Cherkasy"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "love-story",
@@ -150,6 +188,31 @@
           {
             "type": "p",
             "text": "Лав сторі — це фотосесія або міні-відео пари до весілля. Зазвичай знімають за 1–3 місяці до дня Х. Багато пар вважають це зайвим: навіщо, якщо буде весільна зйомка? Але ті, хто знімали лав сторі в Черкасах разом з нами, потім кажуть що це був один з найкращих досвідів підготовки до весілля."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-165.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Лав сторі перед весіллям: навіщо і як підготуватись, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-33.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Лав сторі перед весіллям: навіщо і як підготуватись, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-54.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Лав сторі перед весіллям: навіщо і як підготуватись, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-71.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Лав сторі перед весіллям: навіщо і як підготуватись, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-95.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Лав сторі перед весіллям: навіщо і як підготуватись, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -233,7 +296,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "Pre-wedding love story shoot: why it matters and how to prepare",
+            "description": "How a love story session helps you get comfortable on camera, test locations, and create warm pre-wedding photos.",
+            "keywords": [
+              "love story shoot",
+              "pre-wedding photoshoot",
+              "engagement photo session",
+              "love story Cherkasy"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "vybir-fotografa",
@@ -250,6 +326,31 @@
           {
             "type": "p",
             "text": "Вибір весільного фотографа — одне з найважливіших рішень у підготовці до весілля. Квіти завянуть, торт з'їдять, музика забудеться. Фотографії і відео залишаться на десятиліття. Ось систематичний підхід до вибору, перевірений сотнями пар у Черкасах і по всій Україні."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-172.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як вибрати весільного фотографа: на що дивитись, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-42-tall.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як вибрати весільного фотографа: на що дивитись, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-63.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як вибрати весільного фотографа: на що дивитись, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-86.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як вибрати весільного фотографа: на що дивитись, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-104.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Як вибрати весільного фотографа: на що дивитись, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -361,7 +462,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "How to choose a wedding photographer: what to look for",
+            "description": "Portfolio, style, contract, pricing, communication, and red flags: a clear guide to choosing a wedding photographer.",
+            "keywords": [
+              "how to choose wedding photographer",
+              "wedding photographer checklist",
+              "wedding photographer Cherkasy",
+              "wedding portfolio"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "lokatsii",
@@ -378,6 +492,31 @@
           {
             "type": "p",
             "text": "Локація — це фон, настрій і характер ваших весільних фото. Черкаси дають чудовий вибір: від класичної набережної Дніпра до камерних вуличок старого міста, від зеленого дендропарку до диких полів Черкаської області. Ось наш практичний гайд по локаціях, який ми склали на основі сотень знятих тут весіль."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-141.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Де знімати весілля в Черкасах: локації та ідеї, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-160.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Де знімати весілля в Черкасах: локації та ідеї, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-22.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Де знімати весілля в Черкасах: локації та ідеї, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-5.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Де знімати весілля в Черкасах: локації та ідеї, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-67.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Де знімати весілля в Черкасах: локації та ідеї, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -449,7 +588,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "Where to shoot a wedding in Cherkasy: locations and ideas",
+            "description": "Ideas for wedding photos in Cherkasy: riverside, city streets, estates, indoor backups, and how to choose locations by light.",
+            "keywords": [
+              "wedding locations Cherkasy",
+              "wedding photoshoot locations",
+              "Cherkasy wedding photo ideas",
+              "wedding photo spots"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "tsiny",
@@ -467,6 +619,31 @@
           {
             "type": "p",
             "text": "Ціна весільного фотографа — одне з перших питань молодят і одне з найбільш неоднозначних. Вона залежить від десятків факторів і може відрізнятись вдвічі-втричі навіть у фотографів одного рівня. Ось що насправді формує вартість і на що звертати увагу."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-168.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Скільки коштує весільна зйомка в Черкасах: ціни та пакети, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-36.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Скільки коштує весільна зйомка в Черкасах: ціни та пакети, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-58.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Скільки коштує весільна зйомка в Черкасах: ціни та пакети, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-75.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Скільки коштує весільна зйомка в Черкасах: ціни та пакети, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-98.jpg",
+                "alt": "MeTime Studio ? ???????? ??????: Скільки коштує весільна зйомка в Черкасах: ціни та пакети, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -580,7 +757,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "How much does wedding photo and video coverage cost in Cherkasy?",
+            "description": "What affects wedding photography and videography pricing: hours, team size, editing, deliverables, and package format.",
+            "keywords": [
+              "wedding photography price Cherkasy",
+              "wedding videography price",
+              "wedding photo video packages",
+              "wedding shoot cost"
+            ],
+            "blocks": []
+          }
+        }
       }
     ]
   },
@@ -612,6 +802,31 @@
           {
             "type": "p",
             "text": "Танцювальна зйомка відрізняється від звичайної портретної сесії: тут важливо не лише як ви виглядаєте, а як рухаєтесь. Правильна підготовка скорочує час на «розігрів» і дозволяє отримати максимум від кожної хвилини зйомки."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-104.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Як підготуватися до танцювальної фотосесії, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-124.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Як підготуватися до танцювальної фотосесії, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-14.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Як підготуватися до танцювальної фотосесії, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-159.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Як підготуватися до танцювальної фотосесії, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-19.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Як підготуватися до танцювальної фотосесії, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -682,7 +897,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "How to prepare for a dance photoshoot",
+            "description": "Outfits, warm-up, choreography, locations, and practical tips for dancers before a photo or video session.",
+            "keywords": [
+              "dance photoshoot preparation",
+              "dance photo session",
+              "dance photography tips",
+              "dance shoot Cherkasy"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "styli",
@@ -699,6 +927,31 @@
           {
             "type": "p",
             "text": "Танцювальна фотографія — це не один стиль. Залежно від вашого жанру, мети і характеру — підхід до зйомки кардинально відрізняється. Ми в MeTime Studio працюємо у кількох напрямах і підбираємо стиль разом з танцівником перед кожною зйомкою."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-14.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Стилі танцювальної зйомки: від динаміки до артистизму, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-159.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Стилі танцювальної зйомки: від динаміки до артистизму, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-19.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Стилі танцювальної зйомки: від динаміки до артистизму, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-44.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Стилі танцювальної зйомки: від динаміки до артистизму, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-65.jpg",
+                "alt": "MeTime Studio ? ??????????? ??????: Стилі танцювальної зйомки: від динаміки до артистизму, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -758,7 +1011,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "Dance photography styles: from dynamics to artistry",
+            "description": "How different dance genres change the visual approach: motion, lines, emotion, lighting, and composition.",
+            "keywords": [
+              "dance photography styles",
+              "dance photoshoot ideas",
+              "dynamic dance photography",
+              "artistic dance photos"
+            ],
+            "blocks": []
+          }
+        }
       }
     ]
   },
@@ -791,6 +1057,31 @@
           {
             "type": "p",
             "text": "Головна помилка батьків при підготовці до дитячої зйомки — намагатись все проконтролювати. Дитину не можна змусити бути веселою. Але можна створити умови, в яких вона природно розкриється. Ось що ми рекомендуємо на основі сотень дитячих зйомок у Черкасах і за його межами."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-87.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Як підготувати дитину до фотосесії, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-106.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Як підготувати дитину до фотосесії, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-125.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Як підготувати дитину до фотосесії, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-140.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Як підготувати дитину до фотосесії, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-16.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Як підготувати дитину до фотосесії, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -868,7 +1159,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "How to prepare a child for a photoshoot",
+            "description": "Timing, clothes, snacks, toys, and parent behavior: how to make a children?s photo session calm and natural.",
+            "keywords": [
+              "children photoshoot preparation",
+              "kids photoshoot tips",
+              "child photographer Cherkasy",
+              "family photo session"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "yakyy-vik",
@@ -886,6 +1190,31 @@
           {
             "type": "p",
             "text": "«Коли краще зняти дитину?» — одне з найчастіших питань яке нам ставлять батьки. Не існує «неправильного» віку. Але кожен етап має свою специфіку, свої найкращі моменти і свої виклики. Ось практичний гайд який ми склали на основі роботи з дітьми різного віку в Черкасах."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-116.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: У якому віці краще знімати дітей: гайд по вікам, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-132.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: У якому віці краще знімати дітей: гайд по вікам, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-15.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: У якому віці краще знімати дітей: гайд по вікам, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-167.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: У якому віці краще знімати дітей: гайд по вікам, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-35.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: У якому віці краще знімати дітей: гайд по вікам, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -962,7 +1291,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "What age is best for children?s photos: an age-by-age guide",
+            "description": "Newborns, babies, toddlers, preschoolers, and older kids: what to expect at each age and how to plan the shoot.",
+            "keywords": [
+              "best age for kids photoshoot",
+              "children photography guide",
+              "baby photoshoot timing",
+              "kids photographer Cherkasy"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "newborn",
@@ -980,6 +1322,31 @@
           {
             "type": "p",
             "text": "Новонароджена зйомка — один з найбільш технічно складних і найбільш цінних форматів дитячої фотографії. Вікно можливостей невелике: перші 5–14 днів після народження. Потім дитина змінюється так швидко, що ці перші дні вже не повернути. Ось все що потрібно знати щоб підготуватись правильно."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-10.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Новонароджена зйомка: коли замовляти і як підготуватись, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-121.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Новонароджена зйомка: коли замовляти і як підготуватись, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-138.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Новонароджена зйомка: коли замовляти і як підготуватись, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-157.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Новонароджена зйомка: коли замовляти і як підготуватись, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-172.jpg",
+                "alt": "MeTime Studio ? ?????? ??????: Новонароджена зйомка: коли замовляти і як підготуватись, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -1078,7 +1445,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "Newborn photography: when to book and how to prepare",
+            "description": "A practical guide for newborn sessions: ideal timing, safety, temperature, feeding, props, and parent preparation.",
+            "keywords": [
+              "newborn photoshoot preparation",
+              "newborn photographer Cherkasy",
+              "baby photo session",
+              "newborn photography safety"
+            ],
+            "blocks": []
+          }
+        }
       }
     ]
   },
@@ -1112,6 +1492,31 @@
           {
             "type": "p",
             "text": "Instagram, TikTok і LinkedIn давно стали основними вітринами для малого і середнього бізнесу. Якість візуального контенту напряму впливає на довіру — і на продажі. Але постійно виробляти якісні фото і відео самостійно на телефон майже неможливо. Контент-зйомка вирішує це оптом за одну сесію."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-154.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Контент-зйомка для Instagram і соцмереж: що і як знімати, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-17.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Контент-зйомка для Instagram і соцмереж: що і як знімати, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-39.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Контент-зйомка для Instagram і соцмереж: що і як знімати, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-60.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Контент-зйомка для Instagram і соцмереж: що і як знімати, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-80.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Контент-зйомка для Instagram і соцмереж: що і як знімати, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -1169,7 +1574,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "Content shoot for Instagram and social media: what to capture",
+            "description": "How to plan visual content for Instagram, TikTok, LinkedIn, and a business website during one efficient session.",
+            "keywords": [
+              "content photoshoot for Instagram",
+              "social media content shoot",
+              "brand content photography",
+              "business photos Cherkasy"
+            ],
+            "blocks": []
+          }
+        }
       },
       {
         "slug": "pidhotovka",
@@ -1187,6 +1605,31 @@
           {
             "type": "p",
             "text": "Бренд-зйомка — це інвестиція. І як будь-яка інвестиція, вона дає більше коли до неї готуються. За нашим досвідом бренд-зйомок у Черкасах, ті клієнти хто приходить з готовим планом — отримують вдвічі більше корисного контенту за той самий час. Ось покроковий гайд."
+          },
+          {
+            "type": "carousel",
+            "photos": [
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-165.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Як підготуватися до бренд-зйомки, ???? 1"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-33.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Як підготуватися до бренд-зйомки, ???? 2"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-54.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Як підготуватися до бренд-зйомки, ???? 3"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-71.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Як підготуватися до бренд-зйомки, ???? 4"
+              },
+              {
+                "src": "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-95.jpg",
+                "alt": "MeTime Studio ? ?????-??????: Як підготуватися до бренд-зйомки, ???? 5"
+              }
+            ]
           },
           {
             "type": "h2",
@@ -1260,7 +1703,20 @@
               }
             ]
           }
-        ]
+        ],
+        "translations": {
+          "en": {
+            "title": "How to prepare for a brand photoshoot",
+            "description": "Moodboard, shot list, outfits, props, products, and content plan: a step-by-step guide for a productive brand session.",
+            "keywords": [
+              "brand photoshoot preparation",
+              "business photoshoot checklist",
+              "brand photography Cherkasy",
+              "content shoot planning"
+            ],
+            "blocks": []
+          }
+        }
       }
     ]
   }

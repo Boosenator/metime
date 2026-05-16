@@ -19,6 +19,14 @@ export type ServiceTopic = {
   keywords: string[]
   publishedAt: string
   blocks: TopicBlock[]
+  translations?: {
+    en?: {
+      title: string
+      description: string
+      keywords: string[]
+      blocks?: TopicBlock[]
+    }
+  }
 }
 
 export type ServiceData = {

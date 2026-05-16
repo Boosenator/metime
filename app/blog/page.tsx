@@ -1,9 +1,11 @@
 import type { Metadata } from "next"
+import { cookies } from "next/headers"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
 import { readBlogPosts } from "@/lib/blog/storage"
 import { readServicesSync } from "@/lib/services/storage"
+import { getLocalizedTopic, normalizeContentLocale } from "@/lib/services/i18n"
 import { absoluteUrl, buildBreadcrumbJsonLd, SITE_NAME, OG_IMAGE } from "@/lib/seo"
 
 export const metadata: Metadata = {
@@ -40,8 +42,41 @@ type ArticleCard = {
   description: string
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("uk-UA", {
+const CATEGORY_LABELS_EN: Record<string, string> = {
+  wedding: "Wedding",
+  dance: "Dance",
+  kids: "Kids",
+  brand: "Brand",
+  lovestory: "Love Story",
+  portrait: "Portrait",
+  custom: "Other",
+}
+
+const BLOG_COPY = {
+  uk: {
+    home: "Головна",
+    blog: "Блог",
+    eyebrow: "Корисне",
+    intro: "Поради про підготовку до зйомки, відповіді на часті питання і корисні гайди від команди MeTime Studio.",
+    read: "Читати",
+    materialOne: "матеріал",
+    materialFew: "матеріали",
+    materialMany: "матеріалів",
+  },
+  en: {
+    home: "Home",
+    blog: "Blog",
+    eyebrow: "Helpful",
+    intro: "Preparation tips, answers to common questions, and practical guides from the MeTime Studio team.",
+    read: "Read",
+    materialOne: "article",
+    materialFew: "articles",
+    materialMany: "articles",
+  },
+}
+
+function formatDate(iso: string, locale: "uk" | "en") {
+  return new Date(iso).toLocaleDateString(locale === "en" ? "en-US" : "uk-UA", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -49,18 +84,24 @@ function formatDate(iso: string) {
 }
 
 export default async function BlogPage() {
+  const locale = normalizeContentLocale((await cookies()).get("metime-locale")?.value)
+  const copy = BLOG_COPY[locale]
+  const categoryLabels = locale === "en" ? CATEGORY_LABELS_EN : CATEGORY_LABELS
   const allBlogPosts = await readBlogPosts()
   const blogPosts = allBlogPosts.filter((p) => p.published)
 
   const serviceTopics: ArticleCard[] = readServicesSync().flatMap((s) =>
-    s.topics.map((t) => ({
-      key: `${s.slug}-${t.slug}`,
-      href: `/${s.slug}/${t.slug}`,
-      category: s.slug,
-      date: t.publishedAt,
-      title: t.title,
-      description: t.description,
-    }))
+    s.topics.map((t) => {
+      const localized = getLocalizedTopic(t, locale)
+      return {
+        key: `${s.slug}-${t.slug}`,
+        href: `/${s.slug}/${t.slug}`,
+        category: s.slug,
+        date: t.publishedAt,
+        title: localized.title,
+        description: localized.description,
+      }
+    })
   )
 
   const dynamicPosts: ArticleCard[] = blogPosts.map((p) => ({
@@ -68,8 +109,8 @@ export default async function BlogPage() {
     href: `/blog/${p.slug}`,
     category: p.category,
     date: p.publishedAt,
-    title: p.title,
-    description: p.description,
+    title: p.translations?.[locale]?.title || p.title,
+    description: p.translations?.[locale]?.description || p.description,
   }))
 
   const all: ArticleCard[] = [...dynamicPosts, ...serviceTopics].sort(
@@ -84,8 +125,8 @@ export default async function BlogPage() {
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
             buildBreadcrumbJsonLd([
-              { name: "Головна", url: "/" },
-              { name: "Блог", url: "/blog" },
+              { name: copy.home, url: "/" },
+              { name: copy.blog, url: "/blog" },
             ])
           ),
         }}
@@ -97,24 +138,24 @@ export default async function BlogPage() {
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb" className="mb-10">
             <ol className="flex items-center gap-2 text-xs text-gray-mid">
-              <li><a href="/" className="transition-colors hover:text-cream">Головна</a></li>
+              <li><a href="/" className="transition-colors hover:text-cream">{copy.home}</a></li>
               <li aria-hidden="true" className="text-white/20">/</li>
-              <li className="text-cream">Блог</li>
+              <li className="text-cream">{copy.blog}</li>
             </ol>
           </nav>
 
           {/* Hero */}
           <div className="page-hero">
-            <p className="page-eyebrow">Корисне</p>
+            <p className="page-eyebrow">{copy.eyebrow}</p>
             <h1 className="page-title mb-4">
-              Блог
+              {copy.blog}
             </h1>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
               <p className="max-w-2xl text-gray-light">
-                Поради про підготовку до зйомки, відповіді на часті питання і корисні гайди від команди MeTime Studio.
+                {copy.intro}
               </p>
               <span className="shrink-0 text-xs text-gray-mid">
-                {all.length} {all.length === 1 ? "матеріал" : all.length < 5 ? "матеріали" : "матеріалів"}
+                {all.length} {all.length === 1 ? copy.materialOne : all.length < 5 ? copy.materialFew : copy.materialMany}
               </span>
             </div>
           </div>
@@ -132,9 +173,9 @@ export default async function BlogPage() {
 
                 <div className="mb-4 flex items-center gap-3">
                   <span className="border border-wine/40 px-2 py-0.5 text-[10px] uppercase tracking-[0.2em] text-wine">
-                    {CATEGORY_LABELS[item.category] ?? item.category}
+                    {categoryLabels[item.category] ?? item.category}
                   </span>
-                  <span className="text-xs text-gray-mid">{formatDate(item.date)}</span>
+                  <span className="text-xs text-gray-mid">{formatDate(item.date, locale)}</span>
                 </div>
 
                 <h2 className="mb-3 font-serif text-xl font-light text-cream transition-colors duration-300 group-hover:text-wine md:text-2xl">
@@ -146,7 +187,7 @@ export default async function BlogPage() {
                 </p>
 
                 <span className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-wine">
-                  Читати
+                  {copy.read}
                   <span className="inline-block transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </span>
               </a>

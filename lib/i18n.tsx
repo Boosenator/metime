@@ -770,10 +770,23 @@ type I18nContextType = {
 const I18nContext = createContext<I18nContextType | null>(null)
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("uk")
+  const [locale, setLocaleState] = useState<Locale>(() => {
+    if (typeof document === "undefined") return "uk"
+    const cookieLocale = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("metime-locale="))
+      ?.split("=")[1]
+    if (cookieLocale === "uk" || cookieLocale === "en") return cookieLocale
+    const stored = window.localStorage.getItem("metime-locale")
+    return stored === "uk" || stored === "en" ? stored : "uk"
+  })
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l)
+    if (typeof document !== "undefined") {
+      window.localStorage.setItem("metime-locale", l)
+      document.cookie = `metime-locale=${l}; path=/; max-age=31536000; samesite=lax`
+    }
   }, [])
 
   return (
