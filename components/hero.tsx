@@ -19,21 +19,12 @@ export function Hero({
   const mobileVideoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    const v = desktopVideoRef.current
-    if (!v) return
-    v.play().catch(() => {
-      v.muted = true
+    // Fallback: деякі браузери ігнорують autoplay до взаємодії
+    for (const ref of [desktopVideoRef, mobileVideoRef]) {
+      const v = ref.current
+      if (!v || !v.paused) continue
       v.play().catch(() => {})
-    })
-  }, [])
-
-  useEffect(() => {
-    const v = mobileVideoRef.current
-    if (!v) return
-    v.play().catch(() => {
-      v.muted = true
-      v.play().catch(() => {})
-    })
+    }
   }, [])
 
   return (
@@ -51,7 +42,7 @@ export function Hero({
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={HERO_POSTER}
             className="h-full w-full object-cover"
           />
@@ -78,7 +69,7 @@ export function Hero({
             loop
             muted
             playsInline
-            preload="metadata"
+            preload="auto"
             poster={HERO_POSTER}
             className="h-full w-full object-cover"
           />
