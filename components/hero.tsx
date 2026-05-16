@@ -119,6 +119,9 @@ export function Hero({
         >
           {t.hero.cta}
         </a>
+        <p className="mt-8 text-[10px] uppercase tracking-[0.3em] text-gray-mid/50">
+          Весілля · Love story · Dance · Діти · Портрет · Бренд
+        </p>
       </div>
 
       {/* Scroll Indicator */}
