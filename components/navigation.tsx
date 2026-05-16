@@ -89,12 +89,12 @@ export function Navigation() {
 
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="relative z-[60] h-10 w-10"
+              className="relative z-[60] flex h-10 w-10 flex-col items-center justify-center gap-[5px]"
               aria-label={isOpen ? "Close menu" : "Open menu"}
             >
-              <span className={`absolute left-2 h-px w-6 bg-cream transition-all duration-300 ${isOpen ? "top-5 rotate-45" : "top-[14px]"}`} />
-              <span className={`absolute left-2 top-5 h-px w-6 bg-cream transition-all duration-300 ${isOpen ? "opacity-0" : "opacity-100"}`} />
-              <span className={`absolute left-2 h-px w-6 bg-cream transition-all duration-300 ${isOpen ? "top-5 -rotate-45" : "top-[26px]"}`} />
+              <span className={`block h-px w-6 origin-center bg-cream transition-all duration-300 ${isOpen ? "translate-y-[6px] rotate-45" : ""}`} />
+              <span className={`block h-px w-6 bg-cream transition-all duration-300 ${isOpen ? "opacity-0" : ""}`} />
+              <span className={`block h-px w-6 origin-center bg-cream transition-all duration-300 ${isOpen ? "-translate-y-[6px] -rotate-45" : ""}`} />
             </button>
           </div>
         </div>
