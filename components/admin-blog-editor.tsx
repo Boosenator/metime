@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Trash2, ChevronUp, ChevronDown, Save, Globe, Eye, EyeOff, ArrowLeft, Images, Video, Check, X } from "lucide-react"
-import type { BlogPost, TopicBlock } from "@/lib/blog/types"
+import type { BlogLocale, BlogPost, BlogPostTranslation, TopicBlock } from "@/lib/blog/types"
 import type { CarouselPhoto } from "@/lib/services/types"
 
 const CATEGORIES = [
@@ -518,13 +518,39 @@ function AddBlockBar({ onAdd }: { onAdd: (type: TopicBlock["type"]) => void }) {
   )
 }
 
-const EMPTY_POST: Omit<BlogPost, "id" | "publishedAt" | "updatedAt"> = {
+type BlogEditorData = Omit<BlogPost, "id" | "publishedAt" | "updatedAt">
+
+const EMPTY_TRANSLATION: BlogPostTranslation = {
+  title: "",
+  description: "",
+  keywords: [],
+  blocks: [],
+}
+
+function getTranslation(post: BlogPost, locale: BlogLocale): BlogPostTranslation {
+  if (post.translations?.[locale]) return post.translations[locale]
+  if (locale === "uk") {
+    return {
+      title: post.title,
+      description: post.description,
+      keywords: post.keywords,
+      blocks: post.blocks,
+    }
+  }
+  return EMPTY_TRANSLATION
+}
+
+const EMPTY_POST: BlogEditorData = {
   slug: "",
   title: "",
   description: "",
   keywords: [],
   category: "custom",
   blocks: [],
+  translations: {
+    uk: EMPTY_TRANSLATION,
+    en: EMPTY_TRANSLATION,
+  },
   published: false,
 }
 
@@ -540,16 +566,21 @@ function newBlock(type: TopicBlock["type"]): TopicBlock {
 export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
   const router = useRouter()
   const isNew = !post
+  const [activeLocale, setActiveLocale] = useState<BlogLocale>("uk")
 
-  const [data, setData] = useState<Omit<BlogPost, "id" | "publishedAt" | "updatedAt">>(
+  const [data, setData] = useState<BlogEditorData>(
     post
       ? {
           slug: post.slug,
-          title: post.title,
-          description: post.description,
-          keywords: post.keywords,
+          title: getTranslation(post, "uk").title,
+          description: getTranslation(post, "uk").description,
+          keywords: getTranslation(post, "uk").keywords,
           category: post.category,
-          blocks: post.blocks,
+          blocks: getTranslation(post, "uk").blocks,
+          translations: {
+            uk: getTranslation(post, "uk"),
+            en: getTranslation(post, "en"),
+          },
           published: post.published,
         }
       : EMPTY_POST
@@ -563,39 +594,76 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
     setData((d) => ({ ...d, [k]: v }))
   }, [])
 
+  const activeContent = data.translations?.[activeLocale] ?? EMPTY_TRANSLATION
+
+  const setTranslation = useCallback(
+    <K extends keyof BlogPostTranslation>(k: K, v: BlogPostTranslation[K]) => {
+      setData((d) => {
+        const current = d.translations?.[activeLocale] ?? EMPTY_TRANSLATION
+        const nextTranslation = { ...current, [k]: v }
+        const translations = {
+          ...(d.translations ?? {}),
+          [activeLocale]: nextTranslation,
+        }
+
+        if (activeLocale === "uk") {
+          return {
+            ...d,
+            [k]: v,
+            translations,
+          }
+        }
+
+        return {
+          ...d,
+          translations,
+        }
+      })
+    },
+    [activeLocale]
+  )
+
   const handleTitleChange = (title: string) => {
-    set("title", title)
-    if (!slugManual) set("slug", toSlug(title))
+    setTranslation("title", title)
+    if (activeLocale === "uk" && !slugManual) set("slug", toSlug(title))
   }
 
   const addBlock = (type: TopicBlock["type"]) => {
-    set("blocks", [...data.blocks, newBlock(type)])
+    setTranslation("blocks", [...activeContent.blocks, newBlock(type)])
   }
 
   const updateBlock = (i: number, b: TopicBlock) => {
-    set("blocks", data.blocks.map((bl, idx) => (idx === i ? b : bl)))
+    setTranslation("blocks", activeContent.blocks.map((bl, idx) => (idx === i ? b : bl)))
   }
 
   const moveBlock = (i: number, dir: "up" | "down") => {
-    const blocks = [...data.blocks]
+    const blocks = [...activeContent.blocks]
     const j = dir === "up" ? i - 1 : i + 1
     ;[blocks[i], blocks[j]] = [blocks[j], blocks[i]]
-    set("blocks", blocks)
+    setTranslation("blocks", blocks)
   }
 
   const deleteBlock = (i: number) => {
-    set("blocks", data.blocks.filter((_, idx) => idx !== i))
+    setTranslation("blocks", activeContent.blocks.filter((_, idx) => idx !== i))
   }
 
   const save = async (publish?: boolean) => {
-    if (!data.title.trim() || !data.slug.trim()) {
+    const ukContent = data.translations?.uk ?? EMPTY_TRANSLATION
+    if (!ukContent.title.trim() || !data.slug.trim()) {
       setError("Заголовок і slug обов'язкові")
       return
     }
     setSaving(true)
     setError(null)
 
-    const payload = { ...data, published: publish ?? data.published }
+    const payload = {
+      ...data,
+      title: ukContent.title,
+      description: ukContent.description,
+      keywords: ukContent.keywords,
+      blocks: ukContent.blocks,
+      published: publish ?? data.published,
+    }
 
     try {
       const res = await fetch(
@@ -624,7 +692,7 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
     }
   }
 
-  const descLen = data.description.length
+  const descLen = activeContent.description.length
 
   return (
     <div className="min-h-screen bg-dark">
@@ -684,12 +752,34 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
       </div>
 
       <div className="mx-auto max-w-4xl px-6 py-10">
+        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded border border-white/8 bg-dark-card/30 p-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-wine">Мова контенту</p>
+            <p className="mt-1 text-xs text-gray-mid">Slug, категорія і статус спільні для обох мов</p>
+          </div>
+          <div className="flex gap-2">
+            {(["uk", "en"] as BlogLocale[]).map((locale) => (
+              <button
+                key={locale}
+                onClick={() => setActiveLocale(locale)}
+                className={`min-h-10 px-4 text-xs uppercase tracking-[0.18em] transition-colors ${
+                  activeLocale === locale
+                    ? "bg-wine text-cream"
+                    : "border border-white/15 text-gray-mid hover:border-wine hover:text-cream"
+                }`}
+              >
+                {locale === "uk" ? "UA" : "EN"}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Title */}
         <textarea
           rows={2}
           className="mb-6 w-full resize-none bg-transparent font-serif text-4xl font-light text-cream outline-none placeholder:text-gray-mid/40 md:text-5xl"
-          placeholder="Заголовок посту..."
-          value={data.title}
+          placeholder={activeLocale === "uk" ? "Заголовок посту..." : "Post title..."}
+          value={activeContent.title}
           onChange={(e) => handleTitleChange(e.target.value)}
         />
 
@@ -742,8 +832,8 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
               rows={2}
               className="w-full resize-none border-b border-white/15 bg-transparent text-sm leading-relaxed text-cream outline-none placeholder:text-gray-mid focus:border-wine"
               placeholder="Короткий опис для Google (130–160 символів)..."
-              value={data.description}
-              onChange={(e) => set("description", e.target.value)}
+              value={activeContent.description}
+              onChange={(e) => setTranslation("description", e.target.value)}
             />
           </div>
 
@@ -755,9 +845,9 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
             <input
               className="w-full border-b border-white/15 bg-transparent text-sm text-cream outline-none placeholder:text-gray-mid focus:border-wine"
               placeholder="весільна зйомка, фотограф Черкаси..."
-              value={data.keywords.join(", ")}
+              value={activeContent.keywords.join(", ")}
               onChange={(e) =>
-                set(
+                setTranslation(
                   "keywords",
                   e.target.value.split(",").map((k) => k.trim()).filter(Boolean)
                 )
@@ -767,7 +857,7 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
         </div>
 
         {/* Preview */}
-        {data.title && data.description && (
+        {activeContent.title && activeContent.description && (
           <div className="mb-8 rounded border border-white/8 bg-dark-card/20 p-4">
             <p className="mb-2 text-xs uppercase tracking-[0.2em] text-wine">
               <Eye className="mr-1 inline h-3 w-3" />
@@ -776,8 +866,8 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
             <p className="text-sm text-blue-400 underline">
               metime.in.ua › blog › {data.slug || "..."}
             </p>
-            <p className="text-sm font-medium text-cream">{data.title} | MeTime Studio</p>
-            <p className="text-xs text-gray-mid">{data.description}</p>
+            <p className="text-sm font-medium text-cream">{activeContent.title} | MeTime Studio</p>
+            <p className="text-xs text-gray-mid">{activeContent.description}</p>
           </div>
         )}
 
@@ -785,12 +875,12 @@ export function AdminBlogEditor({ post }: { post: BlogPost | null }) {
         <div className="mb-4">
           <p className="mb-4 text-xs uppercase tracking-[0.2em] text-wine">Контент</p>
           <div className="mb-4 flex flex-col gap-2">
-            {data.blocks.map((block, i) => (
+            {activeContent.blocks.map((block, i) => (
               <BlockRow
                 key={i}
                 block={block}
                 index={i}
-                total={data.blocks.length}
+                total={activeContent.blocks.length}
                 password={password}
                 onChange={(b) => updateBlock(i, b)}
                 onMove={(dir) => moveBlock(i, dir)}

@@ -1,7 +1,16 @@
 import { NextResponse } from "next/server"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
 import { readBlogPosts, saveBlogPosts } from "@/lib/blog/storage"
-import type { BlogPost } from "@/lib/blog/types"
+import type { BlogPost, BlogPostTranslation } from "@/lib/blog/types"
+
+function getUkContent(existing: BlogPost, body: Partial<BlogPost>): BlogPostTranslation {
+  return {
+    title: body.translations?.uk?.title ?? body.title ?? existing.title ?? "",
+    description: body.translations?.uk?.description ?? body.description ?? existing.description ?? "",
+    keywords: body.translations?.uk?.keywords ?? body.keywords ?? existing.keywords ?? [],
+    blocks: body.translations?.uk?.blocks ?? body.blocks ?? existing.blocks ?? [],
+  }
+}
 
 export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -25,6 +34,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
   const now = new Date().toISOString()
   const wasPublished = existing.published
   const isPublishing = body.published && !wasPublished
+  const uk = getUkContent(existing, body)
 
   if (
     body.slug &&
@@ -38,6 +48,21 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     ...existing,
     ...body,
     id,
+    title: uk.title,
+    description: uk.description,
+    keywords: uk.keywords,
+    blocks: uk.blocks,
+    translations: {
+      ...(existing.translations ?? {}),
+      ...(body.translations ?? {}),
+      uk,
+      en: body.translations?.en ?? existing.translations?.en ?? {
+        title: "",
+        description: "",
+        keywords: [],
+        blocks: [],
+      },
+    },
     publishedAt: isPublishing ? now : existing.publishedAt,
     updatedAt: now,
   }
