@@ -133,8 +133,7 @@ export default async function BlogPage() {
       />
       <Navigation />
       <main className="page-main">
-        <div className="page-container">
-
+        <div className="article-container">
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb" className="mb-10">
             <ol className="flex items-center gap-2 text-xs text-gray-mid">
@@ -159,7 +158,9 @@ export default async function BlogPage() {
               </span>
             </div>
           </div>
+        </div>
 
+        <div className="page-container">
           {/* Articles */}
           <div className="content-grid sm:grid-cols-2">
             {all.map((item) => (
