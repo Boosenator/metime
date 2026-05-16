@@ -22,20 +22,9 @@ export const metadata: Metadata = {
   ...buildDefaultMetadata(),
   icons: {
     icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
+      { url: "/icon-64x64.jpg", sizes: "64x64", type: "image/jpeg" },
     ],
-    apple: "/apple-icon.png",
+    apple: "/apple-icon.jpg",
   },
 }
 

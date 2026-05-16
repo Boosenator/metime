@@ -127,6 +127,41 @@ function renderBlock(block: TopicBlock, i: number) {
           </ul>
         </div>
       )
+    case "carousel":
+      if (!block.photos.length) return null
+      return (
+        <div key={i} className="my-10 -mx-6 overflow-x-auto lg:-mx-8">
+          <div className="flex gap-3 px-6 pb-2 lg:px-8" style={{ width: "max-content" }}>
+            {block.photos.map((photo, j) => (
+              <div key={j} className="h-72 w-52 shrink-0 overflow-hidden">
+                <img
+                  src={photo.src}
+                  alt={photo.alt || "MeTime Studio"}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    case "video":
+      if (!block.src) return null
+      return (
+        <div key={i} className="my-10">
+          {block.title && (
+            <p className="mb-3 text-xs uppercase tracking-[0.25em] text-wine">{block.title}</p>
+          )}
+          <video
+            src={block.src}
+            poster={block.poster}
+            controls
+            playsInline
+            preload="metadata"
+            className="w-full"
+          />
+        </div>
+      )
     default:
       return null
   }

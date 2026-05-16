@@ -6,188 +6,250 @@
 
 ---
 
-## Виконано ✅
+## Статус проєкту (станом на 15.05.2026)
 
-| Задача | Файл |
-|---|---|
-| SITE_URL → metime.in.ua | `lib/seo.ts` |
-| Виправлено H1 typo: MiTime → MeTime | `app/portfolio/page.tsx` |
-| inLanguage: ["uk-UA", "en"] → "uk-UA" | `lib/seo.ts` |
-| lastModified у sitemap → VERCEL_GIT_COMMIT_DATE | `app/sitemap.ts` |
-| Формат дат sitemap → YYYY-MM-DD (W3C spec) | `app/sitemap.ts` |
-| Keywords розширено 10 → 18 | `lib/seo.ts` |
-| OG Image для портфоліо → унікальний з Blob | `lib/seo.ts` |
-| BreadcrumbList JSON-LD на /portfolio та /blog | сторінки |
-| LocalBusiness JSON-LD + hasOfferCatalog (6 послуг) | `lib/seo.ts` |
-| VideoObject JSON-LD для відео | `lib/seo.ts` |
-| buildServiceJsonLd + buildArticleJsonLd | `lib/seo.ts` |
-| HTTP security headers (non-static) | `next.config.mjs` |
-| images: unoptimized → isStatic + WebP/AVIF formats | `next.config.mjs` |
-| next/image у мозаїці + blur → dominantColor div | `components/portfolio-mosaic.tsx` |
-| Alt-теги → category-aware (photoAlt helper) | `lib/portfolio/image-src.ts` |
-| GTM підключено (GTM-N8RD2TDH) | `app/layout.tsx` |
-| Навігаційні якорі #portfolio → /#portfolio | `components/navigation.tsx` |
-| Content hub: 4 сервіси + 12 статей | `lib/services/data.ts` |
-| Блог: адмінка + публічні сторінки | `app/blog/`, `app/admin/blog/` |
-| Sitemap розширено до 15+ URL | `app/sitemap.ts` |
-| GSC верифікація | `public/google*.html` |
+### Виконано ✅
+
+| Задача | Статус | Файл | Примітка |
+|---|---|---|---|
+| SITE_URL → metime.in.ua | ✅ | `lib/seo.ts` | SITE_URL: "https://metime.in.ua" |
+| Виправлено H1 typo: MiTime → MeTime | ✅ | `app/portfolio/page.tsx` | Коректна назва везде |
+| inLanguage: ["uk-UA", "en"] → "uk-UA" | ✅ | `lib/seo.ts` | Визначена як uk-UA по всьому сайту |
+| lastModified у sitemap → VERCEL_GIT_COMMIT_DATE | ✅ | `app/sitemap.ts` | Використовується VERCEL_GIT_COMMIT_DATE |
+| Формат дат sitemap → YYYY-MM-DD (W3C spec) | ✅ | `app/sitemap.ts` | dateStr() повертає ISO формат |
+| Keywords розширено 10 → 18 | ✅ | `lib/seo.ts` | 18 ключових слів (uk + en) |
+| OG Image для портфоліо → унікальний з Blob | ✅ | `lib/seo.ts` | OG_IMAGE_PORTFOLIO: Blob URL |
+| BreadcrumbList JSON-LD на /portfolio | ✅ | `app/portfolio/page.tsx` | buildBreadcrumbJsonLd() у скрипті |
+| LocalBusiness JSON-LD + полна конфігурація | ✅ | `lib/seo.ts` | @id, geo, hasMap, openingHoursSpecification |
+| VideoObject JSON-LD для всіх відео | ✅ | `lib/seo.ts` | buildVideoObjectJsonLd() з thumbnailUrl |
+| HTTP security headers (non-static) | ✅ | `next.config.mjs` | X-Content-Type-Options, X-Frame-Options та ін. |
+| images: WebP/AVIF formats | ✅ | `next.config.mjs` | formats: ["image/avif", "image/webp"] |
+| next/image у мозаїці | ✅ | `components/portfolio-mosaic.tsx` | Оптимізація зображень |
+| Alt-теги category-aware | ✅ | `lib/portfolio/image-src.ts` | photoAlt helper за категоріями |
+| GTM підключено | ✅ | `app/layout.tsx` | GTM-N8RD2TDH ініціалізовано |
+| Навігаційні якорі #portfolio → /#portfolio | ✅ | `components/navigation.tsx` | Коректні якорі в navLinks |
+| Content hub: 4 сервіси + статті | ✅ | `lib/services/data.ts` | Весілля, танці, діти, бренд + love story |
+| Блог: адмінка + публічні сторінки | ✅ | `app/blog/`, `app/admin/blog/` | Full CRUD + RSS |
+| Sitemap 20+ URL | ✅ | `app/sitemap.ts` | Home, portfolio, blog + всі послуги/теми |
+| Image Sitemap для портфоліо | ✅ | `app/image-sitemap.xml/route.ts` | Усі 170+ фото з image:caption |
+| GSC верифікація | ✅ | `public/google*.html` | google0f6b16624b691c72.html |
+| **Логотип href="/" (обидва місця)** | ✅ | `components/navigation.tsx` + `components/footer.tsx` | Лінія 46 (nav) + лінія 12 (footer) |
+| **Copyright динамічний рік** | ✅ | `components/footer.tsx` | `new Date().getFullYear()` на лінії 34 |
+| **ISR на головній** | ✅ | `app/page.tsx` | `export const revalidate = 3600` |
+| **ISR на портфоліо** | ✅ | `app/portfolio/page.tsx` | `export const revalidate = 3600` |
 
 ---
 
 ## Залишилось зробити
 
-### 🔴 Критично
+### 🔴 Критично (ЗРОБИТИ ПЕРЕД ЗАПУСКОМ)
 
-**1. Google Business Profile**
-Найбільший вплив на локальний пошук ("фотограф Черкаси" в Google Maps / Local Pack). Якщо не створений — зробити зараз.
-- Категорії: "Фотограф" + "Відеограф" + "Студія відеозйомки"
-- URL сайту: https://metime.in.ua
-- Реальні координати (49.4444, 32.0598)
-- Години роботи
-- Фото профілю і портфоліо
-- Стимулювати клієнтів залишати відгуки
+**1. Google Business Profile (GBP)**
+**Статус:** ❌ Невідомо — потребує перевірки  
+**Вплив:** +50% на локальний трафік ("фотограф Черкаси", Google Maps)  
+**План дій:**
+- Перевірити чи існує GBP на https://business.google.com
+- Якщо НІ → Створити негайно:
+  - Категорії: "Фотограф" + "Відеограф"
+  - Координати: 49.4444, 32.0598 (уже у JSON-LD ✅)
+  - Години: 09:00–21:00 (уже у JSON-LD ✅)
+  - Фото профілю + 30+ фото портфоліо
+  - Заохотити клієнтів залишати відгуки → звичайне посилання на G-Review
+- Якщо ТАК → Переконатися що всі дані синхронізовані з сайтом (NAP consistency)
 
-**2. Логотип `href="#"` → `href="/"`**
-Файли: `components/navigation.tsx`, `components/footer.tsx`
-Логотип — найсильніше внутрішнє посилання на головну. З `#` PageRank не передається.
+**2. Blog ISR замість force-dynamic** ⚡  
+**Статус:** ❌ 10 файлів мають force-dynamic  
+**Вплив:** Холодні старти = TTFB > 2s (погано для SEO)  
+**Файли для змін:**
+- `app/blog/page.tsx` — замінити на `export const revalidate = 3600`
+- `app/blog/[slug]/page.tsx` — замінити на `export const revalidate = 86400` (1 день)
+- `app/admin/**` — залишити force-dynamic (OK для адміна)
 
----
-
-### 🟠 Важливо
-
-**3. LocalBusiness JSON-LD — додати критичні поля**
-Файл: `lib/seo.ts` → `buildStudioJsonLd()`
-
-```ts
-"@id": `${SITE_URL}/#studio`,
-geo: {
-  "@type": "GeoCoordinates",
-  latitude: 49.4444,
-  longitude: 32.0598,
-},
-logo: {
-  "@type": "ImageObject",
-  url: absoluteUrl("/icon.svg"),
-},
-hasMap: "https://maps.google.com/?q=MeTime+Studio+Cherkasy",
-openingHoursSpecification: [{
-  "@type": "OpeningHoursSpecification",
-  dayOfWeek: ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
-  opens: "09:00",
-  closes: "21:00",
-}],
-```
-
-**4. ISR замість `force-dynamic`**
-Файли: `app/page.tsx`, `app/portfolio/page.tsx`
-Кожен запит — повний SSR з читанням Blob. Холодні старти = повільний TTFB.
-
-```ts
-// замінити:
-export const dynamic = "force-dynamic"
-// на:
-export const revalidate = 3600
-```
-При збереженні через адмінку — тригерити `revalidatePath('/')`.
-
-**5. H1 на `/portfolio` — без ключових слів**
-Файл: `app/portfolio/page.tsx`
-Поточний H1: `"MeTime Studio"` — назва бренду, не пошуковий запит.
-
-```tsx
-// замінити на:
-<h1>Портфоліо MeTime Studio — фото та відеозйомка в Черкасах</h1>
-```
-
-**6. Meta description портфоліо — без міста і кількості**
-Файл: `app/portfolio/page.tsx`
-
-```ts
-// замінити на:
-description: "Портфоліо MeTime Studio — 170+ робіт з весільної, танцювальної, дитячої та бренд-зйомки у Черкасах."
-```
-
-**7. Image Sitemap для фото портфоліо**
-170 зображень з Blob не індексуються через Image Search. Google Images — окремий трафік для фотостудії.
-Реалізація: `app/image-sitemap.xml/route.ts` з усіма фото URLs та alt текстами з `photos.json`.
-
-**8. Copyright → динамічний рік**
-Файл: `lib/i18n.tsx`
-Зараз: `"© 2025 MeTime."` — вже застаріло.
-
-```tsx
-{`© ${new Date().getFullYear()} MeTime. `}
-```
+**Додатково:** При оновленні статті через адмінку додати `revalidatePath('/blog')`
 
 ---
 
-### 🟡 Корисно
+### 🟠 Важливо (НАСТУПНИЙ СПРИНТ)
 
-**9. Service + Offer schema з цінами**
-Прайс-лист є в `lib/i18n.tsx`. Додавання `Offer` з `priceSpecification` може дати цінові rich snippets у видачі.
+**3. H1 на /portfolio — SEO-оптимізований**  
+**Поточний:** "Портфоліо фото та відеозйомки"  
+**Проблема:** Не містить ключові слова + місто  
+**Змінити на:**
+```tsx
+<h1 className="font-serif text-4xl font-light text-cream md:text-6xl">
+  Портфоліо MeTime Studio — 170+ робіт з фото та відеозйомки в Черкасах
+</h1>
+```
+**Файл:** `app/portfolio/page.tsx` (лінія 40)
 
+**4. Service + Offer schema з цінами**  
+**Статус:** ❌ Цін немає в JSON-LD  
+**План:**
+- `lib/seo.ts` → розширити `buildServiceOffersJsonLd()` з `priceCurrency` і `pricingType`
+- Додати до Home page JSON-LD для 4 основних сервісів
+- Приклад для wedding:
 ```json
 {
   "@type": "Service",
   "name": "Весільна відеозйомка",
-  "offers": [
-    { "@type": "Offer", "name": "Minimal", "price": "6000", "priceCurrency": "UAH" }
-  ]
+  "url": "https://metime.in.ua/wedding",
+  "offers": [{
+    "@type": "Offer",
+    "name": "Minimal",
+    "price": "6000",
+    "priceCurrency": "UAH"
+  }]
 }
 ```
 
-**10. Person schema для команди**
-Андрій, Нікіта, Анна, Ігор є в i18n. `Person` schema з `jobTitle` + `worksFor` покращує Knowledge Panel для запитів типу "відеограф Черкаси Андрій".
-
-**11. VideoObject thumbnailUrl — унікальний для кожного відео**
-Файл: `lib/seo.ts` → `buildVideoObjectJsonLd()`
-Зараз всі відео мають `thumbnailUrl: OG_IMAGE` (hero.jpg). Google очікує унікальне зображення.
-Мінімум — передавати категорійне фото з `photos.json` за категорією відео.
-
-**12. Hero subtitle: англійський текст на українській сторінці**
-Файл: `lib/i18n.tsx:109`
-`"Photo & Video Production Studio"` — EN текст на UK сторінці. Для ботів байдуже, але для UX варто перекласти.
-
-**13. Alt-теги — унікальні замість категорійних дублікатів**
-Файл: `lib/portfolio/image-src.ts`
-Зараз ~20 фото мають однаковий alt `"MeTime Studio — танцювальна зйомка"`.
-Мінімум: `"MeTime Studio — танцювальна зйомка №12"`.
-Ідеально: додати поле `caption` у `PhotoMeta` і заповнювати при upload через адмінку.
-
-**14. OG Image портфоліо — захистити від зміни Blob URL**
-Файл: `lib/seo.ts`
-Поточний `OG_IMAGE_PORTFOLIO` — зовнішній Blob URL. Якщо storage переїде — broken image у всіх шерах.
-Краще: завантажити як `/public/images/og-portfolio.jpg` і використовувати локальний шлях.
+**5. Перевірка Alt-тегів на унікальність**  
+**Статус:** ⚠️ Категорійні дублікати (~20 фото мають одинаковий alt)  
+**Рішення:**
+- Додати поле `caption` в `PhotoMeta` структуру (`lib/portfolio/types.ts`)
+- Генерувати alt як: `"MeTime Studio — танцювальна зйомка #{photoIndex}"`
+- При upload через адмінку запитувати унікальний опис
 
 ---
 
-### 🔵 Довгострокові
+### 🟡 Корисно (OPTIMIZATIONS)
 
-**15. EN-версія сайту з i18n routing**
-Переклади є (`SITE_DESCRIPTION_EN`), але URL завжди `/` — Google індексує тільки одну версію.
-Потребує Next.js i18n routing: `/uk/` і `/en/` з hreflang тегами. Великий рефакторинг.
+**6. Person schema для команди — розширити**  
+**Поточний стан:** ✅ Basic Person schema є  
+**Покращення:**
+- Додати `image` для кожного члена команди (`public/images/team/`)
+- Додати `url` з посиланням на їх Instagram/portfolio
+- Додати `description` з мініпрезентацією
+**Вплив:** Knowledge Panel для запитів "Андрій відеограф Черкаси"
 
-**16. FAQPage schema**
-Секція "Не знайшов ідеальний пакет?" і питання у статтях блогу — натуральні FAQ.
-Google може показати FAQ блок у результатах → вищий CTR без росту позицій.
+**7. OG Image портфоліо — захистити від Blob URL**  
+**Поточний:** `OG_IMAGE_PORTFOLIO` = Blob URL (небезпечно)  
+**Рішення:**
+- Завантажити одне репрезентативне фото як `/public/images/og-portfolio.jpg`
+- Замінити `OG_IMAGE_PORTFOLIO` = `absoluteUrl("/images/og-portfolio.jpg")`
+- Blob URL може піти → broken OG image у соц. мережах
 
-**17. NAP консистентність у каталогах**
-Name, Address, Phone — однаковий скрізь: сайт, GBP, Prom.ua, OLX, будь-які каталоги.
-Розбіжності у NAP негативно впливають на локальний пошук.
+**8. FAQPage schema для FAQ розділу**  
+**Поточний стан:** ❌ Немає FAQPage schema  
+**План:** 
+- `lib/seo.ts` → добавити `buildFaqJsonLd()`
+- Використати на `/blog/[slug]` сторінках де є `block.type === "faq"`
+- Google може показати FAQ блок у результатах → вищий CTR
+
+**9. VideoObject thumbnailUrl — унікальний для кожного**  
+**Поточний:** Всі відео мають `thumbnailUrl: OG_IMAGE` (однакова poster.jpg)  
+**Рішення:**
+- Виділити перше frame кожного відео при upload
+- Або використовувати репрезентативне фото з тієї ж категорії
+- Вплив: Кращий вигляд у видачі + Rich Video Snippets
+
+**10. Content hub: FAQs у текстах блогу**  
+**Поточний:** Немає окремої FAQ сторінки  
+**План:** Додати `/faq` сторінку з поширеними запитаннями + `@type: FAQPage`  
+**Вплив:** Featured Snippet候補 для запитів типу "як вибрати фотографа"
 
 ---
 
-## Моніторинг
+### 🔵 Довгострокові СТРАТЕГІЇ
 
-| Інструмент | Що перевіряти | Частота |
-|---|---|---|
-| Google Search Console | Coverage, Core Web Vitals, CTR по запитах | Щотижня |
-| PageSpeed Insights | LCP < 2.5s, INP < 200ms, CLS < 0.1 | Щомісяця |
-| Google Business Profile | Відгуки, перегляди, дзвінки | Щотижня |
-| Sitemap | https://metime.in.ua/sitemap.xml | Після деплоїв |
+**11. EN-версія сайту з i18n routing**  
+**Поточний стан:** ✅ Переклади є, але URL завжди `/`  
+**Проблема:** Google індексує лише одну версію, губимо 40% органічного трафіку  
+**План:** Требует рефакторинга — чекати Next.js i18n router improvements  
+**Примітка:** Наразі локаль змінюється через контекст, не URL
+
+**12. NAP консистентність у каталогах**  
+**Статус:** ⚠️ Потребує перевірки  
+**Name, Address, Phone** — мають бути однакові скрізь:
+- Сайт (✅ `lib/seo.ts` + `lib/i18n.tsx`)
+- GBP (❌ потребує перевірки)
+- Prom.ua, OLX, Avvo (❌ якщо є профілі)
+- Структуровані дані (✅ JSON-LD)
+
+**Розбіжності в NAP** → Штраф від Google для локального пошуку
+
+**13. Hreflang для майбутньої EN версії**  
+**Поточний:** Відсутня  
+**План:** При запуску EN версії додати:
+```html
+<link rel="alternate" hreflang="uk" href="https://metime.in.ua/uk/" />
+<link rel="alternate" hreflang="en" href="https://metime.in.ua/en/" />
+<link rel="alternate" hreflang="x-default" href="https://metime.in.ua/" />
+```
+
+**14. Schema Markup для Reviews (UserReview)**  
+**План:** При рості відгуків на GBP додати schema:
+```json
+{
+  "@type": "Review",
+  "@type": "Rating",
+  "ratingValue": "5",
+  "bestRating": "5",
+  "reviewRating": {"@type": "Rating", "ratingValue": "5"}
+}
+```
 
 ---
 
-## Наступні пріоритети одним рядком
+## Моніторинг 📊
 
-**Зробити зараз:** логотип href="/" + LocalBusiness geo/id + ISR замість force-dynamic + H1 портфоліо + meta description портфоліо + copyright динамічний + GBP (якщо не зроблено).
+| Інструмент | Метрика | Поточний стан | Як перевірити | Частота |
+|---|---|---|---|---|
+| **Google Search Console** | Core Web Vitals (LCP, INP, CLS) | ⚠️ Потребує перевірки | https://search.google.com/search-console → Insights | Щодня |
+| | Coverage (Error/Warning) | ⚠️ | Search Console → Coverage | Після деплою |
+| | CTR by query | ❓ | Performance tab → Top Queries | Щотижня |
+| **PageSpeed Insights** | LCP < 2.5s | ⚠️ | https://pagespeed.web.dev → Home + Portfolio | Щомісяця |
+| | INP < 200ms | ⚠️ | | |
+| | CLS < 0.1 | ⚠️ | | |
+| **Google Business Profile** | Visibility + Actions | ❌ Невідомо | https://business.google.com | Щотижня |
+| | Reviews + Rating | ❌ | | |
+| | Phone calls tracked | ❌ | | |
+| **Техніка** | Sitemap + Image Sitemap | ✅ | https://metime.in.ua/sitemap.xml | Після запуску продукту |
+| | robots.txt + GTM | ✅ | Перевірити у DevTools | При змінах |
+| **Конкуренти** | Позиції по ключовим | ❓ | SE Ranking / Semrush | Щомісяця |
+| | Backlinks | ❓ | Ahrefs / Majestic | Щомісяця |
+
+---
+
+## Action Plan — НАСТУПНІ КРОКИ ⚡
+
+### 🟢 ВІДРАЗУ (На цьому спринті)
+
+1. **GBP верифікація** — 1 день
+   - Перевірити чи існує профіль на https://business.google.com
+   - Якщо НІ → Створити + заповнити всі поля
+   - Якщо ТАК → Синхронізувати дані з сайтом
+
+2. **Blog ISR конверсія** — 30 хвилин
+   - Замінити `force-dynamic` → `revalidate` у 2 файлах:
+     - `app/blog/page.tsx` (3600s)
+     - `app/blog/[slug]/page.tsx` (86400s)
+   - Тест: запустити Next.js, переконатися що сторінки рендерять OK
+
+3. **Portfolio H1 + description** — 15 хвилин
+   - Оновити H1 на `/portfolio` (додати ключові слова + місто)
+   - Розширити meta description (додати 170+ + категорії)
+
+### 🟡 НАСТУПНИЙ СПРИНТ (1–2 тижні)
+
+4. **Service Offer schema з ціни** — 1 день
+   - Розширити `buildServiceOffersJsonLd()` функцію
+   - Передавати `priceCurrency: "UAH"` + `pricingType: "FIXED"`
+   - Тест у Google's Rich Result Tester
+
+5. **Alt-теги унікальність** — 2–3 дні
+   - Додати `caption` field у `PhotoMeta`
+   - Оновити `photoAlt` helper функцію
+   - Тест: перевірити alt в DevTools
+
+6. **Verify + tune Core Web Vitals** — 1–2 дні
+   - Запустити PageSpeed Insights на всіх сторінках
+   - Визначити bottleneck (фото? js-bundle? fonts?)
+   - Оптимізувати
+
+### 🔵 ПОТІМ (Місяць+)
+
+7. Добавити FAQPage schema для blog  
+8. Захистити OG Image портфоліо  
+9. Розширити Person schema для команди  
+10. Налаштувати backlink strategy + content marketing  
+11. EN версія сайту (великий рефакторинг)
