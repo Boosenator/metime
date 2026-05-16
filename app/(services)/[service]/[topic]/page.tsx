@@ -246,8 +246,8 @@ export default async function TopicPage({
         <article className="article-container">
 
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-12">
-            <ol className="flex flex-wrap items-center gap-2 text-xs text-gray-mid">
+          <nav aria-label="Breadcrumb" className="breadcrumb-nav">
+            <ol className="breadcrumb-list">
               <li><a href="/" className="transition-colors hover:text-cream">{copy.home}</a></li>
               <li aria-hidden="true" className="text-white/20">/</li>
               <li><a href={`/${serviceSlug}`} className="transition-colors hover:text-cream">{serviceName}</a></li>

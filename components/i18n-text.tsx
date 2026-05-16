@@ -7,3 +7,9 @@ export function ServicesLabel() {
 
   return <>{t.services.sectionLabel}</>
 }
+
+export function HomeLabel() {
+  const { locale } = useI18n()
+
+  return <>{locale === "en" ? "Home" : "Головна"}</>
+}

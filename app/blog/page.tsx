@@ -135,8 +135,8 @@ export default async function BlogPage() {
       <main className="page-main">
         <div className="article-container">
           {/* Breadcrumb */}
-          <nav aria-label="Breadcrumb" className="mb-10">
-            <ol className="flex items-center gap-2 text-xs text-gray-mid">
+          <nav aria-label="Breadcrumb" className="breadcrumb-nav">
+            <ol className="breadcrumb-list">
               <li><a href="/" className="transition-colors hover:text-cream">{copy.home}</a></li>
               <li aria-hidden="true" className="text-white/20">/</li>
               <li className="text-cream">{copy.blog}</li>

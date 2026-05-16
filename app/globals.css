@@ -92,6 +92,14 @@
     @apply mb-14 border-b border-white/10 pb-10 md:mb-16 md:pb-12;
   }
 
+  .breadcrumb-nav {
+    @apply mb-12;
+  }
+
+  .breadcrumb-list {
+    @apply flex flex-wrap items-center gap-2 text-xs text-gray-mid;
+  }
+
   .page-eyebrow {
     @apply mb-4 text-xs uppercase tracking-[0.3em] text-wine;
   }

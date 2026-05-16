@@ -2,7 +2,7 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
-import { ServicesLabel } from "@/components/i18n-text"
+import { HomeLabel, ServicesLabel } from "@/components/i18n-text"
 import { I18nProvider } from "@/lib/i18n"
 import { readServicesSync, getServiceSync as getService } from "@/lib/services/storage"
 import {
@@ -68,6 +68,14 @@ export default async function ServicePage({
       <main className="page-main">
         {/* Hero */}
         <div className="article-container">
+          <nav aria-label="Breadcrumb" className="breadcrumb-nav">
+            <ol className="breadcrumb-list">
+              <li><a href="/" className="transition-colors hover:text-cream"><HomeLabel /></a></li>
+              <li aria-hidden="true" className="text-white/20">/</li>
+              <li className="text-cream">{service.name}</li>
+            </ol>
+          </nav>
+
           <div className="page-hero">
             <p className="page-eyebrow"><ServicesLabel /></p>
             <h1 className="page-title mb-6">
