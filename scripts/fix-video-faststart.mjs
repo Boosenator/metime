@@ -19,7 +19,7 @@ import { createWriteStream, mkdirSync, rmSync, existsSync } from "fs"
 import { readFile } from "fs/promises"
 import { join, extname } from "path"
 import { pipeline } from "stream/promises"
-import { get as blobGet, put as blobPut } from "@vercel/blob"
+import { list as blobList, put as blobPut } from "@vercel/blob"
 import https from "https"
 import http from "http"
 
@@ -110,11 +110,12 @@ async function main() {
   console.log("📥  Читаю videos.json з Blob...")
   let videos
   try {
-    const blob = await blobGet(BLOB_VIDEOS_JSON, { access: "public" })
-    if (!blob?.url) throw new Error("Blob not found")
-    videos = await fetchJson(blob.url)
-  } catch {
-    console.error("❌  Не вдалося отримати videos.json з Blob")
+    const { blobs } = await blobList({ prefix: BLOB_VIDEOS_JSON })
+    const meta = blobs.find((b) => b.pathname === BLOB_VIDEOS_JSON)
+    if (!meta) throw new Error("videos.json не знайдено в Blob")
+    videos = await fetchJson(meta.url)
+  } catch (e) {
+    console.error("❌  Не вдалося отримати videos.json з Blob:", e.message)
     process.exit(1)
   }
 
