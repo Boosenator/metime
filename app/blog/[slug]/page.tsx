@@ -209,8 +209,8 @@ export default async function BlogPostPage({
         }}
       />
       <Navigation />
-      <main className="min-h-screen bg-dark pb-24 pt-28">
-        <article className="mx-auto max-w-3xl px-6 lg:px-8">
+      <main className="page-main">
+        <article className="article-container">
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb" className="mb-12">
             <ol className="flex flex-wrap items-center gap-2 text-xs text-gray-mid">
@@ -223,11 +223,11 @@ export default async function BlogPostPage({
           </nav>
 
           {/* Header */}
-          <header className="mb-12 border-b border-white/10 pb-12">
-            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-wine">
+          <header className="page-hero">
+            <p className="page-eyebrow">
               {CATEGORY_LABELS[post.category] ?? post.category}
             </p>
-            <h1 className="mb-5 font-serif text-4xl font-light text-cream md:text-5xl">
+            <h1 className="mb-5 font-serif text-4xl font-light leading-tight text-cream md:text-5xl">
               {post.title}
             </h1>
             <p className="mb-4 text-lg leading-relaxed text-gray-light">
@@ -244,13 +244,13 @@ export default async function BlogPostPage({
           <div>{post.blocks.map((block, i) => renderBlock(block, i))}</div>
 
           {/* CTA */}
-          <div className="mt-16 border border-wine/20 px-8 py-10 text-center">
+          <div className="cta-panel">
             <p className="mb-6 font-serif text-2xl font-light text-cream">
               Маєте питання про зйомку?
             </p>
             <a
               href="/#contact"
-              className="inline-block border border-wine px-8 py-3 text-sm uppercase tracking-[0.2em] text-cream transition-colors duration-300 hover:bg-wine"
+              className="outline-cta"
             >
               Написати нам
             </a>

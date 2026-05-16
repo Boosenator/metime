@@ -4,18 +4,18 @@ import Image from "next/image"
 import { useI18n } from "@/lib/i18n"
 
 const teamMembers = [
-  { id: "nikita", image: "/images/team/Nikita.jpg" },
+  { id: "nikita", image: "/images/team/nikita.jpg" },
   { id: "anna", image: "/images/team/anna.jpg" },
   { id: "andrii", image: "/images/team/andrii.jpg" },
-  { id: "ihor", image: "/images/team/Ihor.jpg" },
+  { id: "ihor", image: "/images/team/ihor.jpg" },
 ] as const
 
 export function Team() {
   const { t } = useI18n()
 
   return (
-    <section id="team" className="bg-dark px-6 py-16 lg:px-8 lg:py-20">
-      <div className="mx-auto max-w-7xl">
+    <section id="team" className="section-shell bg-dark">
+      <div className="section-container">
         {/* Section Header */}
         <div className="mb-10 text-center">
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">

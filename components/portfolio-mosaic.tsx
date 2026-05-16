@@ -154,7 +154,7 @@ export function PortfolioMosaic({
           }
         }
       `}</style>
-      <div className="mosaic-grid grid grid-cols-2 gap-3 overflow-x-clip px-4 sm:gap-4 lg:gap-[2px] lg:px-6">
+      <div className="mosaic-grid grid grid-cols-2 gap-3 overflow-x-clip sm:gap-4 lg:gap-[2px]">
         {cells.map((cell, i) => (
           <MosaicCell
             key={cell.photoId}
@@ -182,17 +182,17 @@ export function PortfolioMosaic({
           >
             <button
               onClick={close}
-              className="absolute right-6 top-6 text-cream hover:text-wine transition-colors"
+              className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center bg-black/40 text-cream transition-colors hover:text-wine md:right-6 md:top-6"
               aria-label="Close"
             >
-              <X className="h-8 w-8" />
+              <X className="h-6 w-6" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); navigate("prev") }}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:left-8"
+              className="absolute left-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-black/40 text-wine/70 transition-colors hover:text-wine md:left-8"
               aria-label="Previous"
             >
-              <ChevronLeft className="h-10 w-10" />
+              <ChevronLeft className="h-7 w-7" />
             </button>
             <div
               className="relative h-[80vh] w-[90vw] max-w-5xl"
@@ -209,10 +209,10 @@ export function PortfolioMosaic({
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); navigate("next") }}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-wine/70 hover:text-wine transition-colors md:right-8"
+              className="absolute right-2 top-1/2 flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-black/40 text-wine/70 transition-colors hover:text-wine md:right-8"
               aria-label="Next"
             >
-              <ChevronRight className="h-10 w-10" />
+              <ChevronRight className="h-7 w-7" />
             </button>
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm tracking-widest text-gray-mid">
               {lightbox + 1} / {cells.length}

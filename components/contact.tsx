@@ -17,7 +17,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="bg-dark-card px-6 py-16 lg:px-8 lg:py-20"
+      className="section-shell bg-dark-card"
     >
       <div className="mx-auto max-w-2xl text-center">
         {/* Header */}

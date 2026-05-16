@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
+import { ServicesLabel } from "@/components/i18n-text"
 import { I18nProvider } from "@/lib/i18n"
 import { readServicesSync, getServiceSync as getService } from "@/lib/services/storage"
 import {
@@ -64,16 +65,16 @@ export default async function ServicePage({
         }}
       />
       <Navigation />
-      <main className="min-h-screen bg-dark pb-24 pt-28">
-        <div className="mx-auto max-w-5xl px-6 lg:px-8">
+      <main className="page-main">
+        <div className="page-container">
 
           {/* Hero */}
-          <div className="mb-20">
-            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-wine">Послуги</p>
-            <h1 className="mb-6 font-serif text-5xl font-light text-cream md:text-7xl">
+          <div className="page-hero">
+            <p className="page-eyebrow"><ServicesLabel /></p>
+            <h1 className="page-title mb-6">
               {service.name}
             </h1>
-            <div className="max-w-2xl space-y-4 text-lg leading-relaxed text-gray-light">
+            <div className="max-w-2xl space-y-4 text-base leading-relaxed text-gray-light md:text-lg">
               {service.intro.split("\n\n").map((para, i) => (
                 <p key={i}>{para}</p>
               ))}
@@ -88,12 +89,12 @@ export default async function ServicePage({
             >
               Корисні матеріали
             </p>
-            <div className="grid gap-px bg-white/5 md:grid-cols-3">
+            <div className="content-grid md:grid-cols-3">
               {service.topics.map((topic) => (
                 <a
                   key={topic.slug}
                   href={`/${slug}/${topic.slug}`}
-                  className="group bg-dark p-8 transition-colors duration-300 hover:bg-white/5"
+                  className="group content-card"
                 >
                   <h2 className="mb-3 font-serif text-xl font-light text-cream transition-colors duration-300 group-hover:text-wine">
                     {topic.title}
@@ -110,7 +111,7 @@ export default async function ServicePage({
           </section>
 
           {/* CTA */}
-          <div className="border border-wine/20 px-10 py-12 text-center">
+          <div className="cta-panel">
             <p className="mb-6 font-serif text-3xl font-light text-cream">
               Хочете поговорити про вашу зйомку?
             </p>
@@ -119,7 +120,7 @@ export default async function ServicePage({
             </p>
             <a
               href="/#contact"
-              className="inline-block border border-wine px-10 py-3 text-sm uppercase tracking-[0.2em] text-cream transition-colors duration-300 hover:bg-wine"
+              className="outline-cta px-10"
             >
               Написати нам
             </a>

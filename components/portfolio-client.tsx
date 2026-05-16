@@ -54,7 +54,7 @@ function CategoryTabs({
         <button
           key={cat.id}
           onClick={() => onChange(cat.id)}
-          className={`shrink-0 px-3 py-1.5 text-[10px] uppercase tracking-[0.15em] transition-all duration-300 md:px-4 md:py-2 md:text-[11px] ${
+          className={`min-h-11 shrink-0 px-4 py-2 text-[10px] uppercase tracking-[0.15em] transition-all duration-300 md:min-h-0 md:px-4 md:py-2 md:text-[11px] ${
             active === cat.id
               ? "border-b border-wine text-wine"
               : "text-gray-mid hover:text-cream"
@@ -294,7 +294,7 @@ export function PortfolioClient({
   return (
     <section id="portfolio" className="bg-dark py-16 lg:py-20">
       {/* Heading */}
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+      <div className="site-container">
         <div className="mb-10 text-center">
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">
             {t.nav.portfolio}
@@ -306,8 +306,8 @@ export function PortfolioClient({
       </div>
 
       {/* Sticky tabs bar */}
-      <div className="sticky top-12 z-40 bg-dark/95 px-6 py-4 backdrop-blur-md md:top-14 lg:px-8">
-        <div className="mx-auto max-w-7xl flex items-center justify-between">
+      <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-40 bg-dark/95 px-6 py-4 backdrop-blur-md md:top-20 lg:px-8">
+        <div className="section-container flex items-center justify-between">
           {/* Photo / Video toggle */}
           <div className="flex items-center gap-6 md:gap-12">
             {portfolioTabs.map((tab) => (
@@ -334,7 +334,7 @@ export function PortfolioClient({
         {mode === "photo" && (
           <>
             {/* Category tabs — always visible; selecting non-all switches to grid */}
-            <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <div className="site-container">
               <div className="mb-6">
                 <CategoryTabs
                   categories={photoCategories}
@@ -345,9 +345,11 @@ export function PortfolioClient({
             </div>
 
             {isDesktop && photoFilter === "all" ? (
-              <PortfolioMosaic cells={cells} grid={grid} />
+              <div className="site-container">
+                <PortfolioMosaic cells={cells} grid={grid} />
+              </div>
             ) : (
-              <div className="mx-auto max-w-7xl px-6 lg:px-8">
+              <div className="site-container">
                 <PhotoGrid photos={filteredPhotos} onOpen={openGallery} />
               </div>
             )}
@@ -356,7 +358,7 @@ export function PortfolioClient({
 
         {/* ── Video with category filters ───────────────────────────────── */}
         {mode === "video" && (
-          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="site-container">
             <div className="mb-6">
               <CategoryTabs
                 categories={videoCategories}

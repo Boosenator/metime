@@ -10,10 +10,10 @@ export function Navigation() {
 
   const navLinks = [
     { label: t.nav.portfolio, href: "/#portfolio" },
-    { label: "Послуги", href: "/#services" },
+    { label: t.nav.services, href: "/#services" },
     { label: t.nav.pricing, href: "/#pricing" },
     { label: t.nav.team, href: "/#team" },
-    { label: "Блог", href: "/blog" },
+    { label: t.nav.blog, href: "/blog" },
     { label: t.nav.contact, href: "/#contact" },
   ]
 
@@ -111,13 +111,18 @@ export function Navigation() {
 
       {/* Mobile Overlay */}
       <div
-        className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-dark/98 transition-all duration-500 md:hidden ${
+        className={`fixed inset-0 z-50 flex min-h-svh flex-col items-center justify-center overflow-y-auto bg-dark/98 px-6 py-20 transition-all duration-500 md:hidden ${
           isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
         }`}
+        style={{
+          paddingTop: "calc(5rem + env(safe-area-inset-top))",
+          paddingBottom: "calc(5rem + env(safe-area-inset-bottom))",
+        }}
       >
         <button
           onClick={() => setIsOpen(false)}
-          className="absolute right-6 top-6 z-[60] flex h-10 w-10 items-center justify-center text-cream transition-colors duration-300 hover:text-wine"
+          className="absolute right-6 z-[60] flex h-11 w-11 items-center justify-center text-cream transition-colors duration-300 hover:text-wine"
+          style={{ top: "calc(1rem + env(safe-area-inset-top))" }}
           aria-label="Close menu"
         >
           <X className="h-6 w-6" />

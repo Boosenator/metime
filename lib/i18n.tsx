@@ -18,8 +18,10 @@ type PricingCategory = {
 type Translations = {
   nav: {
     portfolio: string
+    services: string
     pricing: string
     team: string
+    blog: string
     contact: string
     book: string
   }
@@ -30,6 +32,16 @@ type Translations = {
     location: string
     cta: string
     scroll: string
+    seoText: string
+  }
+  services: {
+    sectionLabel: string
+    title: string
+  }
+  blog: {
+    sectionLabel: string
+    latestTitle: string
+    allPosts: string
   }
   portfolio: {
     title: string
@@ -100,8 +112,10 @@ const translations: Record<Locale, Translations> = {
   uk: {
     nav: {
       portfolio: "Портфоліо",
+      services: "Послуги",
       pricing: "Ціни",
       team: "Команда",
+      blog: "Блог",
       contact: "Контакт",
       book: "Записатися",
     },
@@ -112,6 +126,16 @@ const translations: Record<Locale, Translations> = {
       location: "Черкаси, Україна",
       cta: "Записатися на зйомку",
       scroll: "Далі",
+      seoText: "MeTime Studio — фото та відеостудія у Черкасах. Знімаємо весілля, love story, дітей, танці та бренд-контент. Понад 170 робіт у портфоліо.",
+    },
+    services: {
+      sectionLabel: "Послуги",
+      title: "Що ми знімаємо",
+    },
+    blog: {
+      sectionLabel: "Блог",
+      latestTitle: "Корисні статті",
+      allPosts: "Всі статті",
     },
     portfolio: {
       title: "Наші роботи",
@@ -380,8 +404,10 @@ const translations: Record<Locale, Translations> = {
   en: {
     nav: {
       portfolio: "Portfolio",
+      services: "Services",
       pricing: "Pricing",
       team: "Team",
+      blog: "Blog",
       contact: "Contact",
       book: "Book Now",
     },
@@ -392,6 +418,16 @@ const translations: Record<Locale, Translations> = {
       location: "Cherkasy, Ukraine",
       cta: "Book a Shoot",
       scroll: "Scroll",
+      seoText: "MeTime Studio is a photo and video studio in Cherkasy. We capture weddings, love stories, kids, dance, and brand content. More than 170 works in the portfolio.",
+    },
+    services: {
+      sectionLabel: "Services",
+      title: "What we shoot",
+    },
+    blog: {
+      sectionLabel: "Blog",
+      latestTitle: "Helpful articles",
+      allPosts: "All posts",
     },
     portfolio: {
       title: "Our Work",

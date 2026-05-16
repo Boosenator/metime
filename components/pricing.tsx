@@ -13,8 +13,8 @@ export function Pricing({ pricingData }: { pricingData: PricingData | null }) {
   const categories = pricingData?.[locale] ?? getDefaultPricingLocaleData(locale)
 
   return (
-    <section id="pricing" className="bg-dark-card px-6 py-16 lg:px-8 lg:py-20">
-      <div className="mx-auto max-w-7xl">
+    <section id="pricing" className="section-shell bg-dark-card">
+      <div className="section-container">
         {/* Section Header */}
         <div className="mb-8 text-center">
           <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">
@@ -26,7 +26,7 @@ export function Pricing({ pricingData }: { pricingData: PricingData | null }) {
         </div>
 
         {/* Category Tabs - Sticky */}
-        <div className="sticky top-16 z-40 -mx-6 mb-8 bg-dark-card/95 px-6 py-4 backdrop-blur-md lg:-mx-8 lg:px-8">
+        <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] z-40 -mx-6 mb-8 bg-dark-card/95 px-6 py-4 backdrop-blur-md md:top-20 lg:-mx-8 lg:px-8">
           <div className="flex flex-wrap justify-center gap-2 md:gap-4">
             {PRICING_CATEGORY_KEYS.map((key) => (
               <button

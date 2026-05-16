@@ -116,7 +116,7 @@ export function AdminBlogList({
                       </p>
                     </div>
 
-                    <div className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <div className="flex shrink-0 items-center gap-2 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
                       <button
                         onClick={() => router.push(`/admin/blog/${post.id}`)}
                         className="flex items-center gap-1.5 border border-white/15 px-3 py-1.5 text-xs text-gray-mid transition-colors hover:border-wine hover:text-cream"
@@ -176,7 +176,7 @@ export function AdminBlogList({
                   </p>
                 </div>
 
-                <div className="flex shrink-0 items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="flex shrink-0 items-center gap-2 sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
                   <button
                     onClick={() => router.push(`/admin/services/${topic.serviceSlug}/${topic.slug}`)}
                     className="flex items-center gap-1.5 border border-white/15 px-3 py-1.5 text-xs text-gray-mid transition-colors hover:border-wine hover:text-cream"

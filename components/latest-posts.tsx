@@ -1,4 +1,7 @@
+"use client"
+
 import type { BlogPost } from "@/lib/blog/types"
+import { useI18n } from "@/lib/i18n"
 
 const CATEGORY_LABELS: Record<string, string> = {
   wedding: "Весілля",
@@ -11,32 +14,34 @@ const CATEGORY_LABELS: Record<string, string> = {
 }
 
 export function LatestPosts({ posts }: { posts: BlogPost[] }) {
+  const { t } = useI18n()
+
   if (!posts.length) return null
 
   return (
-    <section id="blog-preview" className="bg-dark px-6 py-16 lg:px-8 lg:py-20">
-      <div className="mx-auto max-w-7xl">
+    <section id="blog-preview" className="section-shell bg-dark">
+      <div className="section-container">
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">Блог</p>
+            <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">{t.blog.sectionLabel}</p>
             <h2 className="font-serif text-3xl font-light text-cream md:text-5xl lg:text-6xl">
-              Корисні статті
+              {t.blog.latestTitle}
             </h2>
           </div>
           <a
             href="/blog"
             className="shrink-0 text-xs uppercase tracking-[0.2em] text-gray-mid transition-colors hover:text-cream"
           >
-            Всі статті →
+            {t.blog.allPosts} →
           </a>
         </div>
 
-        <div className="grid gap-px bg-white/8 md:grid-cols-3">
+        <div className="content-grid md:grid-cols-3">
           {posts.map((post) => (
             <a
               key={post.id}
               href={`/blog/${post.slug}`}
-              className="group bg-dark p-8 transition-colors duration-300 hover:bg-dark-card"
+              className="group content-card hover:bg-dark-card"
             >
               <p className="mb-3 text-xs uppercase tracking-[0.25em] text-wine">
                 {CATEGORY_LABELS[post.category] ?? post.category}

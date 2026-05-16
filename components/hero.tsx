@@ -108,7 +108,7 @@ export function Hero({
           {t.hero.cta}
         </a>
         <p className="mx-auto mt-8 max-w-sm text-[11px] leading-relaxed text-gray-mid/60">
-          MeTime Studio — фото та відеостудія у Черкасах. Знімаємо весілля, love story, дітей, танці та бренд-контент. Понад 170 робіт у портфоліо.
+          {t.hero.seoText}
         </p>
       </div>
 

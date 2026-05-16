@@ -91,8 +91,8 @@ export default async function BlogPage() {
         }}
       />
       <Navigation />
-      <main className="min-h-screen bg-dark pb-24 pt-28">
-        <div className="mx-auto max-w-4xl px-6 lg:px-8">
+      <main className="page-main">
+        <div className="page-container">
 
           {/* Breadcrumb */}
           <nav aria-label="Breadcrumb" className="mb-10">
@@ -104,13 +104,13 @@ export default async function BlogPage() {
           </nav>
 
           {/* Hero */}
-          <div className="mb-16 border-b border-white/8 pb-12">
-            <p className="mb-4 text-xs uppercase tracking-[0.3em] text-wine">Корисне</p>
-            <h1 className="mb-4 font-serif text-5xl font-light text-cream md:text-7xl">
+          <div className="page-hero">
+            <p className="page-eyebrow">Корисне</p>
+            <h1 className="page-title mb-4">
               Блог
             </h1>
-            <div className="flex items-end justify-between gap-4">
-              <p className="max-w-xl text-gray-light">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <p className="max-w-2xl text-gray-light">
                 Поради про підготовку до зйомки, відповіді на часті питання і корисні гайди від команди MeTime Studio.
               </p>
               <span className="shrink-0 text-xs text-gray-mid">
@@ -120,12 +120,12 @@ export default async function BlogPage() {
           </div>
 
           {/* Articles */}
-          <div className="grid gap-px bg-white/5 sm:grid-cols-2">
+          <div className="content-grid sm:grid-cols-2">
             {all.map((item) => (
               <a
                 key={item.key}
                 href={item.href}
-                className="group relative flex flex-col bg-dark p-8 transition-colors duration-300 hover:bg-white/[0.03]"
+                className="group content-card relative flex flex-col"
               >
                 {/* Wine left border on hover */}
                 <span className="absolute left-0 top-0 h-0 w-px bg-wine transition-all duration-500 group-hover:h-full" />
