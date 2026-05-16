@@ -253,7 +253,7 @@ export function PortfolioClient({
     }
   }, [hasVideos, mode])
 
-  const PAGE_SECTIONS = ["portfolio", "pricing", "team", "contact"]
+  const PAGE_SECTIONS = ["portfolio", "services", "pricing", "blog-preview", "team", "contact"]
 
   const getCurrentSectionIdx = useCallback(() => {
     const mid = window.scrollY + window.innerHeight / 3

@@ -14,7 +14,7 @@ export function LatestPosts({ posts }: { posts: BlogPost[] }) {
   if (!posts.length) return null
 
   return (
-    <section className="bg-dark px-6 py-16 lg:px-8 lg:py-20">
+    <section id="blog-preview" className="bg-dark px-6 py-16 lg:px-8 lg:py-20">
       <div className="mx-auto max-w-7xl">
         <div className="mb-10 flex items-end justify-between">
           <div>
