@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { Navigation } from "@/components/navigation"
 import { Hero } from "@/components/hero"
-import { ServicesGrid } from "@/components/services-grid"
 import { LatestPosts } from "@/components/latest-posts"
 import { PortfolioClient } from "@/components/portfolio-client"
 import { Pricing } from "@/components/pricing"
@@ -101,9 +100,6 @@ export default async function Home() {
             <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} videos={activeVideos} />
           </div>
           <div className="fade-in-section">
-            <ServicesGrid services={services} />
-          </div>
-          <div className="fade-in-section">
             <Pricing pricingData={pricingData} />
           </div>
           <div className="fade-in-section">
@@ -116,7 +112,7 @@ export default async function Home() {
             <Contact />
           </div>
         </main>
-        <Footer />
+        <Footer services={services} />
       </ScrollWrapper>
     </I18nProvider>
   )

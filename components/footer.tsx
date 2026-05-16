@@ -2,8 +2,9 @@
 
 import { Instagram } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
+import type { ServiceData } from "@/lib/services/types"
 
-export function Footer() {
+export function Footer({ services = [] }: { services?: ServiceData[] }) {
   const { t } = useI18n()
 
   return (
@@ -32,6 +33,29 @@ export function Footer() {
         <p className="text-center text-sm text-gray-mid">
           {t.footer.tagline}
         </p>
+
+        {services.length > 0 && (
+          <nav
+            aria-label={t.services.sectionLabel}
+            className="flex max-w-3xl flex-wrap items-center justify-center gap-x-4 gap-y-2 border-y border-white/8 px-4 py-5"
+          >
+            {services.map((service, index) => (
+              <span key={service.slug} className="inline-flex items-center gap-4">
+                <a
+                  href={`/${service.slug}`}
+                  className="font-serif text-lg font-light text-gray-light transition-colors hover:text-cream"
+                >
+                  {service.name}
+                </a>
+                {index < services.length - 1 && (
+                  <span className="text-xs text-white/15" aria-hidden="true">
+                    /
+                  </span>
+                )}
+              </span>
+            ))}
+          </nav>
+        )}
 
         {/* Social */}
         <a
