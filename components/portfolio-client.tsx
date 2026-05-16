@@ -260,7 +260,10 @@ export function PortfolioClient({
     let idx = -1
     for (let i = 0; i < PAGE_SECTIONS.length; i++) {
       const el = document.getElementById(PAGE_SECTIONS[i])
-      if (el && el.offsetTop <= scrolled) idx = i
+      if (el) {
+        const absoluteTop = el.getBoundingClientRect().top + window.scrollY
+        if (absoluteTop <= scrolled) idx = i
+      }
     }
     return idx
   }, [])
