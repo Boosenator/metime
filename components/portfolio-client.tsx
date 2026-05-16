@@ -17,6 +17,9 @@ type GalleryPhoto = {
   id: string
   filename: string
   src?: string
+  title?: string
+  alt?: string
+  caption?: string
   category: string
   wide: boolean
 }
@@ -172,6 +175,9 @@ export function PortfolioClient({
     id: p.id,
     filename: p.filename,
     src: p.src,
+    title: p.title,
+    alt: p.alt,
+    caption: p.caption,
     category: p.category && SUPPORTED_CATEGORIES.has(p.category) ? normalizeCategory(p.category) : getCategory(p.filename),
     wide: i % 5 === 0 || i % 7 === 0,
   }))

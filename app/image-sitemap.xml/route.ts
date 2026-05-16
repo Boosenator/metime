@@ -1,19 +1,8 @@
 import { readPortfolioData } from "@/lib/portfolio/read-data"
-import { getPortfolioImageSrc } from "@/lib/portfolio/image-src"
+import { getPortfolioImageSrc, photoCaption } from "@/lib/portfolio/image-src"
 import { absoluteUrl, SITE_URL } from "@/lib/seo"
 
 export const revalidate = 3600
-
-const CATEGORY_LABELS: Record<string, string> = {
-  dance: "Танцювальна зйомка MeTime Studio",
-  wedding: "Весільна зйомка MeTime Studio",
-  kids: "Дитяча зйомка MeTime Studio",
-  brand: "Бренд-зйомка MeTime Studio",
-  commercial: "Бренд-зйомка MeTime Studio",
-  lovestory: "Love Story MeTime Studio",
-  portrait: "Портретна зйомка MeTime Studio",
-  custom: "Фотозйомка MeTime Studio",
-}
 
 function escapeXml(str: string) {
   return str
@@ -31,7 +20,7 @@ export async function GET() {
     .map((photo) => {
       const src = getPortfolioImageSrc(photo)
       const imgUrl = src.startsWith("http") ? src : absoluteUrl(src)
-      const caption = CATEGORY_LABELS[photo.category ?? "custom"] ?? "Фотозйомка MeTime Studio"
+      const caption = photoCaption(photo)
       return `    <image:image>
       <image:loc>${escapeXml(imgUrl)}</image:loc>
       <image:caption>${escapeXml(caption)}</image:caption>

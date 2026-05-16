@@ -9,7 +9,7 @@ export const SITE_DESCRIPTION =
 export const SITE_DESCRIPTION_EN =
   "MeTime Studio is a photo and video production studio in Cherkasy, Ukraine. Weddings, love story, dance, portrait, brand, and kids shoots."
 export const OG_IMAGE = "/images/hero.jpg"
-export const OG_IMAGE_PORTFOLIO = "https://pvkfjwkaaidqblea.public.blob.vercel-storage.com/portfolio/images/custom-33.jpg"
+export const OG_IMAGE_PORTFOLIO = "/images/hero.jpg"
 
 export const CONTACT_INFO = {
   email: "boosyonya@gmail.com",

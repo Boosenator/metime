@@ -386,6 +386,7 @@ function LibraryCard({
   placed,
   selected,
   onCategoryChange,
+  onTextChange,
   onToggleSelected,
   onPreview,
   onExcludeToggle,
@@ -395,6 +396,7 @@ function LibraryCard({
   placed: boolean
   selected: boolean
   onCategoryChange: (value: string) => void
+  onTextChange: (field: "title" | "alt" | "caption", value: string) => void
   onToggleSelected: () => void
   onPreview: () => void
   onExcludeToggle: () => void
@@ -451,6 +453,39 @@ function LibraryCard({
               </option>
             ))}
           </select>
+        </label>
+
+        <label className="block">
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Title</span>
+          <input
+            type="text"
+            value={photo.title || ""}
+            onChange={(e) => onTextChange("title", e.target.value)}
+            placeholder="Portfolio title"
+            className="w-full rounded border border-white/10 bg-dark px-2 py-2 text-sm text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Alt</span>
+          <input
+            type="text"
+            value={photo.alt || ""}
+            onChange={(e) => onTextChange("alt", e.target.value)}
+            placeholder="Specific image alt text"
+            className="w-full rounded border border-white/10 bg-dark px-2 py-2 text-sm text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
+          />
+        </label>
+
+        <label className="block">
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Caption</span>
+          <textarea
+            value={photo.caption || ""}
+            onChange={(e) => onTextChange("caption", e.target.value)}
+            placeholder="Image sitemap caption"
+            rows={2}
+            className="w-full resize-none rounded border border-white/10 bg-dark px-2 py-2 text-sm text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
+          />
         </label>
 
         <div className="flex gap-2">
@@ -967,6 +1002,12 @@ export function AdminPortfolioEditor({
   const updateCategory = useCallback((photoId: string, category: string) => {
     setPhotos((prev) =>
       prev.map((photo) => (photo.id === photoId ? { ...photo, category: normalizePhotoCategory(category) } : photo))
+    )
+  }, [])
+
+  const updatePhotoText = useCallback((photoId: string, field: "title" | "alt" | "caption", value: string) => {
+    setPhotos((prev) =>
+      prev.map((photo) => (photo.id === photoId ? { ...photo, [field]: value } : photo))
     )
   }, [])
 
@@ -1902,6 +1943,7 @@ export function AdminPortfolioEditor({
                   placed={placedIds.has(photo.id)}
                   selected={selectedPhotoIds.includes(photo.id)}
                   onCategoryChange={(value) => updateCategory(photo.id, value)}
+                  onTextChange={(field, value) => updatePhotoText(photo.id, field, value)}
                   onToggleSelected={() => togglePhotoSelection(photo.id)}
                   onPreview={() => setPreviewPhotoId(photo.id)}
                   onExcludeToggle={() => (photo.excluded ? includePhoto(photo.id) : excludePhoto(photo.id))}

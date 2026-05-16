@@ -4,6 +4,10 @@ import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
 import { saveHeroVideosData, saveLayoutData, savePhotosData, saveVideosData } from "@/lib/portfolio/storage"
 import type { HeroVideoConfig, LayoutData, PhotoMeta, VideoMeta } from "@/lib/portfolio/types"
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object"
+}
+
 export async function PUT(request: Request) {
   const authError = requireAdminAuth(request)
   if (authError) return authError
@@ -31,20 +35,23 @@ export async function PUT(request: Request) {
     },
     cells: payload.cells
       .filter(
-        (c) =>
-          c &&
+        (c) => {
+          if (!isRecord(c)) return false
+          return (
           typeof c.photoId === "string" &&
           typeof c.x === "number" &&
           typeof c.y === "number" &&
           typeof c.spanX === "number" &&
           typeof c.spanY === "number"
+          )
+        }
       )
       .map((c) => ({
-        photoId: c.photoId,
-        x: Math.max(0, Math.floor(c.x)),
-        y: Math.max(0, Math.floor(c.y)),
-        spanX: Math.max(1, Math.floor(c.spanX)),
-        spanY: Math.max(1, Math.floor(c.spanY)),
+        photoId: c.photoId as string,
+        x: Math.max(0, Math.floor(c.x as number)),
+        y: Math.max(0, Math.floor(c.y as number)),
+        spanX: Math.max(1, Math.floor(c.spanX as number)),
+        spanY: Math.max(1, Math.floor(c.spanY as number)),
         locked: Boolean(c.locked),
       })),
     version: typeof payload.version === "number" ? payload.version + 1 : 1,
@@ -55,8 +62,9 @@ export async function PUT(request: Request) {
   const validatedPhotos = Array.isArray(bodyWithPhotos.photos)
     ? bodyWithPhotos.photos
         .filter(
-          (photo): photo is PhotoMeta =>
-            Boolean(photo) &&
+          (photo): photo is PhotoMeta => {
+            if (!isRecord(photo) || !isRecord(photo.lab)) return false
+            return (
             typeof photo.id === "string" &&
             typeof photo.filename === "string" &&
             typeof photo.width === "number" &&
@@ -66,21 +74,29 @@ export async function PUT(request: Request) {
             typeof photo.lab?.L === "number" &&
             typeof photo.lab?.a === "number" &&
             typeof photo.lab?.b === "number"
+            )
+          }
         )
         .map((photo) => ({
           ...photo,
           category: typeof photo.category === "string" ? photo.category : "custom",
           excluded: Boolean(photo.excluded),
+          title: typeof photo.title === "string" && photo.title.trim() ? photo.title.trim() : undefined,
+          alt: typeof photo.alt === "string" && photo.alt.trim() ? photo.alt.trim() : undefined,
+          caption: typeof photo.caption === "string" && photo.caption.trim() ? photo.caption.trim() : undefined,
         }))
     : null
   const validatedVideos = Array.isArray(bodyWithPhotos.videos)
     ? bodyWithPhotos.videos
         .filter(
-          (video): video is VideoMeta =>
-            Boolean(video) &&
+          (video): video is VideoMeta => {
+            if (!isRecord(video)) return false
+            return (
             typeof video.id === "string" &&
             typeof video.filename === "string" &&
             typeof video.uploadedAt === "string"
+            )
+          }
         )
         .map((video) => ({
           ...video,

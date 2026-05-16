@@ -8,6 +8,9 @@ export type PhotoMeta = {
   id: string
   filename: string
   src?: string
+  title?: string
+  alt?: string
+  caption?: string
   category?: string
   excluded?: boolean
   width: number
