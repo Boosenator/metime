@@ -10,7 +10,16 @@ export function Footer() {
     <footer className="border-t border-gray-warm/30 bg-dark px-6 py-12 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-6">
         {/* Logo */}
-        <a href="/" className="flex flex-col items-center leading-none">
+        <a
+          href="/"
+          onClick={(e) => {
+            if (window.location.pathname === "/") {
+              e.preventDefault()
+              window.scrollTo({ top: 0, behavior: "smooth" })
+            }
+          }}
+          className="flex flex-col items-center leading-none"
+        >
           <span className="font-serif text-2xl font-semibold tracking-wide text-cream">
             MeTime
           </span>
