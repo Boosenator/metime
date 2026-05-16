@@ -112,10 +112,10 @@ export default async function Home() {
             mobileVideoSrc={mobileHeroVideo ? getPortfolioVideoSrc(mobileHeroVideo) : null}
           />
           <div className="fade-in-section">
-            <ServicesGrid services={services} />
+            <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} videos={activeVideos} />
           </div>
           <div className="fade-in-section">
-            <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} videos={activeVideos} />
+            <ServicesGrid services={services} />
           </div>
           <div className="fade-in-section">
             <Pricing pricingData={pricingData} />
