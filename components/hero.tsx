@@ -100,16 +100,16 @@ export function Hero({
 
       {/* Content */}
       <div className="relative z-10 px-6 text-center">
-        <p className="mb-4 text-xs uppercase tracking-[0.4em] text-gray-light md:text-sm">
+        <h1 className="mb-4 text-xs uppercase tracking-[0.4em] text-gray-light md:text-sm">
           {t.hero.subtitle}
-        </p>
-        <h1 className="font-serif text-4xl font-light leading-tight text-cream md:text-6xl lg:text-7xl xl:text-8xl">
+        </h1>
+        <p className="font-serif text-4xl font-light leading-tight text-cream md:text-6xl lg:text-7xl xl:text-8xl">
           <span className="text-balance">
             {t.hero.title1}
             <br />
             {t.hero.title2}
           </span>
-        </h1>
+        </p>
         <p className="mx-auto mt-6 max-w-md text-sm text-gray-light md:text-base">
           {t.hero.location}
         </p>
