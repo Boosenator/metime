@@ -110,17 +110,14 @@ export function Hero({
             {t.hero.title2}
           </span>
         </p>
-        <p className="mx-auto mt-6 max-w-md text-sm text-gray-light md:text-base">
-          {t.hero.location}
-        </p>
         <a
           href="#contact"
           className="group mt-10 inline-block border border-cream/30 px-10 py-4 text-xs uppercase tracking-[0.3em] text-cream transition-all duration-500 hover:border-wine hover:bg-wine"
         >
           {t.hero.cta}
         </a>
-        <p className="mt-8 text-[10px] uppercase tracking-[0.3em] text-gray-mid/50">
-          Весілля · Love story · Dance · Діти · Портрет · Бренд
+        <p className="mx-auto mt-8 max-w-sm text-[11px] leading-relaxed text-gray-mid/60">
+          MeTime Studio — фото та відеостудія у Черкасах. Знімаємо весілля, love story, дітей, танці та бренд-контент. Понад 170 робіт у портфоліо.
         </p>
       </div>
 
