@@ -66,9 +66,8 @@ export default async function ServicePage({
       />
       <Navigation />
       <main className="page-main">
-        <div className="page-container">
-
-          {/* Hero */}
+        {/* Hero */}
+        <div className="article-container">
           <div className="page-hero">
             <p className="page-eyebrow"><ServicesLabel /></p>
             <h1 className="page-title mb-6">
@@ -80,7 +79,9 @@ export default async function ServicePage({
               ))}
             </div>
           </div>
+        </div>
 
+        <div className="page-container">
           {/* Topics grid */}
           <section aria-labelledby="topics-heading" className="mb-20">
             <p
