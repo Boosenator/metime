@@ -1,40 +1,32 @@
 "use client"
 
-import type { ServiceData } from "@/lib/services/types"
 import { useI18n } from "@/lib/i18n"
+import type { ServiceData } from "@/lib/services/types"
 
 export function ServicesGrid({ services }: { services: ServiceData[] }) {
   const { t } = useI18n()
 
   return (
-    <section id="services" className="section-shell bg-dark-card">
-      <div className="section-container">
-        <div className="mb-10 text-center">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">{t.services.sectionLabel}</p>
-          <h2 className="font-serif text-3xl font-light text-cream md:text-5xl lg:text-6xl">
-            {t.services.title}
-          </h2>
-        </div>
+    <section id="services" className="border-y border-white/8 bg-dark-card px-6 py-8 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <p className="shrink-0 text-xs uppercase tracking-[0.3em] text-wine">
+          {t.services.sectionLabel}
+        </p>
 
-        <div className="content-grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {services.map((service, i) => (
+        <nav
+          aria-label={t.services.sectionLabel}
+          className="flex flex-wrap gap-x-6 gap-y-3 md:justify-end"
+        >
+          {services.map((service) => (
             <a
               key={service.slug}
               href={`/${service.slug}`}
-              className="group content-card flex min-h-28 items-center gap-4"
+              className="text-sm text-gray-light underline-offset-4 transition-colors hover:text-cream hover:underline md:text-base"
             >
-              <span className="font-mono text-xs text-wine/40">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <span className="font-serif text-lg font-light text-cream transition-colors duration-300 group-hover:text-wine">
-                {service.name}
-              </span>
-              <span className="ml-auto text-xs text-gray-mid opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                →
-              </span>
+              {service.name}
             </a>
           ))}
-        </div>
+        </nav>
       </div>
     </section>
   )
