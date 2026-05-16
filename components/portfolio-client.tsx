@@ -256,11 +256,11 @@ export function PortfolioClient({
   const PAGE_SECTIONS = ["portfolio", "services", "pricing", "blog-preview", "team", "contact"]
 
   const getCurrentSectionIdx = useCallback(() => {
-    const mid = window.scrollY + window.innerHeight / 3
+    const scrolled = window.scrollY + 10
     let idx = -1
     for (let i = 0; i < PAGE_SECTIONS.length; i++) {
       const el = document.getElementById(PAGE_SECTIONS[i])
-      if (el && el.offsetTop <= mid) idx = i
+      if (el && el.offsetTop <= scrolled) idx = i
     }
     return idx
   }, [])
