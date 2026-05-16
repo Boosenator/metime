@@ -10,6 +10,7 @@ export function Navigation() {
 
   const navLinks = [
     { label: t.nav.portfolio, href: "/#portfolio" },
+    { label: "Послуги", href: "/#services" },
     { label: t.nav.pricing, href: "/#pricing" },
     { label: t.nav.team, href: "/#team" },
     { label: "Блог", href: "/blog" },

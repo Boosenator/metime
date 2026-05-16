@@ -11,20 +11,20 @@ export function ServicesGrid({ services }: { services: ServiceData[] }) {
           </h2>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-3 md:gap-6">
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
           {services.map((service, i) => (
             <a
               key={service.slug}
               href={`/${service.slug}`}
-              className="group flex items-center gap-3 border border-white/10 px-6 py-4 transition-colors duration-300 hover:border-wine"
+              className="group flex items-center justify-center gap-3 border border-white/10 px-5 py-4 transition-colors duration-300 hover:border-wine sm:justify-start"
             >
               <span className="font-mono text-xs text-wine/40">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <span className="font-serif text-lg font-light text-cream transition-colors duration-300 group-hover:text-wine">
+              <span className="font-serif text-base font-light text-cream transition-colors duration-300 group-hover:text-wine sm:text-lg">
                 {service.name}
               </span>
-              <span className="text-xs text-gray-mid opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+              <span className="hidden text-xs text-gray-mid opacity-0 transition-opacity duration-300 group-hover:opacity-100 sm:inline">
                 →
               </span>
             </a>
