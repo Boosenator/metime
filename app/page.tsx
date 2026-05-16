@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { Navigation } from "@/components/navigation"
 import { Hero } from "@/components/hero"
+import { ServicesGrid } from "@/components/services-grid"
+import { LatestPosts } from "@/components/latest-posts"
 import { PortfolioClient } from "@/components/portfolio-client"
 import { Pricing } from "@/components/pricing"
 import { Team } from "@/components/team"
@@ -12,6 +14,8 @@ import { getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
 import { readPricingData } from "@/lib/pricing/storage"
 import { absoluteUrl, buildPersonsJsonLd, buildServiceOffersJsonLd, buildStudioJsonLd, buildVideoObjectJsonLd, buildWebsiteJsonLd, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo"
+import { readServices } from "@/lib/services/storage"
+import { readBlogPosts } from "@/lib/blog/storage"
 
 export const metadata: Metadata = {
   title: "Фото та відеозйомка в Черкасах",
@@ -42,8 +46,16 @@ export const metadata: Metadata = {
 export const revalidate = 3600
 
 export default async function Home() {
-  const { photos, videos, heroVideos, layout } = await readPortfolioData()
-  const pricingData = await readPricingData()
+  const [{ photos, videos, heroVideos, layout }, pricingData, services, allPosts] = await Promise.all([
+    readPortfolioData(),
+    readPricingData(),
+    readServices(),
+    readBlogPosts(),
+  ])
+  const latestPosts = allPosts
+    .filter((p) => p.published)
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+    .slice(0, 3)
   const activePhotos = photos.filter((photo) => !photo.excluded)
   const activeVideos = videos.filter((video) => !video.excluded)
   const videoMap = new Map(videos.map((video) => [video.id, video]))
@@ -100,10 +112,16 @@ export default async function Home() {
             mobileVideoSrc={mobileHeroVideo ? getPortfolioVideoSrc(mobileHeroVideo) : null}
           />
           <div className="fade-in-section">
+            <ServicesGrid services={services} />
+          </div>
+          <div className="fade-in-section">
             <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} videos={activeVideos} />
           </div>
           <div className="fade-in-section">
             <Pricing pricingData={pricingData} />
+          </div>
+          <div className="fade-in-section">
+            <LatestPosts posts={latestPosts} />
           </div>
           <div className="fade-in-section">
             <Team />
