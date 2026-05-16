@@ -13,7 +13,7 @@ import { I18nProvider } from "@/lib/i18n"
 import { getPortfolioVideoSrc } from "@/lib/portfolio/image-src"
 import { readPortfolioData } from "@/lib/portfolio/read-data"
 import { readPricingData } from "@/lib/pricing/storage"
-import { absoluteUrl, buildPersonsJsonLd, buildServiceOffersJsonLd, buildStudioJsonLd, buildVideoObjectJsonLd, buildWebsiteJsonLd, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo"
+import { absoluteUrl, buildPersonsJsonLd, buildServiceOffersJsonLd, buildStudioJsonLd, buildWebsiteJsonLd, OG_IMAGE, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo"
 import { readServices } from "@/lib/services/storage"
 import { readBlogPosts } from "@/lib/blog/storage"
 
@@ -88,20 +88,6 @@ export default async function Home() {
                 { name: "Дитяча відеозйомка", slug: "kids", packages: pricingData?.uk.kids.packages ?? [] },
                 { name: "Бренд-зйомка", slug: "brand", packages: pricingData?.uk.brand.packages ?? [] },
               ]),
-              ...(desktopHeroVideo
-                ? [buildVideoObjectJsonLd(
-                    desktopHeroVideo,
-                    absoluteUrl(getPortfolioVideoSrc(desktopHeroVideo)),
-                    activePhotos.find((p) => p.category === desktopHeroVideo.category && p.width > p.height)?.src
-                  )]
-                : []),
-              ...activeVideos
-                .filter((v) => v.id !== desktopHeroVideo?.id && v.id !== mobileHeroVideo?.id)
-                .map((v) => buildVideoObjectJsonLd(
-                  v,
-                  absoluteUrl(getPortfolioVideoSrc(v)),
-                  activePhotos.find((p) => p.category === v.category && p.width > p.height)?.src
-                )),
             ]),
           }}
         />
