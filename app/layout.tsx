@@ -22,9 +22,9 @@ export const metadata: Metadata = {
   ...buildDefaultMetadata(),
   icons: {
     icon: [
-      { url: "/icon-64x64.jpg", sizes: "64x64", type: "image/jpeg" },
+      { url: "/icon-64x64.png", sizes: "64x64", type: "image/png" },
     ],
-    apple: "/apple-icon.jpg",
+    apple: "/apple-icon.png",
   },
 }
 
