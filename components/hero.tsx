@@ -1,11 +1,8 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import Image from "next/image"
 import { ChevronDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
-
-const HERO_POSTER = "/images/hero-poster.jpg"
 
 export function Hero({
   desktopVideoSrc,
@@ -43,20 +40,9 @@ export function Hero({
             muted
             playsInline
             preload="auto"
-            poster={HERO_POSTER}
             className="h-full w-full object-cover"
           />
-        ) : (
-          <Image
-            src={HERO_POSTER}
-            alt=""
-            aria-hidden="true"
-            fill
-            priority
-            className="hero-poster-zoom object-cover"
-            sizes="100vw"
-          />
-        )}
+        ) : null}
       </div>
 
       {/* Background video — Mobile (9:16) */}
@@ -70,20 +56,9 @@ export function Hero({
             muted
             playsInline
             preload="auto"
-            poster={HERO_POSTER}
             className="h-full w-full object-cover"
           />
-        ) : (
-          <Image
-            src={HERO_POSTER}
-            alt=""
-            aria-hidden="true"
-            fill
-            priority
-            className="hero-poster-zoom object-cover"
-            sizes="100vw"
-          />
-        )}
+        ) : null}
       </div>
 
       {/* Gradient overlay */}
