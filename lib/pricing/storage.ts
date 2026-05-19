@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync } from "fs"
 import { writeFile } from "fs/promises"
 import { join } from "path"
-import { get, put } from "@vercel/blob"
+import { head, put } from "@vercel/blob"
 import type { PricingData } from "./types"
 
 const DATA_DIR = join(process.cwd(), "data", "pricing")
@@ -27,9 +27,10 @@ function readLocalJson<T>(path: string): T | null {
 
 async function readBlobJson<T>(pathname: string): Promise<T | null> {
   try {
-    const blob = await get(pathname, { access: "public" })
-    if (!blob || blob.statusCode !== 200 || !blob.stream) return null
-    const response = new Response(blob.stream)
+    const blob = await head(pathname)
+    if (!blob?.downloadUrl) return null
+    const response = await fetch(blob.downloadUrl, { cache: "no-store" })
+    if (!response.ok) return null
     return (await response.json()) as T
   } catch {
     return null
@@ -41,6 +42,7 @@ async function writeBlobJson(pathname: string, data: unknown) {
     access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
+    cacheControlMaxAge: 60,
     contentType: "application/json; charset=utf-8",
   })
 }
