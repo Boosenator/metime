@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
 import { readBlogPosts, saveBlogPosts } from "@/lib/blog/storage"
 import type { BlogPost, BlogPostTranslation } from "@/lib/blog/types"
@@ -63,5 +64,7 @@ export async function POST(request: Request) {
   }
 
   await saveBlogPosts([...posts, post])
+  revalidatePath("/blog")
+  revalidatePath("/sitemap.xml")
   return NextResponse.json(post, { status: 201 })
 }

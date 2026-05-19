@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { revalidatePath } from "next/cache"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
 import { readBlogPosts, saveBlogPosts } from "@/lib/blog/storage"
 import type { BlogPost, BlogPostTranslation } from "@/lib/blog/types"
@@ -69,6 +70,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   posts[idx] = updated
   await saveBlogPosts(posts)
+  revalidatePath("/blog")
+  revalidatePath(`/blog/${updated.slug}`)
+  revalidatePath("/sitemap.xml")
   return NextResponse.json(updated)
 }
 
@@ -82,6 +86,10 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
   if (filtered.length === posts.length) {
     return NextResponse.json({ error: "Not found" }, { status: 404 })
   }
+  const deleted = posts.find((p) => p.id === id)
   await saveBlogPosts(filtered)
+  revalidatePath("/blog")
+  if (deleted) revalidatePath(`/blog/${deleted.slug}`)
+  revalidatePath("/sitemap.xml")
   return NextResponse.json({ ok: true })
 }

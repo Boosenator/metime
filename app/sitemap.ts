@@ -3,6 +3,8 @@ import { absoluteUrl } from "@/lib/seo"
 import { readServicesSync } from "@/lib/services/storage"
 import { readBlogPosts } from "@/lib/blog/storage"
 
+export const revalidate = 3600
+
 function dateStr(date: Date | string): string {
   return new Date(date).toISOString().split("T")[0]
 }

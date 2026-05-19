@@ -5,6 +5,7 @@ import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
 import { absoluteUrl, buildBreadcrumbJsonLd, buildPortfolioJsonLd, OG_IMAGE_PORTFOLIO, SITE_NAME } from "@/lib/seo"
+import { readServicesSync } from "@/lib/services/storage"
 
 export const revalidate = 3600
 
@@ -35,6 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PortfolioPage() {
   const { photos, layout } = await readPortfolioData()
+  const services = readServicesSync()
   const activePhotos = photos.filter((photo) => !photo.excluded)
 
   const photoMap = new Map(activePhotos.map((p) => [p.id, p]))
@@ -70,7 +72,7 @@ export default async function PortfolioPage() {
         </div>
         <PortfolioMosaic cells={cells} grid={layout.grid} />
       </main>
-      <Footer />
+      <Footer services={services} />
     </I18nProvider>
   )
 }

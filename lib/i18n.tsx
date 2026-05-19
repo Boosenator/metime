@@ -116,7 +116,7 @@ const translations: Record<Locale, Translations> = {
       pricing: "Ціни",
       team: "Команда",
       blog: "Блог",
-      contact: "Контакт",
+      contact: "Контакти",
       book: "Записатися",
     },
     hero: {
@@ -389,7 +389,7 @@ const translations: Record<Locale, Translations> = {
       },
     },
     contact: {
-      sectionLabel: "Контакт",
+      sectionLabel: "Контакти",
       title1: "Давайте створимо",
       title2: "щось неймовірне",
       subtitle: "Розкажіть нам про вашу ідею, і ми втілимо її в життя",

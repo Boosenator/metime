@@ -259,7 +259,14 @@ export function PortfolioClient({
     }
   }, [hasVideos, mode])
 
-  const PAGE_SECTIONS = ["portfolio", "services", "pricing", "blog-preview", "team", "contact"]
+  const PAGE_SECTIONS = ["portfolio", "pricing", "blog-preview", "team", "contact"]
+
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id)
+    if (!el) return
+    const top = el.getBoundingClientRect().top + window.scrollY - 88
+    window.scrollTo({ top: Math.max(0, top), behavior: "smooth" })
+  }, [])
 
   const getCurrentSectionIdx = useCallback(() => {
     const scrolled = window.scrollY + 10
@@ -279,17 +286,17 @@ export function PortfolioClient({
     if (idx <= 0) {
       window.scrollTo({ top: 0, behavior: "smooth" })
     } else {
-      document.getElementById(PAGE_SECTIONS[idx - 1])?.scrollIntoView({ behavior: "smooth" })
+      scrollToSection(PAGE_SECTIONS[idx - 1])
     }
-  }, [getCurrentSectionIdx])
+  }, [getCurrentSectionIdx, scrollToSection])
 
   const scrollToNext = useCallback(() => {
     const idx = getCurrentSectionIdx()
     const next = idx + 1
     if (next < PAGE_SECTIONS.length) {
-      document.getElementById(PAGE_SECTIONS[next])?.scrollIntoView({ behavior: "smooth" })
+      scrollToSection(PAGE_SECTIONS[next])
     }
-  }, [getCurrentSectionIdx])
+  }, [getCurrentSectionIdx, scrollToSection])
 
   useEffect(() => {
     const onScroll = () => setShowScrollActions(window.scrollY > 300)
@@ -351,7 +358,7 @@ export function PortfolioClient({
             </div>
 
             {isDesktop && photoFilter === "all" ? (
-              <div className="site-container">
+              <div className="w-full">
                 <PortfolioMosaic cells={cells} grid={grid} />
               </div>
             ) : (

@@ -19,7 +19,7 @@ export function Contact() {
       id="contact"
       className="section-shell bg-dark-card"
     >
-      <div className="mx-auto max-w-2xl text-center">
+      <div className="mx-auto max-w-4xl text-center">
         {/* Header */}
         <p className="mb-3 text-xs uppercase tracking-[0.3em] text-wine">
           {t.contact.sectionLabel}
@@ -45,7 +45,7 @@ export function Contact() {
         </a>
 
         {/* Contact Details */}
-        <div className="mt-12 flex flex-col items-center gap-4">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
           <a
             href={`mailto:${CONTACT_INFO.email}`}
             className="group flex items-center gap-2 text-sm text-gray-mid transition-colors duration-300 hover:text-cream"

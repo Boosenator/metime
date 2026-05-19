@@ -43,6 +43,40 @@
 | "Blog треба перевести з force-dynamic на ISR" | Не робити механічно, поки блог читає locale з cookies. Спершу треба вирішити мовну архітектуру. |
 | "EN переклади є, але URL ті самі" | Це тепер P0-ризик, бо перекладів стало більше і cookie-locale почав впливати на публічний контент. |
 
+### Google Search Console: "Обнаружена, не проиндексирована"
+
+**Стан на 2026-05-18:** у GSC є група URL зі статусом `Обнаружена, не проиндексирована`. Приклади: `/blog`, `/brand`, `/brand/dlya-soczmerezh`, `/brand/pidhotovka`, `/dance`, `/dance/pidhotovka`, `/dance/styli`, `/kids`, `/kids/newborn`, `/kids/pidhotovka`. У звіті для цих URL останнє сканування відсутнє.
+
+**Що це означає:** Google знайшов URL через sitemap або внутрішні посилання, але ще не вирішив витрачати crawl budget на повне сканування та індексацію. Це не санкція і не технічна помилка сама по собі. Для молодого або слабко прокачаного сайту це типовий сигнал: Google поки не бачить достатньо цінності, трасту або внутрішньої важливості цих сторінок.
+
+**Ймовірні причини саме для MeTime:**
+
+1. Молодий домен і мало зовнішніх сигналів: небагато згадок бренду, беклінків, переходів із соцмереж і Google Business Profile.
+2. Частина service landing pages ще виглядає як короткі сторінки послуг, а не як сильні посадкові сторінки з повним commercial intent.
+3. Внутрішня перелінковка поки слабка: Google бачить sitemap, але має мало контекстних сигналів, які сторінки є головними, а які допоміжними.
+4. Бракує контентних кластерів навколо ключових послуг: dance, brand, kids, wedding мають нарощувати topical authority через статті, FAQ, кейси і портфоліо.
+5. Мовна архітектура на cookie/localStorage може ускладнювати оцінку контенту, хоча сам статус `Discovered - currently not indexed` частіше пов'язаний із пріоритетом сканування, а не з canonical-помилкою.
+
+**Що перевірити вручну в GSC для 5-10 URL:**
+
+1. `Проверка URL -> Просмотреть просканированную страницу -> HTML`: переконатися, що Google бачить повний HTML, а не майже порожню JS-обгортку.
+2. `Проверка URL -> Страница доступна Google?`: перевірити, що немає `noindex`, blocked by robots, redirect або soft 404.
+3. Canonical: заявлений canonical має збігатися з URL сторінки.
+4. Rendered screenshot: переконатися, що головний контент, H1, FAQ і посилання доступні після рендеру.
+5. Sitemap: URL має бути в `https://metime.in.ua/sitemap.xml`, а `lastmod` має бути логічним для статті або деплою.
+
+**План дій для індексації:**
+
+1. Підсилити landing pages `/dance`, `/brand`, `/kids`, `/wedding`: мінімум 1000-1500 слів корисного тексту, H2/H3, FAQ, CTA, приклади форматів, ціни або посилання на pricing, блоки з портфоліо.
+2. Додати контекстні внутрішні посилання: з service landing на релевантні статті, з кожної статті назад на service landing, pricing, portfolio і суміжні матеріали.
+3. Створити 2-4 вузькі SEO-матеріали на кожен кластер. Для dance першими: Group Session, Pole Dance відеозйомка, ідеї Reels для танцю, як зняти хореографію для Instagram.
+4. Додати/покращити FAQ на сторінках, де є реальні питання клієнтів. FAQ має бути видимим на сторінці і дублюватись у FAQPage schema.
+5. Підсилити портфоліо: людські `alt`, `title`, `caption`, стабільна OG-картинка і внутрішні посилання з релевантних статей.
+6. Після публікації важливих сторінок вручну запросити індексацію в GSC: головна, `/dance`, `/brand`, `/kids`, `/blog`, нові комерційні статті.
+7. Підняти зовнішній траст: Google Business Profile, Instagram/TikTok/Facebook/Pinterest bio links, локальні каталоги, партнери, локації, ведучі, декоратори, танцювальні школи.
+
+**Очікування:** перші сторінки можуть зайти в індекс за 1-3 тижні після посилення контенту, перелінковки і ручного запиту індексації. Нормальна стабілізація індексації для молодого локального сайту - 1-3 місяці.
+
 ## P0 - Критично
 
 ### 1. Винести мови в окремі URL
@@ -214,18 +248,21 @@
 |---|---|---|---|
 | P0 | URL-based i18n для `/en` + `hreflang` | Code/Architecture | 2-4 дні |
 | P0 | GBP audit/setup + NAP sync | Off-site | 1 день |
+| P0 | GSC discovered/not indexed triage: перевірити HTML/render/canonical для 10 URL і запросити індексацію ключових сторінок | QA/SEO | 0.5 дня |
+| P1 | Посилити service landing pages `/dance`, `/brand`, `/kids`, `/wedding` до повноцінних commercial pages | Content/SEO | 2-4 дні |
 | P1 | Locale-aware metadata і JSON-LD | Code | 1-2 дні |
 | P1 | Portfolio metadata/H1/OG image cleanup | Code/Content | 0.5 дня |
 | P1 | Structured data validation | QA | 0.5 дня |
 | P1 | Manual alt/caption для portfolio і blog carousel | Code/Content | 1-2 дні |
 | P1 | Contextual internal links у статтях | Content | 1 день |
+| P1 | Створити SEO-кластери навколо dance/brand/kids: 2-4 вузькі статті на кожну послугу | Content | 3-6 днів |
 | P2 | Production Core Web Vitals audit | QA/Perf | 1 день |
 | P2 | Повні EN body translations | Content | 2-5 днів |
 | P3 | Reviews/cases/trust pages | Content | 2-3 дні |
 
 ## KPI на 30 Днів
 
-1. Search Console: усі важливі URL індексуються без duplicate/canonical проблем.
+1. Search Console: ключові URL (`/`, `/dance`, `/brand`, `/kids`, `/blog`, нові service topics) переходять зі статусу `Обнаружена, не проиндексирована` в `Проиндексирована` або хоча б мають фактичне останнє сканування.
 2. GBP: профіль активний, заповнений, з фото, послугами і першими відгуками.
 3. Local queries: з'являються покази за "фотограф Черкаси", "відеограф Черкаси", "весільна відеозйомка Черкаси".
 4. CTR: title/description для portfolio/service pages не нижче середнього по сайту.

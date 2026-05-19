@@ -213,6 +213,7 @@ export default async function TopicPage({
   const localized = getLocalizedTopic(topic, locale)
   const copy = TOPIC_COPY[locale]
   const serviceName = locale === "en" ? SERVICE_NAMES_EN[serviceSlug] ?? service.name : service.name
+  const services = readServicesSync()
 
   const faqItems = localized.blocks
     .filter((b): b is { type: "faq"; items: FaqItem[] } => b.type === "faq")
@@ -287,7 +288,7 @@ export default async function TopicPage({
 
         </article>
       </main>
-      <Footer />
+      <Footer services={services} />
     </I18nProvider>
   )
 }

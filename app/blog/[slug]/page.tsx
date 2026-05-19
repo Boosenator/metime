@@ -5,6 +5,7 @@ import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
 import { readBlogPosts } from "@/lib/blog/storage"
 import { getPostOgImage } from "@/lib/blog/og-image"
+import { readServicesSync } from "@/lib/services/storage"
 import type { TopicBlock } from "@/lib/blog/types"
 import {
   absoluteUrl,
@@ -176,6 +177,7 @@ export default async function BlogPostPage({
   const posts = await readBlogPosts()
   const post = posts.find((p) => p.slug === slug && p.published)
   if (!post) notFound()
+  const services = readServicesSync()
 
   const faqItems = post.blocks
     .filter((b): b is { type: "faq"; items: FaqItem[] } => b.type === "faq")
@@ -280,7 +282,7 @@ export default async function BlogPostPage({
           )}
         </article>
       </main>
-      <Footer />
+      <Footer services={services} />
     </I18nProvider>
   )
 }

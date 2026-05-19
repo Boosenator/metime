@@ -89,8 +89,9 @@ export default async function BlogPage() {
   const categoryLabels = locale === "en" ? CATEGORY_LABELS_EN : CATEGORY_LABELS
   const allBlogPosts = await readBlogPosts()
   const blogPosts = allBlogPosts.filter((p) => p.published)
+  const services = readServicesSync()
 
-  const serviceTopics: ArticleCard[] = readServicesSync().flatMap((s) =>
+  const serviceTopics: ArticleCard[] = services.flatMap((s) =>
     s.topics.map((t) => {
       const localized = getLocalizedTopic(t, locale)
       return {
@@ -197,7 +198,7 @@ export default async function BlogPage() {
 
         </div>
       </main>
-      <Footer />
+      <Footer services={services} />
     </I18nProvider>
   )
 }

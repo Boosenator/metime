@@ -81,11 +81,11 @@ function CategoryPricing({
   return (
     <div className="space-y-12">
       {/* Packages Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="flex flex-wrap justify-center gap-6">
         {category.packages.map((pkg: PricingPackageItem, idx) => (
           <div
             key={pkg.name}
-            className={`group relative flex flex-col border transition-all duration-500 hover:-translate-y-1 ${
+            className={`group relative flex w-full flex-col border transition-all duration-500 hover:-translate-y-1 md:basis-[calc(50%-0.75rem)] lg:basis-[calc(25%-1.125rem)] ${
               idx === category.packages.length - 1
                 ? "border-wine/40 bg-dark"
                 : "border-gray-warm/50 bg-dark"

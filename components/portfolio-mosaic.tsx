@@ -154,7 +154,7 @@ export function PortfolioMosaic({
           }
         }
       `}</style>
-      <div className="mosaic-grid grid grid-cols-2 gap-3 overflow-x-clip sm:gap-4 lg:gap-[2px]">
+      <div className="mosaic-grid grid w-full grid-cols-2 gap-3 overflow-x-clip sm:gap-4 lg:gap-[2px]">
         {cells.map((cell, i) => (
           <MosaicCell
             key={cell.photoId}
