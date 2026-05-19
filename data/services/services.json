@@ -789,8 +789,8 @@
     "topics": [
       {
         "slug": "grupova-videozyomka-tantsyu",
-        "title": "Групова відеозйомка танців у Черкасах | Group Session від MeTime",
-        "description": "Group Session від MeTime — групова відеозйомка танцю в Черкасах для студій, команд і танцівниць, які хочуть стильний контент без бюджету на повноцінний кліп.",
+        "title": "Групова відеозйомка Танцю у Черкасах — Pole Dance, Heels, Hip-Hop",
+        "description": "Групова відеозйомка танцю в Черкасах для студій і танцівниць — Group Session MeTime. Знімаємо Pole Dance, Heels, Hip-Hop. Стильний контент від 500 ₴ з людини.",
         "keywords": [
           "групова відеозйомка танців Черкаси",
           "Group Session MeTime",
@@ -830,7 +830,7 @@
           },
           {
             "type": "h2",
-            "text": "Кому підходить Group Session"
+            "text": "Кому підходить групова відеозйомка танцю в Черкасах"
           },
           {
             "type": "p",
@@ -1085,6 +1085,15 @@
             ]
           },
           {
+            "type": "links",
+            "heading": "Читати також",
+            "items": [
+              { "text": "Pole Dance відеозйомка в Черкасах", "href": "/dance/videozyomka-pole-dance" },
+              { "text": "Reels і TikTok для танцювальної студії", "href": "/dance/reels-tiktok-dlya-tantsiv" },
+              { "text": "Підготовка до танцювальної фотосесії", "href": "/dance/pidhotovka" }
+            ]
+          },
+          {
             "type": "h2",
             "text": "Group Session — коли хочеться просто красиво зняти свій танець"
           },
@@ -1107,8 +1116,8 @@
         ],
         "translations": {
           "en": {
-            "title": "Group Dance Videography in Cherkasy | Group Session by MeTime",
-            "description": "Group Session by MeTime is a group dance video shoot in Cherkasy for studios, teams, and dancers who want stylish content without the budget of a full music video.",
+            "title": "Group Dance Videography in Cherkasy: Pole Dance, Heels, Hip-Hop",
+            "description": "Group dance videography in Cherkasy for studios and dancers — Group Session MeTime. We film Pole Dance, Heels, Hip-Hop. Stylish content from ₴500 per person.",
             "keywords": [
               "group dance videography Cherkasy",
               "Group Session MeTime",
@@ -1146,7 +1155,7 @@
               },
               {
                 "type": "h2",
-                "text": "Who Group Session Is For"
+                "text": "Who Group Dance Videography in Cherkasy Is For"
               },
               {
                 "type": "p",
@@ -1398,6 +1407,15 @@
                     "q": "Can we film in different looks?",
                     "a": "Yes, if it fits into the shoot timing."
                   }
+                ]
+              },
+              {
+                "type": "links",
+                "heading": "Also read",
+                "items": [
+                  { "text": "Pole Dance Videography in Cherkasy", "href": "/dance/videozyomka-pole-dance" },
+                  { "text": "Reels & TikTok for Dance Studios", "href": "/dance/reels-tiktok-dlya-tantsiv" },
+                  { "text": "Preparing for a Dance Photoshoot", "href": "/dance/pidhotovka" }
                 ]
               },
               {
