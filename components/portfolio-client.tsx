@@ -113,33 +113,36 @@ function VideoGrid({
   onOpen: (item: VideoMeta) => void
 }) {
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
-      {videos.map((item, index) => (
-        <div
-          key={item.id}
-          className="group cursor-pointer"
-          style={{ animation: "fadeScaleIn 0.5s ease both", animationDelay: `${index * 50}ms` }}
-          onClick={() => onOpen(item)}
-        >
-          <div className="relative aspect-video overflow-hidden">
-            <VideoPosterFrame
-              src={getPortfolioVideoSrc(item)}
-              seekTo={item.posterTime ?? 0}
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-cream/30 bg-dark/40 backdrop-blur-sm transition-all duration-300 group-hover:border-wine group-hover:bg-wine/70 group-hover:scale-110 md:h-20 md:w-20">
-                <Play className="h-6 w-6 translate-x-0.5 text-cream md:h-7 md:w-7" fill="currentColor" />
+    <div className="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6 grid-flow-dense">
+      {videos.map((item, index) => {
+        const isPortrait = item.orientation === "portrait"
+        return (
+          <div
+            key={item.id}
+            className={`group cursor-pointer ${isPortrait ? "col-span-1" : "col-span-2 md:col-span-2"}`}
+            style={{ animation: "fadeScaleIn 0.5s ease both", animationDelay: `${index * 50}ms` }}
+            onClick={() => onOpen(item)}
+          >
+            <div className={`relative overflow-hidden ${isPortrait ? "aspect-[9/16]" : "aspect-video"}`}>
+              <VideoPosterFrame
+                src={getPortfolioVideoSrc(item)}
+                seekTo={item.posterTime ?? 0}
+                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className={`flex items-center justify-center rounded-full border-2 border-cream/30 bg-dark/40 backdrop-blur-sm transition-all duration-300 group-hover:border-wine group-hover:bg-wine/70 group-hover:scale-110 ${isPortrait ? "h-12 w-12" : "h-16 w-16 md:h-20 md:w-20"}`}>
+                  <Play className={`translate-x-0.5 text-cream ${isPortrait ? "h-4 w-4" : "h-6 w-6 md:h-7 md:w-7"}`} fill="currentColor" />
+                </div>
               </div>
             </div>
+            <div className="mt-3">
+              <h3 className={`font-serif font-light text-cream transition-colors duration-300 group-hover:text-wine ${isPortrait ? "text-sm md:text-base" : "text-lg md:text-xl"}`}>
+                {item.title || item.filename}
+              </h3>
+            </div>
           </div>
-          <div className="mt-4">
-            <h3 className="font-serif text-lg font-light text-cream transition-colors duration-300 group-hover:text-wine md:text-xl">
-              {item.title || item.filename}
-            </h3>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -443,10 +446,21 @@ export function PortfolioClient({
           <button onClick={closeVideo} className="absolute right-6 top-6 text-cream hover:text-wine transition-colors" aria-label="Close">
             <X className="h-8 w-8" />
           </button>
-          <div className="flex h-[84vh] w-[96vw] max-w-7xl items-center justify-center" onClick={(e) => e.stopPropagation()}>
+          <div
+            className={`flex items-center justify-center ${
+              videoModal.orientation === "portrait"
+                ? "h-[90vh] w-auto"
+                : "h-[84vh] w-[96vw] max-w-7xl"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
             <video
               src={getPortfolioVideoSrc(videoModal)}
-              className="max-h-full w-full object-contain"
+              className={`object-contain ${
+                videoModal.orientation === "portrait"
+                  ? "h-full w-auto max-w-[min(90vw,400px)]"
+                  : "max-h-full w-full"
+              }`}
               controls
               autoPlay
               playsInline
