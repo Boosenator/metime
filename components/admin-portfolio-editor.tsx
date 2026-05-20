@@ -723,6 +723,68 @@ function VideoLibraryCard({
   )
 }
 
+function VideoListItem({
+  video, isActive, isDesktopHero, isMobileHero,
+  position, isFirst, isLast,
+  onSelect, onMoveUp, onMoveDown,
+}: {
+  video: VideoMeta; isActive: boolean; isDesktopHero: boolean; isMobileHero: boolean
+  position: number; isFirst: boolean; isLast: boolean
+  onSelect: () => void; onMoveUp: () => void; onMoveDown: () => void
+}) {
+  const isPortrait = video.orientation === "portrait"
+  return (
+    <div
+      onClick={onSelect}
+      className={`group flex cursor-pointer items-center gap-2.5 border-b border-white/5 px-3 py-2 transition-colors hover:bg-white/5 ${
+        isActive ? "border-l-2 border-l-wine bg-wine/10" : "border-l-2 border-l-transparent"
+      }`}
+    >
+      <div className={`shrink-0 overflow-hidden rounded ${isPortrait ? "h-12 w-8" : "h-9 w-16"}`}>
+        <VideoPosterFrame
+          src={getPortfolioVideoSrc(video)}
+          seekTo={video.posterTime ?? 0}
+          className="h-full w-full object-cover"
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className={`truncate text-xs ${video.excluded ? "text-gray-mid line-through" : "text-cream"}`}>
+          {video.title || video.filename}
+        </p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+          {(isDesktopHero || isMobileHero) && (
+            <span className="text-[9px] uppercase tracking-[0.1em] text-amber-400">hero</span>
+          )}
+          {video.category && (
+            <span className="text-[9px] text-gray-mid">
+              {VIDEO_CATEGORY_LABELS[normalizeVideoCategory(video.category)] ?? video.category}
+            </span>
+          )}
+          <span className="text-[9px] text-gray-mid/40">#{position}</span>
+        </div>
+      </div>
+      <div className="flex shrink-0 flex-col gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onMoveUp() }}
+          disabled={isFirst}
+          className="rounded p-0.5 text-gray-mid hover:text-cream disabled:opacity-20"
+        >
+          <ChevronUp className="h-3 w-3" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onMoveDown() }}
+          disabled={isLast}
+          className="rounded p-0.5 text-gray-mid hover:text-cream disabled:opacity-20"
+        >
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function PreviewModal({
   photo,
   onClose,
@@ -870,6 +932,8 @@ export function AdminPortfolioEditor({
   const [videoPage, setVideoPage] = useState(1)
   const [videoPageSize, setVideoPageSize] = useState(24)
   const [selectedVideoIds, setSelectedVideoIds] = useState<string[]>([])
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
+  const [heroExpanded, setHeroExpanded] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const heroFileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -2080,317 +2144,198 @@ export function AdminPortfolioEditor({
           )}
         </div>
       ) : (
-        <div className="min-h-0 flex-1 overflow-auto bg-dark px-4 py-4">
-          <div className="mb-4 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.24em] text-wine">Video Library</p>
-                <h2 className="mt-1 text-xl text-cream">Videos and preview</h2>
-              </div>
-              <p className="text-sm text-gray-mid">
-                {filteredVideos.length} filtered / {videos.length} total
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-              {([
-                {
-                  slot: "desktopVideoId",
-                  title: "Desktop hero",
-                  description: "Background video for desktop home hero",
-                  current: desktopHeroVideo,
-                },
-                {
-                  slot: "mobileVideoId",
-                  title: "Mobile hero",
-                  description: "Background video for mobile home hero",
-                  current: mobileHeroVideo,
-                },
-              ] as const).map((heroSlot) => (
-                <article key={heroSlot.slot} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="mb-3 flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-[0.24em] text-wine">Hero video</p>
-                      <h3 className="mt-1 text-lg text-cream">{heroSlot.title}</h3>
-                      <p className="mt-1 text-sm text-gray-mid">{heroSlot.description}</p>
+        <div className="min-h-0 flex-1 flex flex-col overflow-hidden bg-dark">
+          {/* Hero section — collapsible */}
+          <div className="shrink-0 border-b border-white/10">
+            <button
+              type="button"
+              onClick={() => setHeroExpanded((v) => !v)}
+              className="flex w-full items-center justify-between px-4 py-2.5 text-left transition-colors hover:bg-white/5"
+            >
+              <span className="text-[10px] uppercase tracking-[0.2em] text-wine">Hero background videos</span>
+              <span className="flex items-center gap-2 text-[10px] text-gray-mid">
+                {[desktopHeroVideo, mobileHeroVideo].filter(Boolean).length} / 2 assigned
+                {heroExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </span>
+            </button>
+            {heroExpanded && (
+              <div className="grid grid-cols-1 gap-2 px-4 pb-3 xl:grid-cols-2">
+                {([
+                  { slot: "desktopVideoId", title: "Desktop hero", current: desktopHeroVideo },
+                  { slot: "mobileVideoId", title: "Mobile hero", current: mobileHeroVideo },
+                ] as const).map((heroSlot) => (
+                  <div key={heroSlot.slot} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-2.5">
+                    <div className="h-11 w-20 shrink-0 overflow-hidden rounded border border-white/10 bg-black/40">
+                      {heroSlot.current ? (
+                        <VideoPosterFrame
+                          src={getPortfolioVideoSrc(heroSlot.current)}
+                          seekTo={heroSlot.current.posterTime ?? 0}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-[9px] text-gray-mid">None</div>
+                      )}
                     </div>
-                    <div className="rounded-full border border-white/10 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-gray-mid">
-                      {heroSlot.current ? "Assigned" : "Poster fallback"}
-                    </div>
-                  </div>
-
-                  <div className="overflow-hidden rounded-xl border border-white/10 bg-black/40">
-                    {heroSlot.current ? (
-                      <VideoPosterFrame
-                        src={getPortfolioVideoSrc(heroSlot.current)}
-                        seekTo={heroSlot.current.posterTime ?? 0}
-                        className="aspect-video w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex aspect-video items-center justify-center text-sm uppercase tracking-[0.22em] text-gray-mid">
-                        No video selected
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="mt-3 flex flex-col gap-3">
-                    <div className="flex items-center gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-wine">{heroSlot.title}</p>
                       <select
                         value={heroVideos[heroSlot.slot] ?? ""}
                         onChange={(e) => assignHeroVideo(heroSlot.slot, e.target.value || null)}
-                        className="min-w-0 flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                        className="mt-1 w-full rounded border border-white/10 bg-dark px-2 py-1 text-xs text-cream focus:outline-none focus:ring-1 focus:ring-wine"
                       >
                         <option value="">No video</option>
-                        {videos.map((video) => (
-                          <option key={video.id} value={video.id}>
-                            {video.title || video.filename}
-                          </option>
+                        {videos.map((v) => (
+                          <option key={v.id} value={v.id}>{v.title || v.filename}</option>
                         ))}
                       </select>
+                    </div>
+                    <div className="flex shrink-0 flex-col gap-1">
                       <button
                         type="button"
-                        onClick={() => {
-                          setPendingHeroSlot(heroSlot.slot)
-                          heroFileInputRef.current?.click()
-                        }}
+                        onClick={() => { setPendingHeroSlot(heroSlot.slot); heroFileInputRef.current?.click() }}
                         disabled={uploading}
-                        className="flex items-center gap-1.5 rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                        className="rounded border border-white/10 bg-white/5 p-1.5 text-gray-mid transition-colors hover:text-cream disabled:opacity-40"
+                        title="Upload"
                       >
                         {uploading && pendingHeroSlot === heroSlot.slot ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Upload className="h-3.5 w-3.5" />}
-                        Upload
-                      </button>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => heroSlot.current && setPreviewVideoId(heroSlot.current.id)}
-                        disabled={!heroSlot.current}
-                        className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
-                      >
-                        Preview
                       </button>
                       <button
                         type="button"
                         onClick={() => assignHeroVideo(heroSlot.slot, null)}
                         disabled={!heroVideos[heroSlot.slot]}
-                        className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                        className="rounded border border-white/10 bg-white/5 p-1.5 text-gray-mid transition-colors hover:text-cream disabled:opacity-40"
+                        title="Clear"
                       >
-                        Clear
+                        <X className="h-3.5 w-3.5" />
                       </button>
-                      <span className="text-xs text-gray-mid">
-                        {heroSlot.current ? heroSlot.current.title || heroSlot.current.filename : "Falls back to poster image on the home page"}
-                      </span>
                     </div>
                   </div>
-                </article>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-            <div className="sticky top-0 z-10 rounded-2xl border border-white/10 bg-dark/95 p-3 backdrop-blur">
-              <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-                <label className="relative min-w-0 flex-1">
-                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-mid" />
+          {/* Master-detail split */}
+          <div className="flex min-h-0 flex-1">
+            {/* Left: list */}
+            <div className="flex w-[38%] shrink-0 flex-col border-r border-white/10">
+              {/* Compact filters */}
+              <div className="shrink-0 space-y-1.5 border-b border-white/10 p-2">
+                <label className="relative block">
+                  <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-mid" />
                   <input
                     type="text"
                     value={videoQuery}
                     onChange={(e) => setVideoQuery(e.target.value)}
-                    placeholder="Search by title, filename or id"
-                    className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-3 text-sm text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
+                    placeholder="Search..."
+                    className="w-full rounded border border-white/10 bg-white/5 py-1.5 pl-7 pr-2 text-xs text-cream placeholder:text-gray-mid focus:outline-none focus:ring-1 focus:ring-wine"
                   />
                 </label>
-
-                <select
-                  value={videoCategory}
-                  onChange={(e) => setVideoCategory(e.target.value as "all" | (typeof VIDEO_CATEGORIES)[number])}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-                >
-                  <option value="all">All categories</option>
-                  {VIDEO_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>
-                      {VIDEO_CATEGORY_LABELS[category]}
-                    </option>
-                  ))}
-                </select>
-
-                <select
-                  value={videoStatus}
-                  onChange={(e) => setVideoStatus(e.target.value as "all" | "included" | "excluded" | "hero")}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-                >
-                  <option value="all">All statuses</option>
-                  <option value="included">Included</option>
-                  <option value="excluded">Excluded</option>
-                  <option value="hero">Hero background</option>
-                </select>
-
-                <select
-                  value={videoOrientation}
-                  onChange={(e) => setVideoOrientation(e.target.value as "all" | "portrait" | "landscape")}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-                >
-                  <option value="all">All orientations</option>
-                  <option value="landscape">Horizontal</option>
-                  <option value="portrait">Vertical</option>
-                </select>
-
-                <select
-                  value={videoSort}
-                  onChange={(e) => setVideoSort(e.target.value as LibrarySort)}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-                >
-                  <option value="newest">Newest first</option>
-                  <option value="oldest">Oldest first</option>
-                  <option value="filename">Filename</option>
-                </select>
-
-                <select
-                  value={String(videoPageSize)}
-                  onChange={(e) => setVideoPageSize(Number(e.target.value))}
-                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
-                >
-                  <option value="24">24 / page</option>
-                  <option value="48">48 / page</option>
-                  <option value="96">96 / page</option>
-                </select>
-              </div>
-
-              <div className="mt-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-gray-mid">
-                  <span>{selectedVideoIds.length} selected</span>
-                  <button
-                    type="button"
-                    onClick={toggleSelectVisibleVideos}
-                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10"
-                  >
-                    {allVisibleVideosSelected ? "Unselect visible" : "Select visible"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={selectFilteredVideos}
-                    disabled={allFilteredVideosSelected || filteredVideos.length === 0}
-                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
-                  >
-                    Select filtered
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearVideoSelection}
-                    disabled={selectedVideoIds.length === 0}
-                    className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
-                  >
-                    Clear
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex gap-1">
                   <select
-                    defaultValue=""
-                    onChange={(e) => {
-                      if (!e.target.value || selectedVideoIds.length === 0) return
-                      bulkSetVideoCategory(selectedVideoIds, e.target.value)
-                      e.target.value = ""
-                    }}
-                    disabled={selectedVideoIds.length === 0}
-                    className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine disabled:opacity-40"
+                    value={videoCategory}
+                    onChange={(e) => setVideoCategory(e.target.value as "all" | (typeof VIDEO_CATEGORIES)[number])}
+                    className="flex-1 rounded border border-white/10 bg-white/5 px-1.5 py-1 text-[11px] text-cream focus:outline-none"
                   >
-                    <option value="">Set category</option>
-                    {VIDEO_CATEGORIES.map((category) => (
-                      <option key={category} value={category}>
-                        {VIDEO_CATEGORY_LABELS[category]}
-                      </option>
-                    ))}
+                    <option value="all">All cat.</option>
+                    {VIDEO_CATEGORIES.map((c) => <option key={c} value={c}>{VIDEO_CATEGORY_LABELS[c]}</option>)}
                   </select>
-                  <button
-                    type="button"
-                    onClick={() => bulkExcludeVideos(selectedVideoIds)}
-                    disabled={selectedVideoIds.length === 0}
-                    className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                  <select
+                    value={videoStatus}
+                    onChange={(e) => setVideoStatus(e.target.value as "all" | "included" | "excluded" | "hero")}
+                    className="flex-1 rounded border border-white/10 bg-white/5 px-1.5 py-1 text-[11px] text-cream focus:outline-none"
                   >
-                    Exclude
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => bulkIncludeVideos(selectedVideoIds)}
-                    disabled={selectedVideoIds.length === 0}
-                    className="rounded border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
+                    <option value="all">All</option>
+                    <option value="included">Included</option>
+                    <option value="excluded">Excluded</option>
+                    <option value="hero">Hero</option>
+                  </select>
+                  <select
+                    value={videoOrientation}
+                    onChange={(e) => setVideoOrientation(e.target.value as "all" | "portrait" | "landscape")}
+                    className="flex-1 rounded border border-white/10 bg-white/5 px-1.5 py-1 text-[11px] text-cream focus:outline-none"
                   >
-                    Include
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (selectedVideoIds.length === 0) return
-                      if (!window.confirm(`Delete ${selectedVideoIds.length} selected video(s)?`)) return
-                      void bulkDeleteVideos(selectedVideoIds)
-                    }}
-                    disabled={selectedVideoIds.length === 0}
-                    className="rounded border border-red-900/40 bg-red-950/30 px-3 py-2 text-xs uppercase tracking-[0.16em] text-red-300 transition-colors hover:bg-red-950/50 disabled:opacity-40"
+                    <option value="all">All</option>
+                    <option value="landscape">Horiz</option>
+                    <option value="portrait">Vert</option>
+                  </select>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-gray-mid">{filteredVideos.length} / {videos.length}</span>
+                  <select
+                    value={videoSort}
+                    onChange={(e) => setVideoSort(e.target.value as LibrarySort)}
+                    className="rounded border border-white/10 bg-white/5 px-1.5 py-1 text-[10px] text-cream focus:outline-none"
                   >
-                    Delete selected
-                  </button>
+                    <option value="newest">Newest</option>
+                    <option value="oldest">Oldest</option>
+                    <option value="filename">Name</option>
+                  </select>
                 </div>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm text-gray-mid">
-              <span>
-                Page {videoPage} / {totalVideoPages}
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setVideoPage((prev) => Math.max(1, prev - 1))}
-                  disabled={videoPage === 1}
-                  className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
-                >
-                  Prev
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setVideoPage((prev) => Math.min(totalVideoPages, prev + 1))}
-                  disabled={videoPage === totalVideoPages}
-                  className="rounded border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.16em] text-cream transition-colors hover:bg-white/10 disabled:opacity-40"
-                >
-                  Next
-                </button>
+              {/* Scrollable list */}
+              <div className="flex-1 overflow-y-auto">
+                {filteredVideos.length === 0 ? (
+                  <div className="px-3 py-8 text-center text-xs text-gray-mid">No videos match filters.</div>
+                ) : (
+                  filteredVideos.map((video) => {
+                    const rawIdx = videos.findIndex((v) => v.id === video.id)
+                    return (
+                      <VideoListItem
+                        key={video.id}
+                        video={video}
+                        isActive={selectedVideoId === video.id}
+                        isDesktopHero={heroVideos.desktopVideoId === video.id}
+                        isMobileHero={heroVideos.mobileVideoId === video.id}
+                        position={rawIdx + 1}
+                        isFirst={rawIdx === 0}
+                        isLast={rawIdx === videos.length - 1}
+                        onSelect={() => setSelectedVideoId(video.id)}
+                        onMoveUp={() => moveVideoUp(video.id)}
+                        onMoveDown={() => moveVideoDown(video.id)}
+                      />
+                    )
+                  })
+                )}
               </div>
             </div>
-          </div>
 
-          {paginatedVideos.length ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {paginatedVideos.map((video) => {
-                const rawIdx = videos.findIndex((v) => v.id === video.id)
+            {/* Right: detail */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {(() => {
+                const selectedVideo = selectedVideoId ? videos.find((v) => v.id === selectedVideoId) ?? null : null
+                if (!selectedVideo) {
+                  return (
+                    <div className="flex h-full items-center justify-center text-sm text-gray-mid">
+                      ← Select a video from the list
+                    </div>
+                  )
+                }
+                const rawIdx = videos.findIndex((v) => v.id === selectedVideo.id)
                 return (
                   <VideoLibraryCard
-                    key={video.id}
-                    video={video}
-                    selected={selectedVideoIds.includes(video.id)}
-                    isDesktopHero={heroVideos.desktopVideoId === video.id}
-                    isMobileHero={heroVideos.mobileVideoId === video.id}
+                    video={selectedVideo}
+                    selected={selectedVideoIds.includes(selectedVideo.id)}
+                    isDesktopHero={heroVideos.desktopVideoId === selectedVideo.id}
+                    isMobileHero={heroVideos.mobileVideoId === selectedVideo.id}
                     position={rawIdx + 1}
                     isFirst={rawIdx === 0}
                     isLast={rawIdx === videos.length - 1}
-                    onTitleChange={(value) => updateVideoTitle(video.id, value)}
-                    onCategoryChange={(value) => updateVideoCategory(video.id, value)}
-                    onPosterTimeChange={(value) => updateVideoPosterTime(video.id, value)}
-                    onOrientationChange={(value) => updateVideoOrientation(video.id, value)}
-                    onMoveUp={() => moveVideoUp(video.id)}
-                    onMoveDown={() => moveVideoDown(video.id)}
-                    onToggleSelected={() => toggleVideoSelection(video.id)}
-                    onPreview={() => setPreviewVideoId(video.id)}
-                    onExcludeToggle={() => (video.excluded ? includeVideo(video.id) : excludeVideo(video.id))}
-                    onDelete={() => void deleteVideo(video.id)}
+                    onTitleChange={(value) => updateVideoTitle(selectedVideo.id, value)}
+                    onCategoryChange={(value) => updateVideoCategory(selectedVideo.id, value)}
+                    onPosterTimeChange={(value) => updateVideoPosterTime(selectedVideo.id, value)}
+                    onOrientationChange={(value) => updateVideoOrientation(selectedVideo.id, value)}
+                    onMoveUp={() => moveVideoUp(selectedVideo.id)}
+                    onMoveDown={() => moveVideoDown(selectedVideo.id)}
+                    onToggleSelected={() => toggleVideoSelection(selectedVideo.id)}
+                    onPreview={() => setPreviewVideoId(selectedVideo.id)}
+                    onExcludeToggle={() => (selectedVideo.excluded ? includeVideo(selectedVideo.id) : excludeVideo(selectedVideo.id))}
+                    onDelete={() => { void deleteVideo(selectedVideo.id); setSelectedVideoId(null) }}
                   />
                 )
-              })}
+              })()}
             </div>
-          ) : (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-6 py-12 text-center text-gray-mid">
-              No videos match the current filters.
-            </div>
-          )}
+          </div>
         </div>
       )}
 
