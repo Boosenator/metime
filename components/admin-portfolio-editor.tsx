@@ -937,6 +937,9 @@ export function AdminPortfolioEditor({
   const [selectedVideoIds, setSelectedVideoIds] = useState<string[]>([])
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [heroExpanded, setHeroExpanded] = useState(false)
+  const [videoListWidth, setVideoListWidth] = useState(38)
+  const splitContainerRef = useRef<HTMLDivElement>(null)
+  const isResizing = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const heroFileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
@@ -2219,9 +2222,9 @@ export function AdminPortfolioEditor({
           </div>
 
           {/* Master-detail split */}
-          <div className="flex min-h-0 flex-1">
+          <div className="flex min-h-0 flex-1" ref={splitContainerRef}>
             {/* Left: list */}
-            <div className="flex w-[38%] shrink-0 flex-col border-r border-white/10">
+            <div className="flex shrink-0 flex-col overflow-hidden" style={{ width: `${videoListWidth}%` }}>
               {/* Compact filters */}
               <div className="shrink-0 space-y-1.5 border-b border-white/10 p-2">
                 <label className="relative block">
@@ -2300,6 +2303,23 @@ export function AdminPortfolioEditor({
                     )
                   })
                 )}
+              </div>
+            </div>
+
+            {/* Resizable divider */}
+            <div
+              className="group relative w-1 shrink-0 cursor-col-resize bg-white/10 transition-colors hover:bg-wine/50 active:bg-wine/70"
+              onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); isResizing.current = true }}
+              onPointerMove={(e) => {
+                if (!isResizing.current || !splitContainerRef.current) return
+                const rect = splitContainerRef.current.getBoundingClientRect()
+                const pct = ((e.clientX - rect.left) / rect.width) * 100
+                setVideoListWidth(Math.min(Math.max(pct, 20), 65))
+              }}
+              onPointerUp={(e) => { e.currentTarget.releasePointerCapture(e.pointerId); isResizing.current = false }}
+            >
+              <div className="pointer-events-none absolute inset-y-0 -left-1 -right-1 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+                <div className="h-10 w-0.5 rounded-full bg-wine/80" />
               </div>
             </div>
 
