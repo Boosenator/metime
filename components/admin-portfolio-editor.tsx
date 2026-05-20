@@ -564,7 +564,7 @@ function VideoLibraryCard({
         <VideoPosterFrame
           src={getPortfolioVideoSrc(video)}
           seekTo={video.posterTime ?? 0}
-          className={`${orientation === "portrait" ? "aspect-[2/3]" : "aspect-video"} w-full object-cover`}
+          className={`${orientation === "portrait" ? "aspect-[8/9]" : "aspect-video"} w-full object-cover`}
           onDurationChange={setDuration}
         />
         <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent p-2 text-[10px] uppercase tracking-[0.2em] text-cream/80">
