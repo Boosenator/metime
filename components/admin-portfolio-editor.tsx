@@ -19,6 +19,8 @@ import {
 import { useDraggable, useDroppable } from "@dnd-kit/core"
 import {
   Ban,
+  ChevronDown,
+  ChevronUp,
   Expand,
   FolderKanban,
   Grid2x2,
@@ -514,9 +516,17 @@ function LibraryCard({
 function VideoLibraryCard({
   video,
   selected,
+  isDesktopHero,
+  isMobileHero,
+  position,
+  isFirst,
+  isLast,
   onTitleChange,
   onCategoryChange,
   onPosterTimeChange,
+  onOrientationChange,
+  onMoveUp,
+  onMoveDown,
   onToggleSelected,
   onPreview,
   onExcludeToggle,
@@ -524,18 +534,32 @@ function VideoLibraryCard({
 }: {
   video: VideoMeta
   selected: boolean
+  isDesktopHero: boolean
+  isMobileHero: boolean
+  position: number
+  isFirst: boolean
+  isLast: boolean
   onTitleChange: (value: string) => void
   onCategoryChange: (value: string) => void
   onPosterTimeChange: (value: number) => void
+  onOrientationChange: (value: "portrait" | "landscape") => void
+  onMoveUp: () => void
+  onMoveDown: () => void
   onToggleSelected: () => void
   onPreview: () => void
   onExcludeToggle: () => void
   onDelete: () => void
 }) {
   const [duration, setDuration] = useState(0)
+  const isHero = isDesktopHero || isMobileHero
+  const orientation = video.orientation ?? "landscape"
 
   return (
-    <article className={`rounded-2xl border p-3 transition-colors ${selected ? "border-wine bg-wine/10" : "border-white/10 bg-white/5"}`}>
+    <article className={`rounded-2xl border p-3 transition-colors ${
+      selected ? "border-wine bg-wine/10" :
+      isHero ? "border-amber-500/40 bg-amber-950/10" :
+      "border-white/10 bg-white/5"
+    }`}>
       <div className="relative overflow-hidden rounded-xl">
         <VideoPosterFrame
           src={getPortfolioVideoSrc(video)}
@@ -565,11 +589,26 @@ function VideoLibraryCard({
             </button>
           </div>
         </div>
+        {isHero && (
+          <div className="absolute inset-x-0 bottom-0 flex gap-1 p-1.5">
+            {isDesktopHero && (
+              <span className="rounded bg-amber-900/90 px-1.5 py-0.5 text-[9px] uppercase tracking-[0.12em] text-amber-200">
+                Desktop hero
+              </span>
+            )}
+            {isMobileHero && (
+              <span className="rounded bg-amber-900/90 px-1.5 py-0.5 text-[9px] uppercase tracking-[0.12em] text-amber-200">
+                Mobile hero
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="mt-3 space-y-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-mid">{video.id}</p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-gray-mid truncate">{video.id}</p>
+          <span className="shrink-0 text-[10px] text-gray-mid">#{position}</span>
         </div>
 
         <label className="block">
@@ -598,6 +637,34 @@ function VideoLibraryCard({
           </select>
         </label>
 
+        <div>
+          <span className="mb-1 block text-[10px] uppercase tracking-[0.2em] text-gray-mid">Orientation</span>
+          <div className="flex gap-1.5">
+            <button
+              type="button"
+              onClick={() => onOrientationChange("landscape")}
+              className={`flex-1 rounded border px-2 py-1.5 text-[11px] uppercase tracking-[0.12em] transition-colors ${
+                orientation === "landscape"
+                  ? "border-wine bg-wine/20 text-cream"
+                  : "border-white/10 bg-white/5 text-gray-mid hover:bg-white/10"
+              }`}
+            >
+              ▬ Horiz
+            </button>
+            <button
+              type="button"
+              onClick={() => onOrientationChange("portrait")}
+              className={`flex-1 rounded border px-2 py-1.5 text-[11px] uppercase tracking-[0.12em] transition-colors ${
+                orientation === "portrait"
+                  ? "border-wine bg-wine/20 text-cream"
+                  : "border-white/10 bg-white/5 text-gray-mid hover:bg-white/10"
+              }`}
+            >
+              ▮ Vert
+            </button>
+          </div>
+        </div>
+
         <label className="block">
           <div className="mb-1 flex items-center justify-between text-[10px] uppercase tracking-[0.2em] text-gray-mid">
             <span>Cover frame</span>
@@ -623,6 +690,24 @@ function VideoLibraryCard({
           >
             {video.excluded ? <RotateCcw className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
             {video.excluded ? "Include" : "Exclude"}
+          </button>
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={isFirst}
+            className="flex items-center justify-center rounded border border-white/10 bg-white/5 px-2 py-2 text-gray-mid transition-colors hover:text-cream disabled:opacity-30"
+            title="Move up"
+          >
+            <ChevronUp className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={isLast}
+            className="flex items-center justify-center rounded border border-white/10 bg-white/5 px-2 py-2 text-gray-mid transition-colors hover:text-cream disabled:opacity-30"
+            title="Move down"
+          >
+            <ChevronDown className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
@@ -779,7 +864,8 @@ export function AdminPortfolioEditor({
   const [selectedPhotoIds, setSelectedPhotoIds] = useState<string[]>([])
   const [videoQuery, setVideoQuery] = useState("")
   const [videoCategory, setVideoCategory] = useState<"all" | (typeof VIDEO_CATEGORIES)[number]>("all")
-  const [videoStatus, setVideoStatus] = useState<"all" | "included" | "excluded">("all")
+  const [videoStatus, setVideoStatus] = useState<"all" | "included" | "excluded" | "hero">("all")
+  const [videoOrientation, setVideoOrientation] = useState<"all" | "portrait" | "landscape">("all")
   const [videoSort, setVideoSort] = useState<LibrarySort>("newest")
   const [videoPage, setVideoPage] = useState(1)
   const [videoPageSize, setVideoPageSize] = useState(24)
@@ -856,6 +942,11 @@ export function AdminPortfolioEditor({
   const allVisibleSelected = paginatedLibraryPhotos.length > 0 && selectedVisibleCount === paginatedLibraryPhotos.length
   const allFilteredSelected = filteredLibraryPhotos.length > 0 && filteredLibraryPhotos.every((photo) => selectedPhotoIds.includes(photo.id))
 
+  const heroVideoIds = useMemo(
+    () => new Set([heroVideos.desktopVideoId, heroVideos.mobileVideoId].filter(Boolean) as string[]),
+    [heroVideos]
+  )
+
   const filteredVideos = useMemo(() => {
     const next = videos.filter((video) => {
       const normalizedCategory = normalizeVideoCategory(video.category)
@@ -868,9 +959,14 @@ export function AdminPortfolioEditor({
       const matchesStatus =
         videoStatus === "all" ||
         (videoStatus === "included" && !video.excluded) ||
-        (videoStatus === "excluded" && !!video.excluded)
+        (videoStatus === "excluded" && !!video.excluded) ||
+        (videoStatus === "hero" && heroVideoIds.has(video.id))
+      const matchesOrientation =
+        videoOrientation === "all" ||
+        (videoOrientation === "portrait" && video.orientation === "portrait") ||
+        (videoOrientation === "landscape" && (video.orientation === "landscape" || !video.orientation))
 
-      return matchesQuery && matchesCategory && matchesStatus
+      return matchesQuery && matchesCategory && matchesStatus && matchesOrientation
     })
 
     next.sort((a, b) => {
@@ -881,7 +977,7 @@ export function AdminPortfolioEditor({
     })
 
     return next
-  }, [normalizedVideoQuery, videoCategory, videoOrder, videoSort, videoStatus, videos])
+  }, [normalizedVideoQuery, videoCategory, videoOrder, videoSort, videoStatus, videoOrientation, heroVideoIds, videos])
 
   const totalVideoPages = Math.max(1, Math.ceil(filteredVideos.length / videoPageSize))
   const paginatedVideos = useMemo(() => {
@@ -927,7 +1023,7 @@ export function AdminPortfolioEditor({
 
   useEffect(() => {
     setVideoPage(1)
-  }, [videoCategory, videoPageSize, videoQuery, videoSort, videoStatus])
+  }, [videoCategory, videoPageSize, videoQuery, videoSort, videoStatus, videoOrientation])
 
   useEffect(() => {
     if (libraryPage > totalLibraryPages) setLibraryPage(totalLibraryPages)
@@ -1027,6 +1123,32 @@ export function AdminPortfolioEditor({
     setVideos((prev) =>
       prev.map((video) => (video.id === videoId ? { ...video, posterTime: Math.max(0, posterTime) } : video))
     )
+  }, [])
+
+  const updateVideoOrientation = useCallback((videoId: string, orientation: "portrait" | "landscape") => {
+    setVideos((prev) =>
+      prev.map((video) => (video.id === videoId ? { ...video, orientation } : video))
+    )
+  }, [])
+
+  const moveVideoUp = useCallback((videoId: string) => {
+    setVideos((prev) => {
+      const idx = prev.findIndex((v) => v.id === videoId)
+      if (idx <= 0) return prev
+      const next = [...prev]
+      ;[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
+      return next
+    })
+  }, [])
+
+  const moveVideoDown = useCallback((videoId: string) => {
+    setVideos((prev) => {
+      const idx = prev.findIndex((v) => v.id === videoId)
+      if (idx < 0 || idx >= prev.length - 1) return prev
+      const next = [...prev]
+      ;[next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
+      return next
+    })
   }, [])
 
   const assignHeroVideo = useCallback((slot: keyof HeroVideoConfig, videoId: string | null) => {
@@ -2093,12 +2215,23 @@ export function AdminPortfolioEditor({
 
                 <select
                   value={videoStatus}
-                  onChange={(e) => setVideoStatus(e.target.value as "all" | "included" | "excluded")}
+                  onChange={(e) => setVideoStatus(e.target.value as "all" | "included" | "excluded" | "hero")}
                   className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
                 >
                   <option value="all">All statuses</option>
                   <option value="included">Included</option>
                   <option value="excluded">Excluded</option>
+                  <option value="hero">Hero background</option>
+                </select>
+
+                <select
+                  value={videoOrientation}
+                  onChange={(e) => setVideoOrientation(e.target.value as "all" | "portrait" | "landscape")}
+                  className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                >
+                  <option value="all">All orientations</option>
+                  <option value="landscape">Horizontal</option>
+                  <option value="portrait">Vertical</option>
                 </select>
 
                 <select
@@ -2227,20 +2360,31 @@ export function AdminPortfolioEditor({
 
           {paginatedVideos.length ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-              {paginatedVideos.map((video) => (
-                <VideoLibraryCard
-                  key={video.id}
-                  video={video}
-                  selected={selectedVideoIds.includes(video.id)}
-                  onTitleChange={(value) => updateVideoTitle(video.id, value)}
-                  onCategoryChange={(value) => updateVideoCategory(video.id, value)}
-                  onPosterTimeChange={(value) => updateVideoPosterTime(video.id, value)}
-                  onToggleSelected={() => toggleVideoSelection(video.id)}
-                  onPreview={() => setPreviewVideoId(video.id)}
-                  onExcludeToggle={() => (video.excluded ? includeVideo(video.id) : excludeVideo(video.id))}
-                  onDelete={() => void deleteVideo(video.id)}
-                />
-              ))}
+              {paginatedVideos.map((video) => {
+                const rawIdx = videos.findIndex((v) => v.id === video.id)
+                return (
+                  <VideoLibraryCard
+                    key={video.id}
+                    video={video}
+                    selected={selectedVideoIds.includes(video.id)}
+                    isDesktopHero={heroVideos.desktopVideoId === video.id}
+                    isMobileHero={heroVideos.mobileVideoId === video.id}
+                    position={rawIdx + 1}
+                    isFirst={rawIdx === 0}
+                    isLast={rawIdx === videos.length - 1}
+                    onTitleChange={(value) => updateVideoTitle(video.id, value)}
+                    onCategoryChange={(value) => updateVideoCategory(video.id, value)}
+                    onPosterTimeChange={(value) => updateVideoPosterTime(video.id, value)}
+                    onOrientationChange={(value) => updateVideoOrientation(video.id, value)}
+                    onMoveUp={() => moveVideoUp(video.id)}
+                    onMoveDown={() => moveVideoDown(video.id)}
+                    onToggleSelected={() => toggleVideoSelection(video.id)}
+                    onPreview={() => setPreviewVideoId(video.id)}
+                    onExcludeToggle={() => (video.excluded ? includeVideo(video.id) : excludeVideo(video.id))}
+                    onDelete={() => void deleteVideo(video.id)}
+                  />
+                )
+              })}
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 px-6 py-12 text-center text-gray-mid">

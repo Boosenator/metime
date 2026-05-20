@@ -29,6 +29,7 @@ export type VideoMeta = {
   title?: string
   posterTime?: number
   mimeType?: string
+  orientation?: "portrait" | "landscape"
   uploadedAt: string
 }
 
