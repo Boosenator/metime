@@ -1,16 +1,213 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Trash2, ChevronUp, ChevronDown, Save, ArrowLeft } from "lucide-react"
-import type { ServiceData, ServiceTopic, TopicBlock, FaqItem } from "@/lib/services/types"
+import {
+  Plus, Trash2, ChevronUp, ChevronDown, Save, ArrowLeft,
+  Images, Video, Check, X,
+} from "lucide-react"
+import type { ServiceData, ServiceTopic, TopicBlock, CarouselPhoto } from "@/lib/services/types"
+
+// ─── Portfolio library types ──────────────────────────────────────────────────
+
+type PortfolioPhoto = { id: string; filename: string; src?: string; category?: string }
+type PortfolioVideo = { id: string; filename: string; src?: string; category?: string; title?: string }
+
+const CATEGORY_LABELS: Record<string, string> = {
+  dance: "танцювальна", wedding: "весілля", kids: "діти",
+  brand: "бренд", custom: "кастом", lovestory: "love story", portrait: "портрет",
+}
+
+function photoSrc(p: PortfolioPhoto) { return p.src || `/images/portfolio/${p.filename}` }
+function videoSrc(v: PortfolioVideo) { return v.src || `/videos/portfolio/${v.filename}` }
+
+// ─── Photo picker panel ───────────────────────────────────────────────────────
+
+function PhotoPickerPanel({
+  password, currentSrcs, onApply, onClose,
+}: {
+  password: string
+  currentSrcs: string[]
+  onApply: (photos: CarouselPhoto[]) => void
+  onClose: () => void
+}) {
+  const [photos, setPhotos] = useState<PortfolioPhoto[] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [picks, setPicks] = useState<Set<string>>(new Set(currentSrcs))
+  const [filter, setFilter] = useState("all")
+
+  useEffect(() => {
+    fetch("/api/admin/portfolio/state", { headers: { "x-admin-password": password } })
+      .then((r) => r.json())
+      .then((d) => setPhotos((d.photos as PortfolioPhoto[]) ?? []))
+      .catch(() => setPhotos([]))
+      .finally(() => setLoading(false))
+  }, [password])
+
+  const toggle = (src: string) =>
+    setPicks((prev) => { const n = new Set(prev); n.has(src) ? n.delete(src) : n.add(src); return n })
+
+  const apply = () => {
+    const ordered = (photos ?? [])
+      .filter((p) => picks.has(photoSrc(p)))
+      .map((p) => ({
+        src: photoSrc(p),
+        alt: `MeTime Studio — ${CATEGORY_LABELS[p.category ?? ""] ?? "зйомка"}`,
+      }))
+    onApply(ordered)
+    onClose()
+  }
+
+  const cats = ["all", ...Array.from(new Set((photos ?? []).map((p) => p.category).filter(Boolean)))]
+  const visible = filter === "all" ? photos ?? [] : (photos ?? []).filter((p) => p.category === filter)
+
+  return (
+    <div className="mt-2 rounded border border-wine/30 bg-dark p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-xs uppercase tracking-[0.2em] text-wine">
+          <Images className="mr-1.5 inline h-3 w-3" />
+          Бібліотека фото ({picks.size} обрано)
+        </span>
+        <button onClick={onClose} className="text-gray-mid hover:text-cream"><X className="h-4 w-4" /></button>
+      </div>
+
+      <div className="mb-3 flex flex-wrap gap-1.5">
+        {cats.map((c) => (
+          <button key={c} onClick={() => setFilter(c ?? "all")}
+            className={`border px-2 py-0.5 text-xs uppercase tracking-[0.1em] transition-colors ${
+              filter === c ? "border-wine text-wine" : "border-white/15 text-gray-mid hover:border-white/40"
+            }`}>
+            {c === "all" ? "Всі" : CATEGORY_LABELS[c ?? ""] ?? c}
+          </button>
+        ))}
+      </div>
+
+      {loading && <p className="py-4 text-center text-xs text-gray-mid">Завантаження...</p>}
+      {!loading && (
+        <div className="grid max-h-72 grid-cols-5 gap-1.5 overflow-y-auto sm:grid-cols-7 md:grid-cols-9">
+          {visible.map((photo) => {
+            const src = photoSrc(photo)
+            const selected = picks.has(src)
+            return (
+              <button key={photo.id} onClick={() => toggle(src)}
+                className={`relative aspect-square overflow-hidden border-2 transition-colors ${selected ? "border-wine" : "border-transparent"}`}>
+                <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
+                {selected && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-wine/40">
+                    <Check className="h-4 w-4 text-white" />
+                  </div>
+                )}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <div className="mt-3 flex justify-end gap-2">
+        <button onClick={onClose}
+          className="border border-white/15 px-3 py-1.5 text-xs text-gray-mid hover:text-cream">
+          Скасувати
+        </button>
+        <button onClick={apply}
+          className="bg-wine px-4 py-1.5 text-xs uppercase tracking-[0.15em] text-cream hover:opacity-90">
+          Застосувати ({picks.size})
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Video picker panel ───────────────────────────────────────────────────────
+
+function VideoPickerPanel({
+  password, currentSrc, onApply, onClose,
+}: {
+  password: string
+  currentSrc: string
+  onApply: (src: string, title?: string) => void
+  onClose: () => void
+}) {
+  const [videos, setVideos] = useState<PortfolioVideo[] | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [picked, setPicked] = useState(currentSrc)
+
+  useEffect(() => {
+    fetch("/api/admin/portfolio/state", { headers: { "x-admin-password": password } })
+      .then((r) => r.json())
+      .then((d) => setVideos((d.videos as PortfolioVideo[]) ?? []))
+      .catch(() => setVideos([]))
+      .finally(() => setLoading(false))
+  }, [password])
+
+  const apply = () => {
+    const v = (videos ?? []).find((v) => videoSrc(v) === picked)
+    onApply(picked, v?.title)
+    onClose()
+  }
+
+  return (
+    <div className="mt-2 rounded border border-wine/30 bg-dark p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-xs uppercase tracking-[0.2em] text-wine">
+          <Video className="mr-1.5 inline h-3 w-3" />
+          Бібліотека відео
+        </span>
+        <button onClick={onClose} className="text-gray-mid hover:text-cream"><X className="h-4 w-4" /></button>
+      </div>
+
+      {loading && <p className="py-4 text-center text-xs text-gray-mid">Завантаження...</p>}
+      {!loading && (
+        <div className="max-h-60 space-y-1.5 overflow-y-auto">
+          {(videos ?? []).length === 0 && (
+            <p className="text-xs text-gray-mid">Відео не знайдено в бібліотеці</p>
+          )}
+          {(videos ?? []).map((v) => {
+            const src = videoSrc(v)
+            const isSelected = picked === src
+            return (
+              <button key={v.id} onClick={() => setPicked(src)}
+                className={`flex w-full items-center gap-3 rounded border px-3 py-2 text-left transition-colors ${
+                  isSelected ? "border-wine bg-wine/10" : "border-white/8 hover:border-white/20"
+                }`}>
+                <Video className={`h-4 w-4 shrink-0 ${isSelected ? "text-wine" : "text-gray-mid"}`} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-cream">{v.title || v.filename}</p>
+                  {v.category && (
+                    <p className="text-xs text-gray-mid">{CATEGORY_LABELS[v.category] ?? v.category}</p>
+                  )}
+                </div>
+                {isSelected && <Check className="h-3.5 w-3.5 shrink-0 text-wine" />}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      <div className="mt-3 flex justify-end gap-2">
+        <button onClick={onClose}
+          className="border border-white/15 px-3 py-1.5 text-xs text-gray-mid hover:text-cream">
+          Скасувати
+        </button>
+        <button onClick={apply} disabled={!picked}
+          className="bg-wine px-4 py-1.5 text-xs uppercase tracking-[0.15em] text-cream hover:opacity-90 disabled:opacity-40">
+          Застосувати
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Block row ────────────────────────────────────────────────────────────────
 
 function BlockRow({
-  block, index, total, onChange, onMove, onDelete,
+  block, index, total, onChange, onMove, onDelete, password,
 }: {
-  block: TopicBlock; index: number; total: number
+  block: TopicBlock; index: number; total: number; password: string
   onChange: (b: TopicBlock) => void; onMove: (dir: "up" | "down") => void; onDelete: () => void
 }) {
+  const [showPhotoPicker, setShowPhotoPicker] = useState(false)
+  const [showVideoPicker, setShowVideoPicker] = useState(false)
+
   const label = { h2: "H2", h3: "H3", p: "P", ul: "UL", links: "→", faq: "FAQ", carousel: "IMG", video: "VID" }[block.type]
 
   return (
@@ -84,50 +281,57 @@ function BlockRow({
         )}
         {block.type === "carousel" && (
           <div className="w-full space-y-2">
-            {block.photos.map((photo, j) => (
-              <div key={j} className="flex gap-2">
-                <div className="flex-1 space-y-1">
-                  <input
-                    className="w-full bg-transparent text-sm text-cream outline-none placeholder:text-gray-mid border-b border-white/10 pb-1 focus:border-wine"
-                    value={photo.src} placeholder="URL фото..."
-                    onChange={(e) => {
-                      const photos = [...block.photos]
-                      photos[j] = { ...photos[j], src: e.target.value }
-                      onChange({ type: "carousel", photos })
-                    }} />
-                  <input
-                    className="w-full bg-transparent text-xs text-gray-light outline-none placeholder:text-gray-mid focus:border-wine"
-                    value={photo.alt} placeholder="Alt текст..."
-                    onChange={(e) => {
-                      const photos = [...block.photos]
-                      photos[j] = { ...photos[j], alt: e.target.value }
-                      onChange({ type: "carousel", photos })
-                    }} />
-                </div>
-                <button
-                  onClick={() => onChange({ type: "carousel", photos: block.photos.filter((_, i) => i !== j) })}
-                  className="shrink-0 self-start text-gray-mid hover:text-red-400 text-xs mt-1">✕</button>
+            {block.photos.length > 0 && (
+              <div className="flex flex-wrap gap-1.5">
+                {block.photos.map((photo, j) => (
+                  <div key={j} className="relative h-16 w-16 shrink-0 overflow-hidden">
+                    <img src={photo.src} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <button
+                      onClick={() => onChange({ type: "carousel", photos: block.photos.filter((_, i) => i !== j) })}
+                      className="absolute right-0 top-0 bg-dark/75 p-0.5 text-gray-mid hover:text-red-400">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
               </div>
-            ))}
-            <button
-              onClick={() => onChange({ type: "carousel", photos: [...block.photos, { src: "", alt: "" }] })}
-              className="text-xs text-wine underline">+ Фото</button>
+            )}
+            <button onClick={() => setShowPhotoPicker((v) => !v)}
+              className="flex items-center gap-1.5 text-xs text-wine hover:underline">
+              <Images className="h-3 w-3" />
+              {showPhotoPicker ? "Закрити" : `Обрати фото з бібліотеки (${block.photos.length} фото)`}
+            </button>
+            {showPhotoPicker && (
+              <PhotoPickerPanel
+                password={password}
+                currentSrcs={block.photos.map((p) => p.src)}
+                onApply={(photos) => { onChange({ type: "carousel", photos }); setShowPhotoPicker(false) }}
+                onClose={() => setShowPhotoPicker(false)}
+              />
+            )}
           </div>
         )}
         {block.type === "video" && (
           <div className="w-full space-y-2">
-            <input
-              className="w-full bg-transparent text-sm text-cream outline-none placeholder:text-gray-mid border-b border-white/10 pb-1 focus:border-wine"
-              value={block.src} placeholder="URL відео..."
-              onChange={(e) => onChange({ type: "video", src: e.target.value, poster: block.poster, title: block.title })} />
+            {block.src && (
+              <p className="truncate text-xs text-gray-light">{block.src.split("/").pop()}</p>
+            )}
+            <button onClick={() => setShowVideoPicker((v) => !v)}
+              className="flex items-center gap-1.5 text-xs text-wine hover:underline">
+              <Video className="h-3 w-3" />
+              {showVideoPicker ? "Закрити" : block.src ? "Змінити відео" : "Обрати відео з бібліотеки"}
+            </button>
+            {showVideoPicker && (
+              <VideoPickerPanel
+                password={password}
+                currentSrc={block.src}
+                onApply={(src, title) => { onChange({ type: "video", src, poster: block.poster, title }); setShowVideoPicker(false) }}
+                onClose={() => setShowVideoPicker(false)}
+              />
+            )}
             <input
               className="w-full bg-transparent text-xs text-gray-light outline-none placeholder:text-gray-mid border-b border-white/10 pb-1 focus:border-wine"
               value={block.poster ?? ""} placeholder="Poster URL (необов'язково)..."
               onChange={(e) => onChange({ type: "video", src: block.src, poster: e.target.value || undefined, title: block.title })} />
-            <input
-              className="w-full bg-transparent text-xs text-gray-light outline-none placeholder:text-gray-mid focus:border-wine"
-              value={block.title ?? ""} placeholder="Підпис (необов'язково)..."
-              onChange={(e) => onChange({ type: "video", src: block.src, poster: block.poster, title: e.target.value || undefined })} />
           </div>
         )}
       </div>
@@ -140,6 +344,8 @@ function BlockRow({
   )
 }
 
+// ─── New block defaults ───────────────────────────────────────────────────────
+
 function newBlock(type: TopicBlock["type"]): TopicBlock {
   if (type === "ul") return { type: "ul", items: [""] }
   if (type === "faq") return { type: "faq", items: [{ q: "", a: "" }] }
@@ -148,6 +354,8 @@ function newBlock(type: TopicBlock["type"]): TopicBlock {
   if (type === "video") return { type: "video", src: "" }
   return { type, text: "" } as TopicBlock
 }
+
+// ─── Main editor ──────────────────────────────────────────────────────────────
 
 export function AdminServiceTopicEditor({
   service,
@@ -260,7 +468,7 @@ export function AdminServiceTopicEditor({
           <p className="mb-4 text-xs uppercase tracking-[0.2em] text-wine">Контент</p>
           <div className="mb-4 flex flex-col gap-2">
             {blocks.map((block, i) => (
-              <BlockRow key={i} block={block} index={i} total={blocks.length}
+              <BlockRow key={i} block={block} index={i} total={blocks.length} password={password}
                 onChange={(b) => updateBlock(i, b)}
                 onMove={(dir) => moveBlock(i, dir)}
                 onDelete={() => setBlocks((prev) => prev.filter((_, idx) => idx !== i))} />
