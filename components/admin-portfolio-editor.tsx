@@ -560,11 +560,14 @@ function VideoLibraryCard({
       isHero ? "border-amber-500/40 bg-amber-950/10" :
       "border-white/10 bg-white/5"
     }`}>
-      <div className="relative overflow-hidden rounded-xl" style={{ maxHeight: "40vh" }}>
+      <div
+        className="relative flex items-center justify-center overflow-hidden rounded-xl bg-black"
+        style={{ height: "clamp(180px, 38vh, 380px)" }}
+      >
         <VideoPosterFrame
           src={getPortfolioVideoSrc(video)}
           seekTo={video.posterTime ?? 0}
-          className={`${orientation === "portrait" ? "aspect-[8/9]" : "aspect-video"} w-full object-cover`}
+          className="max-h-full max-w-full"
           onDurationChange={setDuration}
         />
         <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/70 to-transparent p-2 text-[10px] uppercase tracking-[0.2em] text-cream/80">
