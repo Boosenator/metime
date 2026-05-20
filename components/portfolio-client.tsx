@@ -119,7 +119,7 @@ function VideoGrid({
         return (
           <div
             key={item.id}
-            className={`group cursor-pointer ${isPortrait ? "col-span-1" : "col-span-2 md:col-span-2"}`}
+            className={`group cursor-pointer ${isPortrait ? "col-span-1" : "col-span-2"}`}
             style={{ animation: "fadeScaleIn 0.5s ease both", animationDelay: `${index * 50}ms` }}
             onClick={() => onOpen(item)}
           >
@@ -129,16 +129,20 @@ function VideoGrid({
                 seekTo={item.posterTime ?? 0}
                 className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
               />
+              {/* Play button */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className={`flex items-center justify-center rounded-full border-2 border-cream/30 bg-dark/40 backdrop-blur-sm transition-all duration-300 group-hover:border-wine group-hover:bg-wine/70 group-hover:scale-110 ${isPortrait ? "h-12 w-12" : "h-16 w-16 md:h-20 md:w-20"}`}>
                   <Play className={`translate-x-0.5 text-cream ${isPortrait ? "h-4 w-4" : "h-6 w-6 md:h-7 md:w-7"}`} fill="currentColor" />
                 </div>
               </div>
-            </div>
-            <div className="mt-3">
-              <h3 className={`font-serif font-light text-cream transition-colors duration-300 group-hover:text-wine ${isPortrait ? "text-sm md:text-base" : "text-lg md:text-xl"}`}>
-                {item.title || item.filename}
-              </h3>
+              {/* Title overlay */}
+              {(item.title || item.filename) && (
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-dark/90 via-dark/40 to-transparent px-3 pb-3 pt-8">
+                  <h3 className={`font-serif font-light text-cream transition-colors duration-300 group-hover:text-wine ${isPortrait ? "text-sm" : "text-base md:text-lg"}`}>
+                    {item.title || item.filename}
+                  </h3>
+                </div>
+              )}
             </div>
           </div>
         )
