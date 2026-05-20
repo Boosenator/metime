@@ -560,7 +560,7 @@ function VideoLibraryCard({
       isHero ? "border-amber-500/40 bg-amber-950/10" :
       "border-white/10 bg-white/5"
     }`}>
-      <div className="relative overflow-hidden rounded-xl">
+      <div className="relative overflow-hidden rounded-xl" style={{ maxHeight: "40vh" }}>
         <VideoPosterFrame
           src={getPortfolioVideoSrc(video)}
           seekTo={video.posterTime ?? 0}
