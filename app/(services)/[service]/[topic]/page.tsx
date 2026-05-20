@@ -181,9 +181,6 @@ function renderBlock(block: TopicBlock, i: number, locale: "uk" | "en") {
       if (!block.src) return null
       return (
         <div key={i} className="my-10">
-          {block.title && (
-            <p className="mb-3 text-xs uppercase tracking-[0.25em] text-wine">{block.title}</p>
-          )}
           <video
             src={block.src}
             poster={block.poster}
