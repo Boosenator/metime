@@ -11,7 +11,7 @@ function BlockRow({
   block: TopicBlock; index: number; total: number
   onChange: (b: TopicBlock) => void; onMove: (dir: "up" | "down") => void; onDelete: () => void
 }) {
-  const label = { h2: "H2", h3: "H3", p: "P", ul: "UL", links: "→", faq: "FAQ" }[block.type]
+  const label = { h2: "H2", h3: "H3", p: "P", ul: "UL", links: "→", faq: "FAQ", carousel: "IMG", video: "VID" }[block.type]
 
   return (
     <div className="group flex gap-3 rounded border border-white/8 bg-dark-card/40 p-4">
@@ -82,6 +82,54 @@ function BlockRow({
               className="text-xs text-wine underline">+ Питання</button>
           </div>
         )}
+        {block.type === "carousel" && (
+          <div className="w-full space-y-2">
+            {block.photos.map((photo, j) => (
+              <div key={j} className="flex gap-2">
+                <div className="flex-1 space-y-1">
+                  <input
+                    className="w-full bg-transparent text-sm text-cream outline-none placeholder:text-gray-mid border-b border-white/10 pb-1 focus:border-wine"
+                    value={photo.src} placeholder="URL фото..."
+                    onChange={(e) => {
+                      const photos = [...block.photos]
+                      photos[j] = { ...photos[j], src: e.target.value }
+                      onChange({ type: "carousel", photos })
+                    }} />
+                  <input
+                    className="w-full bg-transparent text-xs text-gray-light outline-none placeholder:text-gray-mid focus:border-wine"
+                    value={photo.alt} placeholder="Alt текст..."
+                    onChange={(e) => {
+                      const photos = [...block.photos]
+                      photos[j] = { ...photos[j], alt: e.target.value }
+                      onChange({ type: "carousel", photos })
+                    }} />
+                </div>
+                <button
+                  onClick={() => onChange({ type: "carousel", photos: block.photos.filter((_, i) => i !== j) })}
+                  className="shrink-0 self-start text-gray-mid hover:text-red-400 text-xs mt-1">✕</button>
+              </div>
+            ))}
+            <button
+              onClick={() => onChange({ type: "carousel", photos: [...block.photos, { src: "", alt: "" }] })}
+              className="text-xs text-wine underline">+ Фото</button>
+          </div>
+        )}
+        {block.type === "video" && (
+          <div className="w-full space-y-2">
+            <input
+              className="w-full bg-transparent text-sm text-cream outline-none placeholder:text-gray-mid border-b border-white/10 pb-1 focus:border-wine"
+              value={block.src} placeholder="URL відео..."
+              onChange={(e) => onChange({ type: "video", src: e.target.value, poster: block.poster, title: block.title })} />
+            <input
+              className="w-full bg-transparent text-xs text-gray-light outline-none placeholder:text-gray-mid border-b border-white/10 pb-1 focus:border-wine"
+              value={block.poster ?? ""} placeholder="Poster URL (необов'язково)..."
+              onChange={(e) => onChange({ type: "video", src: block.src, poster: e.target.value || undefined, title: block.title })} />
+            <input
+              className="w-full bg-transparent text-xs text-gray-light outline-none placeholder:text-gray-mid focus:border-wine"
+              value={block.title ?? ""} placeholder="Підпис (необов'язково)..."
+              onChange={(e) => onChange({ type: "video", src: block.src, poster: block.poster, title: e.target.value || undefined })} />
+          </div>
+        )}
       </div>
       <div className="flex shrink-0 flex-col gap-1 opacity-0 transition-opacity group-hover:opacity-100">
         <button onClick={() => onMove("up")} disabled={index === 0} className="rounded p-1 text-gray-mid hover:text-cream disabled:opacity-30"><ChevronUp className="h-3.5 w-3.5" /></button>
@@ -96,6 +144,8 @@ function newBlock(type: TopicBlock["type"]): TopicBlock {
   if (type === "ul") return { type: "ul", items: [""] }
   if (type === "faq") return { type: "faq", items: [{ q: "", a: "" }] }
   if (type === "links") return { type: "links", items: [{ text: "", href: "" }] }
+  if (type === "carousel") return { type: "carousel", photos: [] }
+  if (type === "video") return { type: "video", src: "" }
   return { type, text: "" } as TopicBlock
 }
 
@@ -217,11 +267,11 @@ export function AdminServiceTopicEditor({
             ))}
           </div>
           <div className="flex flex-wrap gap-2">
-            {(["p", "h2", "h3", "ul", "faq", "links"] as TopicBlock["type"][]).map((type) => (
+            {(["p", "h2", "h3", "ul", "faq", "links", "carousel", "video"] as TopicBlock["type"][]).map((type) => (
               <button key={type} onClick={() => setBlocks((prev) => [...prev, newBlock(type)])}
                 className="flex items-center gap-1.5 border border-white/15 px-3 py-1.5 text-xs uppercase tracking-[0.15em] text-gray-mid hover:border-wine hover:text-wine transition-colors">
                 <Plus className="h-3 w-3" />
-                {type === "p" ? "Абзац" : type === "h2" ? "H2" : type === "h3" ? "H3" : type === "ul" ? "Список" : type === "faq" ? "FAQ" : "Посилання"}
+                {type === "p" ? "Абзац" : type === "h2" ? "H2" : type === "h3" ? "H3" : type === "ul" ? "Список" : type === "faq" ? "FAQ" : type === "links" ? "Посилання" : type === "carousel" ? "Карусель" : "Відео"}
               </button>
             ))}
           </div>
