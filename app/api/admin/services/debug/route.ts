@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
-import { get } from "@vercel/blob"
+import { list } from "@vercel/blob"
 import { readServicesSync } from "@/lib/services/storage"
 
 const BLOB_KEY = "services/services.json"
@@ -11,44 +11,45 @@ export async function GET(request: Request) {
 
   const result: Record<string, unknown> = {}
 
-  // 1. Env check
   result.BLOB_TOKEN_PRESENT = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
   result.NODE_ENV = process.env.NODE_ENV
 
-  // 2. Local file
+  // Local file
   try {
     const local = readServicesSync()
     result.LOCAL_SERVICES_COUNT = local.length
-    result.LOCAL_WEDDING_TOPICS = local.find(s => s.slug === "wedding")?.topics?.map(t => ({
-      slug: t.slug,
-      title: t.title.slice(0, 60),
-      blocks: t.blocks.length,
-    }))
+    result.LOCAL_WEDDING_TSINY_BLOCKS = local
+      .find(s => s.slug === "wedding")?.topics
+      .find(t => t.slug === "tsiny")?.blocks.length ?? "not found"
   } catch (e) {
     result.LOCAL_ERROR = String(e)
   }
 
-  // 3. Blob — raw read
+  // Blob via list() + fetch()
   if (process.env.BLOB_READ_WRITE_TOKEN) {
     try {
-      const blob = await get(BLOB_KEY, { access: "public", useCache: false })
-      if (!blob || blob.statusCode !== 200 || !blob.stream) {
-        result.BLOB_STATUS = `get() returned: ${JSON.stringify(blob)}`
+      const { blobs } = await list({ prefix: BLOB_KEY })
+      const blob = blobs.find(b => b.pathname === BLOB_KEY)
+      if (!blob) {
+        result.BLOB_STATUS = "NOT_FOUND in list()"
+        result.ALL_BLOBS = blobs.map(b => b.pathname)
       } else {
-        const data = await new Response(blob.stream).json() as { slug: string; topics?: { slug: string; title: string; blocks: unknown[] }[] }[]
-        result.BLOB_SERVICES_COUNT = data.length
-        result.BLOB_WEDDING_TOPICS = data.find(s => s.slug === "wedding")?.topics?.map(t => ({
-          slug: t.slug,
-          title: t.title.slice(0, 60),
-          blocks: t.blocks.length,
-        }))
-        result.BLOB_STATUS = "OK"
+        result.BLOB_URL = blob.url
+        const res = await fetch(blob.url, { cache: "no-store" })
+        if (!res.ok) {
+          result.BLOB_STATUS = `fetch failed: ${res.status}`
+        } else {
+          const data = await res.json() as { slug: string; topics?: { slug: string; title: string; blocks: unknown[] }[] }[]
+          result.BLOB_STATUS = "OK"
+          result.BLOB_SERVICES_COUNT = data.length
+          result.BLOB_WEDDING_TSINY_BLOCKS = data
+            .find(s => s.slug === "wedding")?.topics
+            ?.find(t => t.slug === "tsiny")?.blocks.length ?? "not found"
+        }
       }
     } catch (e) {
       result.BLOB_ERROR = String(e)
     }
-  } else {
-    result.BLOB_STATUS = "SKIPPED (no token)"
   }
 
   return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } })

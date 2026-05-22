@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync } from "fs"
 import { readFile, unlink, writeFile } from "fs/promises"
 import { join } from "path"
-import { del, get, put } from "@vercel/blob"
+import { del, list, put } from "@vercel/blob"
 import { arrangeByColor } from "./arrange-by-color"
 import type { GridConfig, HeroVideoConfig, LayoutData, PhotoMeta, VideoMeta } from "./types"
 
@@ -32,11 +32,12 @@ function useBlobStorage() {
 
 async function readBlobJson<T>(pathname: string): Promise<T | null> {
   try {
-    const blob = await get(pathname, { access: "public", useCache: false })
-    if (!blob || blob.statusCode !== 200 || !blob.stream) return null
-
-    const response = new Response(blob.stream)
-    return (await response.json()) as T
+    const { blobs } = await list({ prefix: pathname })
+    const blob = blobs.find((b) => b.pathname === pathname)
+    if (!blob) return null
+    const res = await fetch(blob.url, { cache: "no-store" })
+    if (!res.ok) return null
+    return (await res.json()) as T
   } catch {
     return null
   }

@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync } from "fs"
 import { writeFile } from "fs/promises"
 import { join } from "path"
-import { get, put } from "@vercel/blob"
+import { list, put } from "@vercel/blob"
 import type { ServiceData } from "./types"
 
 const DATA_DIR = join(process.cwd(), "data", "services")
@@ -23,9 +23,12 @@ function readLocalServices(): ServiceData[] {
 
 async function readBlobJson<T>(pathname: string): Promise<T | null> {
   try {
-    const blob = await get(pathname, { access: "public", useCache: false })
-    if (!blob || blob.statusCode !== 200 || !blob.stream) return null
-    return (await new Response(blob.stream).json()) as T
+    const { blobs } = await list({ prefix: pathname })
+    const blob = blobs.find((b) => b.pathname === pathname)
+    if (!blob) return null
+    const res = await fetch(blob.url, { cache: "no-store" })
+    if (!res.ok) return null
+    return (await res.json()) as T
   } catch {
     return null
   }
