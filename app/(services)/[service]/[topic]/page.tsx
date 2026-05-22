@@ -39,6 +39,8 @@ const TOPIC_COPY = {
   },
 }
 
+export const dynamic = "force-dynamic"
+
 export function generateStaticParams() {
   return readServicesSync().flatMap((s) =>
     s.topics.map((t) => ({ service: s.slug, topic: t.slug }))

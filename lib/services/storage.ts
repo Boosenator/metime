@@ -23,7 +23,7 @@ function readLocalServices(): ServiceData[] {
 
 async function readBlobJson<T>(pathname: string): Promise<T | null> {
   try {
-    const blob = await get(pathname, { access: "public" })
+    const blob = await get(pathname, { access: "public", useCache: false })
     if (!blob || blob.statusCode !== 200 || !blob.stream) return null
     return (await new Response(blob.stream).json()) as T
   } catch {

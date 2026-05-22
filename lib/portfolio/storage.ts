@@ -32,7 +32,7 @@ function useBlobStorage() {
 
 async function readBlobJson<T>(pathname: string): Promise<T | null> {
   try {
-    const blob = await get(pathname, { access: "public" })
+    const blob = await get(pathname, { access: "public", useCache: false })
     if (!blob || blob.statusCode !== 200 || !blob.stream) return null
 
     const response = new Response(blob.stream)
