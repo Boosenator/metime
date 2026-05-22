@@ -4,7 +4,7 @@ import { cookies } from "next/headers"
 import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
 import { I18nProvider } from "@/lib/i18n"
-import { readServicesSync, getTopicSync as getTopic } from "@/lib/services/storage"
+import { readServicesSync, readServices, getTopic } from "@/lib/services/storage"
 import { getLocalizedTopic, normalizeContentLocale } from "@/lib/services/i18n"
 import type { TopicBlock } from "@/lib/services/types"
 import {
@@ -51,7 +51,7 @@ export async function generateMetadata({
   params: Promise<{ service: string; topic: string }>
 }): Promise<Metadata> {
   const { service: serviceSlug, topic: topicSlug } = await params
-  const result = getTopic(serviceSlug, topicSlug)
+  const result = await getTopic(serviceSlug, topicSlug)
   if (!result) return {}
 
   const { service, topic } = result
@@ -202,7 +202,7 @@ export default async function TopicPage({
   params: Promise<{ service: string; topic: string }>
 }) {
   const { service: serviceSlug, topic: topicSlug } = await params
-  const result = getTopic(serviceSlug, topicSlug)
+  const result = await getTopic(serviceSlug, topicSlug)
   if (!result) notFound()
 
   const { service, topic } = result
@@ -210,7 +210,7 @@ export default async function TopicPage({
   const localized = getLocalizedTopic(topic, locale)
   const copy = TOPIC_COPY[locale]
   const serviceName = locale === "en" ? SERVICE_NAMES_EN[serviceSlug] ?? service.name : service.name
-  const services = readServicesSync()
+  const services = await readServices()
 
   const faqItems = localized.blocks
     .filter((b): b is { type: "faq"; items: FaqItem[] } => b.type === "faq")
