@@ -8,7 +8,7 @@ type Params = { params: Promise<{ slug: string; topicSlug: string }> }
 
 export async function GET(_req: Request, { params }: Params) {
   const { slug, topicSlug } = await params
-  const services = readServicesSync()
+  const services = await readServices()
   const service = services.find((s) => s.slug === slug)
   if (!service) return NextResponse.json({ error: "Service not found" }, { status: 404 })
   const topic = service.topics.find((t) => t.slug === topicSlug)
