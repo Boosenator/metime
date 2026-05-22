@@ -53,13 +53,20 @@ export async function readServices(): Promise<ServiceData[]> {
   if (useBlobStorage()) {
     const blob = await readBlobJson<ServiceData[]>(BLOB_KEY)
     if (blob && blob.length > 0) {
-      console.log("[services/storage] readServices: source=BLOB topics0=", blob[0]?.topics?.length)
+      console.log("[services/storage] readServices: source=BLOB")
       return blob
     }
-    console.log("[services/storage] readServices: blob returned null/empty, falling back to local")
+    console.log("[services/storage] readServices: blob null/empty, falling back to local")
   }
-  console.log("[services/storage] readServices: source=LOCAL (no blob token or blob empty)")
+  console.log("[services/storage] readServices: source=LOCAL")
   return readLocalServices()
+}
+
+// Read strictly from Blob — returns null if unavailable (no local fallback).
+// Used by PUT routes to prevent accidentally overwriting Blob with stale local data.
+export async function readServicesFromBlob(): Promise<ServiceData[] | null> {
+  if (!useBlobStorage()) return null
+  return readBlobJson<ServiceData[]>(BLOB_KEY)
 }
 
 // Write — Blob on Vercel, local file in dev

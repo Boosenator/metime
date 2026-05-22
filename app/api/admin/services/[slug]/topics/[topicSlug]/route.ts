@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
-import { readServices, saveServices } from "@/lib/services/storage"
+import { readServices, readServicesFromBlob, saveServices } from "@/lib/services/storage"
 import type { TopicBlock } from "@/lib/services/types"
 
 type Params = { params: Promise<{ slug: string; topicSlug: string }> }
@@ -42,12 +42,23 @@ export async function PUT(request: Request, { params }: Params) {
     }
     log.push(`BODY: title=${body.title?.slice(0, 40)} blocks=${body.blocks?.length ?? "none"}`)
 
-    // 4. Read current data
+    // 4. Read current data — strictly from Blob when token present
     const hasBlobToken = Boolean(process.env.BLOB_READ_WRITE_TOKEN)
     log.push(`BLOB_TOKEN_PRESENT: ${hasBlobToken}`)
 
-    const services = await readServices()
-    log.push(`READ: ${services.length} services loaded`)
+    let services
+    if (hasBlobToken) {
+      const blobData = await readServicesFromBlob()
+      if (!blobData || blobData.length === 0) {
+        log.push("ERROR: Blob read returned null — refusing to save (would overwrite Blob with stale local data)")
+        return NextResponse.json({ error: "Blob недоступний. Спробуйте ще раз.", log }, { status: 503 })
+      }
+      services = blobData
+      log.push(`READ: ${services.length} services from BLOB`)
+    } else {
+      services = await readServices()
+      log.push(`READ: ${services.length} services from LOCAL`)
+    }
 
     const serviceIdx = services.findIndex((s) => s.slug === slug)
     if (serviceIdx === -1) {
