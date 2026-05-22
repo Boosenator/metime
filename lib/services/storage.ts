@@ -49,8 +49,13 @@ export function readServicesSync(): ServiceData[] {
 export async function readServices(): Promise<ServiceData[]> {
   if (useBlobStorage()) {
     const blob = await readBlobJson<ServiceData[]>(BLOB_KEY)
-    if (blob && blob.length > 0) return blob
+    if (blob && blob.length > 0) {
+      console.log("[services/storage] readServices: source=BLOB topics0=", blob[0]?.topics?.length)
+      return blob
+    }
+    console.log("[services/storage] readServices: blob returned null/empty, falling back to local")
   }
+  console.log("[services/storage] readServices: source=LOCAL (no blob token or blob empty)")
   return readLocalServices()
 }
 
