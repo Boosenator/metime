@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { revalidatePath } from "next/cache"
 import { requireAdminAuth } from "@/lib/portfolio/admin-auth"
-import { readServicesSync, saveServices } from "@/lib/services/storage"
+import { readServices, saveServices } from "@/lib/services/storage"
 import type { TopicBlock } from "@/lib/services/types"
 
 type Params = { params: Promise<{ slug: string; topicSlug: string }> }
@@ -29,7 +29,7 @@ export async function PUT(request: Request, { params }: Params) {
     blocks?: TopicBlock[]
   }
 
-  const services = readServicesSync()
+  const services = await readServices()
   const serviceIdx = services.findIndex((s) => s.slug === slug)
   if (serviceIdx === -1) return NextResponse.json({ error: "Service not found" }, { status: 404 })
 

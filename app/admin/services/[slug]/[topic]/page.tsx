@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
-import { getTopicSync } from "@/lib/services/storage"
+import { getTopic } from "@/lib/services/storage"
 import { AdminServiceTopicEditor } from "@/components/admin-service-topic-editor"
 
 export const metadata: Metadata = {
@@ -16,7 +16,7 @@ export default async function AdminServiceTopicPage({
   params: Promise<{ slug: string; topic: string }>
 }) {
   const { slug, topic: topicSlug } = await params
-  const result = getTopicSync(slug, topicSlug)
+  const result = await getTopic(slug, topicSlug)
   if (!result) notFound()
   return <AdminServiceTopicEditor service={result.service} topic={result.topic} />
 }
