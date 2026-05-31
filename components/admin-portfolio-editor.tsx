@@ -2205,21 +2205,28 @@ export function AdminPortfolioEditor({
                       {heroSlot.current.length ? (
                         heroSlot.current.map((video) => (
                           <div key={video.id} className="w-28 shrink-0 overflow-hidden rounded border border-white/10 bg-black/40">
-                            <div className="h-16">
+                            <div className="relative h-16">
                               <VideoPosterFrame
                                 src={getPortfolioVideoSrc(video)}
                                 seekTo={video.posterTime ?? 0}
                                 className="h-full w-full object-cover"
                               />
+                              <button
+                                type="button"
+                                onClick={() => removeHeroVideo(heroSlot.slot, video.id)}
+                                className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded bg-black/75 text-gray-light transition-colors hover:bg-wine hover:text-cream"
+                                title={`Remove ${video.title || video.filename}`}
+                                aria-label={`Remove ${video.title || video.filename} from ${heroSlot.title}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => removeHeroVideo(heroSlot.slot, video.id)}
-                              className="block w-full truncate px-1.5 py-1 text-left text-[9px] text-gray-mid transition-colors hover:text-cream"
-                              title={`Remove ${video.title || video.filename}`}
+                            <p
+                              className="w-full truncate px-1.5 py-1 text-left text-[9px] text-gray-mid"
+                              title={video.title || video.filename}
                             >
                               {video.title || video.filename}
-                            </button>
+                            </p>
                           </div>
                         ))
                       ) : (
