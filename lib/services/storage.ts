@@ -99,7 +99,10 @@ export async function getService(slug: string): Promise<ServiceData | undefined>
 
 export async function getTopic(serviceSlug: string, topicSlug: string) {
   const service = await getService(serviceSlug)
-  if (!service) return undefined
-  const topic = service.topics.find((t) => t.slug === topicSlug)
-  return topic ? { service, topic } : undefined
+  const topic = service?.topics.find((t) => t.slug === topicSlug)
+  if (service && topic) return { service, topic }
+
+  // Production may have older admin-edited Blob data than the bundled JSON.
+  // Keep new code-shipped topics reachable even before Blob is refreshed.
+  return getTopicSync(serviceSlug, topicSlug)
 }
