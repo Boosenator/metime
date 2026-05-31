@@ -73,6 +73,7 @@ const LANDING_CONTENT: Record<string, LandingContent> = {
     ],
     related: [
       { text: "Group Session від MeTime", href: "/dance/grupova-videozyomka-tantsyu" },
+      { text: "Відеозйомка хореографії в Черкасах", href: "/dance/videozyomka-horeografii" },
       { text: "Pole Dance відеозйомка в Черкасах", href: "/dance/videozyomka-pole-dance" },
       { text: "Reels і TikTok для танцювальної студії", href: "/dance/reels-tiktok-dlya-tantsiv" },
       { text: "Як підготуватися до танцювальної фотосесії", href: "/dance/pidhotovka" },
