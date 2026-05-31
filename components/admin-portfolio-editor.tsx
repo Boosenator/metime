@@ -18,6 +18,7 @@ import {
 } from "@dnd-kit/core"
 import { useDraggable, useDroppable } from "@dnd-kit/core"
 import {
+  AlertTriangle,
   Ban,
   ChevronDown,
   ChevronUp,
@@ -84,6 +85,19 @@ const VIDEO_CATEGORY_LABELS: Record<(typeof VIDEO_CATEGORIES)[number], string> =
   brand: "Brand",
   custom: "Custom",
   lovestory: "Love Story",
+}
+
+const MAX_VIDEO_UPLOAD_BYTES = 1024 * 1024 * 1024
+const LARGE_VIDEO_DISMISS_MS = 5000
+
+function formatFileSize(bytes: number) {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(0)} MB`
+  return `${Math.max(1, Math.round(bytes / 1024))} KB`
+}
+
+function findOversizedVideos(files: FileList | null) {
+  return Array.from(files ?? []).filter((file) => file.size > MAX_VIDEO_UPLOAD_BYTES)
 }
 
 function normalizePhotoCategory(category?: string): (typeof PHOTO_CATEGORIES)[number] {
@@ -921,6 +935,8 @@ export function AdminPortfolioEditor({
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [largeVideoFiles, setLargeVideoFiles] = useState<{ name: string; size: number }[]>([])
+  const [largeVideoDismissProgress, setLargeVideoDismissProgress] = useState(0)
   const [deletingPhotoId, setDeletingPhotoId] = useState<string | null>(null)
   const [colsInput, setColsInput] = useState(String(initialLayout.grid.cols))
   const [rowsInput, setRowsInput] = useState(String(initialLayout.grid.rows))
@@ -950,6 +966,8 @@ export function AdminPortfolioEditor({
   const isResizing = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const heroFileInputRef = useRef<HTMLInputElement>(null)
+  const largeVideoHoldTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const largeVideoHoldIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const gridRef = useRef<HTMLDivElement>(null)
   const [pendingHeroSlot, setPendingHeroSlot] = useState<HeroVideoSlot | null>(null)
   const resizingRef = useRef<{
@@ -1484,6 +1502,40 @@ export function AdminPortfolioEditor({
     selectVisibleVideos()
   }, [allVisibleVideosSelected, paginatedVideos, selectVisibleVideos])
 
+  const stopLargeVideoDismissHold = useCallback(() => {
+    if (largeVideoHoldTimeoutRef.current) {
+      clearTimeout(largeVideoHoldTimeoutRef.current)
+      largeVideoHoldTimeoutRef.current = null
+    }
+    if (largeVideoHoldIntervalRef.current) {
+      clearInterval(largeVideoHoldIntervalRef.current)
+      largeVideoHoldIntervalRef.current = null
+    }
+    setLargeVideoDismissProgress(0)
+  }, [])
+
+  const startLargeVideoDismissHold = useCallback(() => {
+    if (largeVideoHoldTimeoutRef.current) return
+
+    const startedAt = Date.now()
+    setLargeVideoDismissProgress(0)
+    largeVideoHoldIntervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startedAt
+      setLargeVideoDismissProgress(Math.min(100, (elapsed / LARGE_VIDEO_DISMISS_MS) * 100))
+    }, 50)
+    largeVideoHoldTimeoutRef.current = setTimeout(() => {
+      if (largeVideoHoldIntervalRef.current) {
+        clearInterval(largeVideoHoldIntervalRef.current)
+        largeVideoHoldIntervalRef.current = null
+      }
+      largeVideoHoldTimeoutRef.current = null
+      setLargeVideoDismissProgress(0)
+      setLargeVideoFiles([])
+    }, LARGE_VIDEO_DISMISS_MS)
+  }, [])
+
+  useEffect(() => stopLargeVideoDismissHold, [stopLargeVideoDismissHold])
+
   const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event
     if (!over) return
@@ -1618,6 +1670,16 @@ export function AdminPortfolioEditor({
 
   const handleUpload = useCallback(async (files: FileList | null) => {
     if (!files?.length) return
+    if (activeTab === "videos") {
+      const oversized = findOversizedVideos(files)
+      if (oversized.length) {
+        setLargeVideoFiles(oversized.map((file) => ({ name: file.name, size: file.size })))
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+        return
+      }
+    }
     setUploading(true)
 
     try {
@@ -1693,6 +1755,15 @@ export function AdminPortfolioEditor({
 
   const handleHeroUpload = useCallback(async (slot: HeroVideoSlot, files: FileList | null) => {
     if (!files?.length) return
+    const oversized = findOversizedVideos(files)
+    if (oversized.length) {
+      setLargeVideoFiles(oversized.map((file) => ({ name: file.name, size: file.size })))
+      setPendingHeroSlot(null)
+      if (heroFileInputRef.current) {
+        heroFileInputRef.current.value = ""
+      }
+      return
+    }
     setUploading(true)
 
     try {
@@ -1740,6 +1811,67 @@ export function AdminPortfolioEditor({
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-dark text-cream">
+      {largeVideoFiles.length > 0 && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="large-video-alert-title"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 px-5 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-2xl border-2 border-red-500 bg-dark p-8 text-center shadow-2xl shadow-red-950/60">
+            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15 text-red-300">
+              <AlertTriangle className="h-9 w-9" />
+            </div>
+            <p className="mb-3 text-xs uppercase tracking-[0.35em] text-red-300">
+              Велике відео
+            </p>
+            <h2
+              id="large-video-alert-title"
+              className="mb-4 font-serif text-4xl font-light uppercase leading-tight text-cream md:text-6xl"
+            >
+              АНЯ, ЗІЖМИ ВІДЕО!
+            </h2>
+            <p className="mx-auto mb-6 max-w-xl text-base leading-relaxed text-gray-light md:text-lg">
+              Цей файл важить більше 1 ГБ. Спочатку стисни його, потім вантажимо.
+            </p>
+            <div className="mb-7 space-y-2 border border-white/10 bg-white/5 p-4 text-left">
+              {largeVideoFiles.map((file) => (
+                <div key={`${file.name}-${file.size}`} className="flex items-center justify-between gap-4 text-sm">
+                  <span className="min-w-0 truncate text-cream">{file.name}</span>
+                  <span className="shrink-0 text-red-300">{formatFileSize(file.size)}</span>
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onPointerDown={startLargeVideoDismissHold}
+              onPointerUp={stopLargeVideoDismissHold}
+              onPointerLeave={stopLargeVideoDismissHold}
+              onPointerCancel={stopLargeVideoDismissHold}
+              onKeyDown={(event) => {
+                if (event.key === " " || event.key === "Enter") {
+                  event.preventDefault()
+                  startLargeVideoDismissHold()
+                }
+              }}
+              onKeyUp={(event) => {
+                if (event.key === " " || event.key === "Enter") {
+                  event.preventDefault()
+                  stopLargeVideoDismissHold()
+                }
+              }}
+              className="relative overflow-hidden rounded border border-red-400/60 bg-red-500/15 px-6 py-3 text-xs uppercase tracking-[0.22em] text-cream transition-colors hover:bg-red-500/25"
+            >
+              <span
+                className="absolute inset-y-0 left-0 bg-red-500/45 transition-[width] duration-75"
+                style={{ width: `${largeVideoDismissProgress}%` }}
+                aria-hidden="true"
+              />
+              <span className="relative z-10">Стискаю як твій пісюн!</span>
+            </button>
+          </div>
+        </div>
+      )}
       <div className="flex flex-shrink-0 flex-wrap items-center gap-3 border-b border-white/10 bg-dark/95 px-4 py-3 backdrop-blur-md">
         <div className="flex items-center gap-1 rounded border border-white/10 bg-white/5 p-1">
           <a
