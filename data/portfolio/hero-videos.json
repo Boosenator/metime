@@ -1,4 +1,4 @@
 {
-  "desktopVideoId": null,
-  "mobileVideoId": null
+  "desktopVideoIds": [],
+  "mobileVideoIds": []
 }

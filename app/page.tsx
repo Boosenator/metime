@@ -58,8 +58,14 @@ export default async function Home() {
   const activePhotos = photos.filter((photo) => !photo.excluded)
   const activeVideos = videos.filter((video) => !video.excluded)
   const videoMap = new Map(videos.map((video) => [video.id, video]))
-  const desktopHeroVideo = heroVideos.desktopVideoId ? videoMap.get(heroVideos.desktopVideoId) ?? null : null
-  const mobileHeroVideo = heroVideos.mobileVideoId ? videoMap.get(heroVideos.mobileVideoId) ?? null : null
+  const desktopHeroVideoSrcs = heroVideos.desktopVideoIds
+    .map((id) => videoMap.get(id))
+    .filter((video): video is NonNullable<typeof video> => Boolean(video))
+    .map((video) => getPortfolioVideoSrc(video))
+  const mobileHeroVideoSrcs = heroVideos.mobileVideoIds
+    .map((id) => videoMap.get(id))
+    .filter((video): video is NonNullable<typeof video> => Boolean(video))
+    .map((video) => getPortfolioVideoSrc(video))
 
   const photoMap = new Map(activePhotos.map((p) => [p.id, p]))
   const cells = layout.cells
@@ -93,8 +99,8 @@ export default async function Home() {
         <Navigation />
         <main>
           <Hero
-            desktopVideoSrc={desktopHeroVideo ? getPortfolioVideoSrc(desktopHeroVideo) : null}
-            mobileVideoSrc={mobileHeroVideo ? getPortfolioVideoSrc(mobileHeroVideo) : null}
+            desktopVideoSrcs={desktopHeroVideoSrcs}
+            mobileVideoSrcs={mobileHeroVideoSrcs}
           />
           <div className="fade-in-section">
             <PortfolioClient cells={cells} grid={layout.grid} photos={activePhotos} videos={activeVideos} />

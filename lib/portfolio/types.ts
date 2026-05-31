@@ -34,8 +34,10 @@ export type VideoMeta = {
 }
 
 export type HeroVideoConfig = {
-  desktopVideoId: string | null
-  mobileVideoId: string | null
+  desktopVideoIds: string[]
+  mobileVideoIds: string[]
+  desktopVideoId?: string | null
+  mobileVideoId?: string | null
 }
 
 export type GridConfig = {

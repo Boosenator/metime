@@ -8,6 +8,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object"
 }
 
+function uniqueStrings(values: unknown): string[] {
+  if (!Array.isArray(values)) return []
+  return Array.from(new Set(values.filter((value): value is string => typeof value === "string" && value.length > 0)))
+}
+
 export async function PUT(request: Request) {
   const authError = requireAdminAuth(request)
   if (authError) return authError
@@ -113,8 +118,14 @@ export async function PUT(request: Request) {
   const validatedHeroVideos: HeroVideoConfig | null =
     bodyWithPhotos.heroVideos && typeof bodyWithPhotos.heroVideos === "object"
       ? {
-          desktopVideoId: typeof bodyWithPhotos.heroVideos.desktopVideoId === "string" ? bodyWithPhotos.heroVideos.desktopVideoId : null,
-          mobileVideoId: typeof bodyWithPhotos.heroVideos.mobileVideoId === "string" ? bodyWithPhotos.heroVideos.mobileVideoId : null,
+          desktopVideoIds: uniqueStrings([
+            ...uniqueStrings(bodyWithPhotos.heroVideos.desktopVideoIds),
+            bodyWithPhotos.heroVideos.desktopVideoId,
+          ]),
+          mobileVideoIds: uniqueStrings([
+            ...uniqueStrings(bodyWithPhotos.heroVideos.mobileVideoIds),
+            bodyWithPhotos.heroVideos.mobileVideoId,
+          ]),
         }
       : null
 

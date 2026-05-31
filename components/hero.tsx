@@ -1,19 +1,31 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 
+function pickRandom(srcs: string[]): string | null {
+  if (srcs.length === 0) return null
+  return srcs[Math.floor(Math.random() * srcs.length)] ?? null
+}
+
 export function Hero({
-  desktopVideoSrc,
-  mobileVideoSrc,
+  desktopVideoSrcs,
+  mobileVideoSrcs,
 }: {
-  desktopVideoSrc: string | null
-  mobileVideoSrc: string | null
+  desktopVideoSrcs: string[]
+  mobileVideoSrcs: string[]
 }) {
   const { t } = useI18n()
   const desktopVideoRef = useRef<HTMLVideoElement>(null)
   const mobileVideoRef = useRef<HTMLVideoElement>(null)
+  const [desktopVideoSrc, setDesktopVideoSrc] = useState<string | null>(null)
+  const [mobileVideoSrc, setMobileVideoSrc] = useState<string | null>(null)
+
+  useEffect(() => {
+    setDesktopVideoSrc(pickRandom(desktopVideoSrcs))
+    setMobileVideoSrc(pickRandom(mobileVideoSrcs))
+  }, [desktopVideoSrcs, mobileVideoSrcs])
 
   useEffect(() => {
     // Fallback: деякі браузери ігнорують autoplay до взаємодії
@@ -22,7 +34,7 @@ export function Hero({
       if (!v || !v.paused) continue
       v.play().catch(() => {})
     }
-  }, [])
+  }, [desktopVideoSrc, mobileVideoSrc])
 
   return (
     <section

@@ -97,6 +97,7 @@ function normalizePhotoCategory(category?: string): (typeof PHOTO_CATEGORIES)[nu
 type AdminTab = "layout" | "library" | "videos"
 type LibraryStatusFilter = "all" | "placed" | "unplaced" | "excluded"
 type LibrarySort = "newest" | "oldest" | "filename"
+type HeroVideoSlot = "desktopVideoIds" | "mobileVideoIds"
 
 function normalizeVideoCategory(category?: string): (typeof VIDEO_CATEGORIES)[number] {
   if (category === "commercial" || category === "brand") return "brand"
@@ -127,6 +128,13 @@ function formatSeconds(value: number) {
 
 function toggleId(ids: string[], id: string) {
   return ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]
+}
+
+function normalizeHeroVideoConfig(config: HeroVideoConfig): HeroVideoConfig {
+  return {
+    desktopVideoIds: Array.from(new Set((config.desktopVideoIds ?? []).filter(Boolean))),
+    mobileVideoIds: Array.from(new Set((config.mobileVideoIds ?? []).filter(Boolean))),
+  }
 }
 
 function buildOccupancyMap(cells: Cell[], grid: GridConfig): Map<string, Cell> {
@@ -905,8 +913,8 @@ export function AdminPortfolioEditor({
   const [savedPhotos, setSavedPhotos] = useState<PhotoMeta[]>(initialPhotos)
   const [videos, setVideos] = useState<VideoMeta[]>(initialVideos)
   const [savedVideos, setSavedVideos] = useState<VideoMeta[]>(initialVideos)
-  const [heroVideos, setHeroVideos] = useState<HeroVideoConfig>(initialHeroVideos)
-  const [savedHeroVideos, setSavedHeroVideos] = useState<HeroVideoConfig>(initialHeroVideos)
+  const [heroVideos, setHeroVideos] = useState<HeroVideoConfig>(() => normalizeHeroVideoConfig(initialHeroVideos))
+  const [savedHeroVideos, setSavedHeroVideos] = useState<HeroVideoConfig>(() => normalizeHeroVideoConfig(initialHeroVideos))
   const [layout, setLayout] = useState<LayoutData>(initialLayout)
   const [savedLayout, setSavedLayout] = useState<LayoutData>(initialLayout)
   const [selected, setSelected] = useState<string | null>(null)
@@ -943,7 +951,7 @@ export function AdminPortfolioEditor({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const heroFileInputRef = useRef<HTMLInputElement>(null)
   const gridRef = useRef<HTMLDivElement>(null)
-  const [pendingHeroSlot, setPendingHeroSlot] = useState<keyof HeroVideoConfig | null>(null)
+  const [pendingHeroSlot, setPendingHeroSlot] = useState<HeroVideoSlot | null>(null)
   const resizingRef = useRef<{
     cell: Cell
     startX: number
@@ -971,8 +979,8 @@ export function AdminPortfolioEditor({
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
   const previewPhoto = previewPhotoId ? photoMap.get(previewPhotoId) ?? null : null
   const previewVideo = previewVideoId ? videoMap.get(previewVideoId) ?? null : null
-  const desktopHeroVideo = heroVideos.desktopVideoId ? videoMap.get(heroVideos.desktopVideoId) ?? null : null
-  const mobileHeroVideo = heroVideos.mobileVideoId ? videoMap.get(heroVideos.mobileVideoId) ?? null : null
+  const desktopHeroVideos = heroVideos.desktopVideoIds.map((id) => videoMap.get(id)).filter((video): video is VideoMeta => Boolean(video))
+  const mobileHeroVideos = heroVideos.mobileVideoIds.map((id) => videoMap.get(id)).filter((video): video is VideoMeta => Boolean(video))
   const normalizedLibraryQuery = libraryQuery.trim().toLowerCase()
   const normalizedVideoQuery = videoQuery.trim().toLowerCase()
 
@@ -1013,7 +1021,7 @@ export function AdminPortfolioEditor({
   const allFilteredSelected = filteredLibraryPhotos.length > 0 && filteredLibraryPhotos.every((photo) => selectedPhotoIds.includes(photo.id))
 
   const heroVideoIds = useMemo(
-    () => new Set([heroVideos.desktopVideoId, heroVideos.mobileVideoId].filter(Boolean) as string[]),
+    () => new Set([...heroVideos.desktopVideoIds, ...heroVideos.mobileVideoIds]),
     [heroVideos]
   )
 
@@ -1080,8 +1088,8 @@ export function AdminPortfolioEditor({
     const validIds = new Set(videos.map((video) => video.id))
     setHeroVideos((prev) => {
       const next: HeroVideoConfig = {
-        desktopVideoId: prev.desktopVideoId && validIds.has(prev.desktopVideoId) ? prev.desktopVideoId : null,
-        mobileVideoId: prev.mobileVideoId && validIds.has(prev.mobileVideoId) ? prev.mobileVideoId : null,
+        desktopVideoIds: prev.desktopVideoIds.filter((id) => validIds.has(id)),
+        mobileVideoIds: prev.mobileVideoIds.filter((id) => validIds.has(id)),
       }
       return JSON.stringify(next) === JSON.stringify(prev) ? prev : next
     })
@@ -1221,8 +1229,23 @@ export function AdminPortfolioEditor({
     })
   }, [])
 
-  const assignHeroVideo = useCallback((slot: keyof HeroVideoConfig, videoId: string | null) => {
-    setHeroVideos((prev) => ({ ...prev, [slot]: videoId }))
+  const addHeroVideo = useCallback((slot: HeroVideoSlot, videoId: string) => {
+    if (!videoId) return
+    setHeroVideos((prev) => ({
+      ...prev,
+      [slot]: prev[slot].includes(videoId) ? prev[slot] : [...prev[slot], videoId],
+    }))
+  }, [])
+
+  const removeHeroVideo = useCallback((slot: HeroVideoSlot, videoId: string) => {
+    setHeroVideos((prev) => ({
+      ...prev,
+      [slot]: prev[slot].filter((id) => id !== videoId),
+    }))
+  }, [])
+
+  const clearHeroVideos = useCallback((slot: HeroVideoSlot) => {
+    setHeroVideos((prev) => ({ ...prev, [slot]: [] }))
   }, [])
 
   const deletePhoto = useCallback(async (photoId: string) => {
@@ -1263,12 +1286,12 @@ export function AdminPortfolioEditor({
       setVideos((prev) => prev.filter((video) => video.id !== videoId))
       setSavedVideos((prev) => prev.filter((video) => video.id !== videoId))
       setHeroVideos((prev) => ({
-        desktopVideoId: prev.desktopVideoId === videoId ? null : prev.desktopVideoId,
-        mobileVideoId: prev.mobileVideoId === videoId ? null : prev.mobileVideoId,
+        desktopVideoIds: prev.desktopVideoIds.filter((id) => id !== videoId),
+        mobileVideoIds: prev.mobileVideoIds.filter((id) => id !== videoId),
       }))
       setSavedHeroVideos((prev) => ({
-        desktopVideoId: prev.desktopVideoId === videoId ? null : prev.desktopVideoId,
-        mobileVideoId: prev.mobileVideoId === videoId ? null : prev.mobileVideoId,
+        desktopVideoIds: prev.desktopVideoIds.filter((id) => id !== videoId),
+        mobileVideoIds: prev.mobileVideoIds.filter((id) => id !== videoId),
       }))
       if (previewVideoId === videoId) setPreviewVideoId(null)
       setSaveMsg("Video deleted")
@@ -1378,12 +1401,12 @@ export function AdminPortfolioEditor({
       setVideos((prev) => prev.filter((video) => !idSet.has(video.id)))
       setSavedVideos((prev) => prev.filter((video) => !idSet.has(video.id)))
       setHeroVideos((prev) => ({
-        desktopVideoId: prev.desktopVideoId && idSet.has(prev.desktopVideoId) ? null : prev.desktopVideoId,
-        mobileVideoId: prev.mobileVideoId && idSet.has(prev.mobileVideoId) ? null : prev.mobileVideoId,
+        desktopVideoIds: prev.desktopVideoIds.filter((id) => !idSet.has(id)),
+        mobileVideoIds: prev.mobileVideoIds.filter((id) => !idSet.has(id)),
       }))
       setSavedHeroVideos((prev) => ({
-        desktopVideoId: prev.desktopVideoId && idSet.has(prev.desktopVideoId) ? null : prev.desktopVideoId,
-        mobileVideoId: prev.mobileVideoId && idSet.has(prev.mobileVideoId) ? null : prev.mobileVideoId,
+        desktopVideoIds: prev.desktopVideoIds.filter((id) => !idSet.has(id)),
+        mobileVideoIds: prev.mobileVideoIds.filter((id) => !idSet.has(id)),
       }))
       setSelectedVideoIds((prev) => prev.filter((id) => !idSet.has(id)))
       if (previewVideoId && idSet.has(previewVideoId)) setPreviewVideoId(null)
@@ -1668,7 +1691,7 @@ export function AdminPortfolioEditor({
     }
   }, [activeTab])
 
-  const handleHeroUpload = useCallback(async (slot: keyof HeroVideoConfig, files: FileList | null) => {
+  const handleHeroUpload = useCallback(async (slot: HeroVideoSlot, files: FileList | null) => {
     if (!files?.length) return
     setUploading(true)
 
@@ -1699,7 +1722,10 @@ export function AdminPortfolioEditor({
       if (uploadedVideo) {
         setVideos((prev) => (prev.some((item) => item.id === uploadedVideo.id) ? prev : [...prev, uploadedVideo]))
         setSavedVideos((prev) => (prev.some((item) => item.id === uploadedVideo.id) ? prev : [...prev, uploadedVideo]))
-        setHeroVideos((prev) => ({ ...prev, [slot]: uploadedVideo.id }))
+        setHeroVideos((prev) => ({
+          ...prev,
+          [slot]: prev[slot].includes(uploadedVideo.id) ? prev[slot] : [...prev[slot], uploadedVideo.id],
+        }))
       }
     } catch (err) {
       alert(`Hero video upload failed: ${err instanceof Error ? err.message : "unknown"}`)
@@ -2160,42 +2186,62 @@ export function AdminPortfolioEditor({
             >
               <span className="text-[10px] uppercase tracking-[0.2em] text-wine">Hero background videos</span>
               <span className="flex items-center gap-2 text-[10px] text-gray-mid">
-                {[desktopHeroVideo, mobileHeroVideo].filter(Boolean).length} / 2 assigned
+                {desktopHeroVideos.length} desktop / {mobileHeroVideos.length} mobile
                 {heroExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               </span>
             </button>
             {heroExpanded && (
               <div className="grid grid-cols-1 gap-2 px-4 pb-3 xl:grid-cols-2">
                 {([
-                  { slot: "desktopVideoId", title: "Desktop hero", current: desktopHeroVideo },
-                  { slot: "mobileVideoId", title: "Mobile hero", current: mobileHeroVideo },
+                  { slot: "desktopVideoIds", title: "Desktop hero pool", current: desktopHeroVideos },
+                  { slot: "mobileVideoIds", title: "Mobile hero pool", current: mobileHeroVideos },
                 ] as const).map((heroSlot) => (
-                  <div key={heroSlot.slot} className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 p-2.5">
-                    <div className="h-11 w-20 shrink-0 overflow-hidden rounded border border-white/10 bg-black/40">
-                      {heroSlot.current ? (
-                        <VideoPosterFrame
-                          src={getPortfolioVideoSrc(heroSlot.current)}
-                          seekTo={heroSlot.current.posterTime ?? 0}
-                          className="h-full w-full object-cover"
-                        />
+                  <div key={heroSlot.slot} className="rounded-xl border border-white/10 bg-white/5 p-2.5">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <p className="text-[10px] uppercase tracking-[0.18em] text-wine">{heroSlot.title}</p>
+                      <span className="text-[10px] text-gray-mid">{heroSlot.current.length} selected</span>
+                    </div>
+                    <div className="mb-2 flex gap-2 overflow-x-auto pb-1">
+                      {heroSlot.current.length ? (
+                        heroSlot.current.map((video) => (
+                          <div key={video.id} className="w-28 shrink-0 overflow-hidden rounded border border-white/10 bg-black/40">
+                            <div className="h-16">
+                              <VideoPosterFrame
+                                src={getPortfolioVideoSrc(video)}
+                                seekTo={video.posterTime ?? 0}
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeHeroVideo(heroSlot.slot, video.id)}
+                              className="block w-full truncate px-1.5 py-1 text-left text-[9px] text-gray-mid transition-colors hover:text-cream"
+                              title={`Remove ${video.title || video.filename}`}
+                            >
+                              {video.title || video.filename}
+                            </button>
+                          </div>
+                        ))
                       ) : (
-                        <div className="flex h-full items-center justify-center text-[9px] text-gray-mid">None</div>
+                        <div className="flex h-16 min-w-28 items-center justify-center rounded border border-white/10 bg-black/40 text-[9px] text-gray-mid">
+                          None
+                        </div>
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-wine">{heroSlot.title}</p>
+                    <div className="flex items-center gap-2">
                       <select
-                        value={heroVideos[heroSlot.slot] ?? ""}
-                        onChange={(e) => assignHeroVideo(heroSlot.slot, e.target.value || null)}
-                        className="mt-1 w-full rounded border border-white/10 bg-dark px-2 py-1 text-xs text-cream focus:outline-none focus:ring-1 focus:ring-wine"
+                        value=""
+                        onChange={(e) => {
+                          addHeroVideo(heroSlot.slot, e.target.value)
+                          e.target.value = ""
+                        }}
+                        className="min-w-0 flex-1 rounded border border-white/10 bg-dark px-2 py-1 text-xs text-cream focus:outline-none focus:ring-1 focus:ring-wine"
                       >
-                        <option value="">No video</option>
+                        <option value="">Add video...</option>
                         {videos.map((v) => (
                           <option key={v.id} value={v.id}>{v.title || v.filename}</option>
                         ))}
                       </select>
-                    </div>
-                    <div className="flex shrink-0 flex-col gap-1">
                       <button
                         type="button"
                         onClick={() => { setPendingHeroSlot(heroSlot.slot); heroFileInputRef.current?.click() }}
@@ -2207,8 +2253,8 @@ export function AdminPortfolioEditor({
                       </button>
                       <button
                         type="button"
-                        onClick={() => assignHeroVideo(heroSlot.slot, null)}
-                        disabled={!heroVideos[heroSlot.slot]}
+                        onClick={() => clearHeroVideos(heroSlot.slot)}
+                        disabled={heroVideos[heroSlot.slot].length === 0}
                         className="rounded border border-white/10 bg-white/5 p-1.5 text-gray-mid transition-colors hover:text-cream disabled:opacity-40"
                         title="Clear"
                       >
@@ -2291,8 +2337,8 @@ export function AdminPortfolioEditor({
                         key={video.id}
                         video={video}
                         isActive={selectedVideoId === video.id}
-                        isDesktopHero={heroVideos.desktopVideoId === video.id}
-                        isMobileHero={heroVideos.mobileVideoId === video.id}
+                        isDesktopHero={heroVideos.desktopVideoIds.includes(video.id)}
+                        isMobileHero={heroVideos.mobileVideoIds.includes(video.id)}
                         position={rawIdx + 1}
                         isFirst={rawIdx === 0}
                         isLast={rawIdx === videos.length - 1}
@@ -2339,8 +2385,8 @@ export function AdminPortfolioEditor({
                   <VideoLibraryCard
                     video={selectedVideo}
                     selected={selectedVideoIds.includes(selectedVideo.id)}
-                    isDesktopHero={heroVideos.desktopVideoId === selectedVideo.id}
-                    isMobileHero={heroVideos.mobileVideoId === selectedVideo.id}
+                    isDesktopHero={heroVideos.desktopVideoIds.includes(selectedVideo.id)}
+                    isMobileHero={heroVideos.mobileVideoIds.includes(selectedVideo.id)}
                     position={rawIdx + 1}
                     isFirst={rawIdx === 0}
                     isLast={rawIdx === videos.length - 1}

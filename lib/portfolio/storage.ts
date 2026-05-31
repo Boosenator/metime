@@ -22,8 +22,30 @@ const BLOB_VIDEO_PREFIX = "portfolio/videos"
 
 const DEFAULT_GRID: GridConfig = { cols: 12, rows: 24 }
 const DEFAULT_HERO_VIDEOS: HeroVideoConfig = {
-  desktopVideoId: null,
-  mobileVideoId: null,
+  desktopVideoIds: [],
+  mobileVideoIds: [],
+}
+
+function uniqueStrings(values: unknown): string[] {
+  if (!Array.isArray(values)) return []
+  return Array.from(new Set(values.filter((value): value is string => typeof value === "string" && value.length > 0)))
+}
+
+function normalizeHeroVideos(config: Partial<HeroVideoConfig> | null | undefined): HeroVideoConfig {
+  const desktopVideoIds = uniqueStrings(config?.desktopVideoIds)
+  const mobileVideoIds = uniqueStrings(config?.mobileVideoIds)
+
+  if (typeof config?.desktopVideoId === "string" && config.desktopVideoId.length > 0) {
+    desktopVideoIds.unshift(config.desktopVideoId)
+  }
+  if (typeof config?.mobileVideoId === "string" && config.mobileVideoId.length > 0) {
+    mobileVideoIds.unshift(config.mobileVideoId)
+  }
+
+  return {
+    desktopVideoIds: Array.from(new Set(desktopVideoIds)),
+    mobileVideoIds: Array.from(new Set(mobileVideoIds)),
+  }
 }
 
 function useBlobStorage() {
@@ -127,17 +149,11 @@ export async function readHeroVideos(): Promise<HeroVideoConfig> {
   if (useBlobStorage()) {
     const heroVideos = await readBlobJson<HeroVideoConfig>(BLOB_HERO_VIDEOS_JSON)
     if (heroVideos) {
-      return {
-        desktopVideoId: typeof heroVideos.desktopVideoId === "string" ? heroVideos.desktopVideoId : localHeroVideos?.desktopVideoId ?? null,
-        mobileVideoId: typeof heroVideos.mobileVideoId === "string" ? heroVideos.mobileVideoId : localHeroVideos?.mobileVideoId ?? null,
-      }
+      return normalizeHeroVideos(heroVideos)
     }
   }
 
-  return {
-    desktopVideoId: localHeroVideos?.desktopVideoId ?? DEFAULT_HERO_VIDEOS.desktopVideoId,
-    mobileVideoId: localHeroVideos?.mobileVideoId ?? DEFAULT_HERO_VIDEOS.mobileVideoId,
-  }
+  return localHeroVideos ? normalizeHeroVideos(localHeroVideos) : DEFAULT_HERO_VIDEOS
 }
 
 export async function readLayout(photos: PhotoMeta[]): Promise<LayoutData> {
@@ -210,10 +226,7 @@ export async function saveVideosData(videos: VideoMeta[]) {
 }
 
 export async function saveHeroVideosData(heroVideos: HeroVideoConfig) {
-  const normalized: HeroVideoConfig = {
-    desktopVideoId: heroVideos.desktopVideoId ?? null,
-    mobileVideoId: heroVideos.mobileVideoId ?? null,
-  }
+  const normalized = normalizeHeroVideos(heroVideos)
 
   if (useBlobStorage()) {
     await writeBlobJson(BLOB_HERO_VIDEOS_JSON, normalized)
