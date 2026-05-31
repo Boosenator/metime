@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef, type CSSProperties } from "react"
 import { createPortal } from "react-dom"
-import { Play, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react"
+import { Link as LinkIcon, Play, X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react"
 import { useI18n } from "@/lib/i18n"
 import { PortfolioMosaic } from "@/components/portfolio-mosaic"
 import { VideoPosterFrame } from "@/components/video-poster-frame"
@@ -118,12 +118,22 @@ function VideoGrid({
         const isPortrait = item.orientation === "portrait"
         return (
           <div
+            id={`portfolio-video-${item.id}`}
             key={item.id}
             className={`group cursor-pointer ${isPortrait ? "col-span-1" : "col-span-2"}`}
             style={{ animation: "fadeScaleIn 0.5s ease both", animationDelay: `${index * 50}ms` }}
             onClick={() => onOpen(item)}
           >
             <div className={`relative overflow-hidden ${isPortrait ? "aspect-[9/16]" : "aspect-video"}`}>
+              <a
+                href={`#portfolio-video-${item.id}`}
+                onClick={(event) => event.stopPropagation()}
+                className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center bg-dark/70 text-cream/75 opacity-0 backdrop-blur-sm transition-all duration-300 hover:bg-wine hover:text-cream group-hover:opacity-100 focus:opacity-100"
+                aria-label={`Посилання на відео ${item.title || item.filename}`}
+                title="Посилання на це відео"
+              >
+                <LinkIcon className="h-4 w-4" />
+              </a>
               <VideoPosterFrame
                 src={getPortfolioVideoSrc(item)}
                 seekTo={item.posterTime ?? 0}
