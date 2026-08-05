@@ -20,7 +20,11 @@ export const metadata: Metadata = {
   title: "Фото та відеозйомка в Черкасах",
   description: SITE_DESCRIPTION,
   alternates: {
-    canonical: "/",
+    // Explicit absolute URL (not relative "/") — Next's metadataBase
+    // resolution otherwise strips the trailing slash for root, producing
+    // "https://metime.in.ua" while sitemap.xml/redirects all use the
+    // slash form. Keeping one canonical form avoids signal dilution.
+    canonical: absoluteUrl("/"),
   },
   openGraph: {
     title: `${SITE_NAME} | Фото та відеозйомка в Черкасах`,

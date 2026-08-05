@@ -6,6 +6,31 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "Referrer-Policy", value: "origin-when-cross-origin" },
   { key: "X-DNS-Prefetch-Control", value: "on" },
+  {
+    // Baseline CSP: blocks framing/plugins/base-uri tampering while allowing
+    // any https: source for scripts/media/connect so Google Tag Manager
+    // (container GTM-N8RD2TDH) can keep loading its configured tags without
+    // this needing to enumerate every third-party domain by hand. Tighten to
+    // a nonce-based script-src once GTM's tag list is audited.
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      "media-src 'self' https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https:",
+      "frame-src https:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "frame-ancestors 'self'",
+    ].join("; "),
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+  },
 ]
 
 const nextConfig = {

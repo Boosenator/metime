@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 export function VideoPosterFrame({
   src,
@@ -13,11 +13,38 @@ export function VideoPosterFrame({
   className?: string
   onDurationChange?: (duration: number) => void
 }) {
-  const ref = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [inView, setInView] = useState(false)
+
+  // Grid pages render one of these per video (16+ on the homepage). Mounting
+  // every <video> eagerly meant every offscreen tile also fetched metadata
+  // and seeked to its poster frame on first load. Only mount the element
+  // (and trigger its network request) once the tile is near the viewport.
+  useEffect(() => {
+    if (inView) return
+    const el = containerRef.current
+    if (!el) return
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true)
+      return
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: "300px" }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [inView])
 
   useEffect(() => {
-    const video = ref.current
-    if (!video) return
+    const video = videoRef.current
+    if (!video || !inView) return
 
     const syncFrame = () => {
       const duration = Number.isFinite(video.duration) ? video.duration : 0
@@ -51,16 +78,20 @@ export function VideoPosterFrame({
       video.removeEventListener("loadedmetadata", handleLoadedMetadata)
       video.removeEventListener("seeked", handleSeeked)
     }
-  }, [onDurationChange, seekTo, src])
+  }, [inView, onDurationChange, seekTo, src])
 
   return (
-    <video
-      ref={ref}
-      src={src}
-      className={className}
-      preload="metadata"
-      muted
-      playsInline
-    />
+    <div ref={containerRef} className={className}>
+      {inView && (
+        <video
+          ref={videoRef}
+          src={src}
+          className="h-full w-full object-cover"
+          preload="metadata"
+          muted
+          playsInline
+        />
+      )}
+    </div>
   )
 }

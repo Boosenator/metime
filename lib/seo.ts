@@ -266,6 +266,7 @@ export function buildServiceJsonLd(service: { name: string; description: string;
     url: absoluteUrl(`/${service.slug}`),
     provider: {
       "@type": "LocalBusiness",
+      "@id": `${SITE_URL}/#studio`,
       name: SITE_NAME,
       url: SITE_URL,
     },

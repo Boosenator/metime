@@ -397,7 +397,7 @@ const translations: Record<Locale, Translations> = {
     },
     footer: {
       tagline: "Моменти, які залишаються назавжди",
-      location: "Черкаси, Україна",
+      location: "Виїзна знімальна команда • Черкаси та область",
       rights: "Усі права захищено.",
     },
   },
@@ -689,7 +689,7 @@ const translations: Record<Locale, Translations> = {
     },
     footer: {
       tagline: "Moments that last forever",
-      location: "Cherkasy, Ukraine",
+      location: "Mobile crew • Cherkasy and region",
       rights: "All rights reserved.",
     },
   },
